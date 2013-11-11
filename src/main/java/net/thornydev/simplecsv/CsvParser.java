@@ -345,4 +345,125 @@ public class CsvParser {
 
     return s.substring(leftidx, rightidx + 1);
   }
+
+
+  /// START EXPERIMENTAL ////
+  String trim2(StringBuilder sb) {
+    int left = 0;
+    int right = sb.length() - 1;
+    
+    if (!retainOuterQuotes) {
+      if (trimWhiteSpace) {
+        int[] indexes = idxTrimSpaces(sb, left, right);
+        left = indexes[0];
+        right = indexes[1];
+        
+        indexes = idxTrimEdgeQuotes(sb, left, right);
+        left = indexes[0];
+        right = indexes[1];
+
+        indexes = idxTrimSpaces(sb, left, right);
+        left = indexes[0];
+        right = indexes[1];      
+      } else {
+        // this block is tricky => 
+        // IDEAS: mod the underlying sb to shift ?
+        pluckOuterQuotes2(sb, left, right);
+        left = 0;
+        right = sb.length() - 1;
+        
+      }
+    } else if (trimWhiteSpace) {
+      int[] indexes = idxTrimSpaces(sb, left, right);
+      left = indexes[0];
+      right = indexes[1];      
+    }
+    
+    return sb.substring(left, right+1);
+  }
+
+  int[] idxTrimEdgeQuotes(StringBuilder sb, int left, int right) {
+    if (sb.length() < 2) {
+      return new int[]{left, right};
+    
+    } else if (sb.charAt(left) == quotechar && sb.charAt(right) == quotechar) {
+      return new int[]{left+1, right+1};      
+    
+    } else {
+      return new int[]{left, right};
+    }
+  }
+  
+  
+  int[] idxTrimSpaces(final StringBuilder sb, int left, int right) {
+    int newLeft  = readLeftWhiteSpace2(sb, left, right);
+    int newRight = readRightWhiteSpace2(sb, left, right);
+
+    if (newLeft > newRight) {
+      newLeft = left;
+      newRight = right;
+    } 
+
+    int[] ary = new int[2];
+    ary[0] = newLeft;
+    ary[1] = newRight;
+    return ary;
+  }
+  
+  
+  void pluckOuterQuotes2(StringBuilder sb, int left, int right) {
+    if (sb.length() < 2) {
+      return;
+    }
+
+    int newLeft  = readLeftWhiteSpace2(sb, left, right);
+    int newRight = readRightWhiteSpace2(sb, left, right);
+    
+    if (sb.charAt(newLeft) == quotechar && sb.charAt(newRight) == quotechar) {
+      sb.deleteCharAt(newRight);
+      sb.deleteCharAt(newLeft);
+    }
+  }
+  
+  /**
+   * Starting from the left side of the string reads to the first
+   * non-white space char (or end of string)
+   * For speed reasons, this code assumes your left and right boundary
+   * conditions are correct and that the StringBuilder is of size >= 1,
+   * so make sure to do checks before calling this method.
+   * @param sb StringBuilder with at least one char (should not be null or size 0)
+   * @param left left boundary index of the current xxx
+   * @param right right boundary index of the current xxx 
+   * @return idx one beyond the last white space char
+   */
+  int readLeftWhiteSpace2(StringBuilder sb, int left, int right) {
+    for (int i = left; i <= right; i++) {
+      if (!Character.isWhitespace(sb.charAt(i))) {
+        return i;
+      }
+    }
+    return left;
+  }
+
+  /**
+   * Starting from the right side of the string reads to the first
+   * non-white space char (or start of string)
+   * For speed reasons, this code assumes your left and right boundary
+   * conditions are correct and that the StringBuilder is of size >= 1,
+   * so make sure to do checks before calling this method.
+   * @param sb StringBuilder with at least one char (should not be null or size 0)
+   * @param right right boundary index of the current xxx 
+   * @return idx one before the last white space char (reading from the right)
+   */
+  int readRightWhiteSpace2(StringBuilder sb, int left, int right) {
+    for (int i = right; i >= left; i--) {
+      if (!Character.isWhitespace(sb.charAt(i))) {
+        return i;
+      }
+    }
+    return right;
+  }
+
+  
+  /// END EXPERIMENTAL ////  
 }
