@@ -9,45 +9,45 @@ public class CsvParserBuilder {
   boolean allowUnbalancedQuotes = CsvParser.DEFAULT_ALLOW_UNBALANCED_QUOTES;
   boolean retainOuterQuotes = CsvParser.DEFAULT_RETAIN_OUTER_QUOTES;
 
-  CsvParserBuilder separator(final char separator) {
+  public CsvParserBuilder separator(final char separator) {
     this.separator = separator;
     return this;
   }
 
-  CsvParserBuilder quoteChar(final char quoteChar) {
+  public CsvParserBuilder quoteChar(final char quoteChar) {
     this.quoteChar = quoteChar;
     return this;
   }
 
-  CsvParserBuilder escapeChar(final char escapeChar) {
+  public CsvParserBuilder escapeChar(final char escapeChar) {
     this.escapeChar = escapeChar;
     return this;
   }
 
-  CsvParserBuilder strictQuotes(final boolean strictQuotes) {
-    this.strictQuotes = strictQuotes;
+  public CsvParserBuilder strictQuotes() {
+    this.strictQuotes = true;
     return this;
   }
 
-  CsvParserBuilder trimWhitespace(final boolean trimWhitespace) {
-    this.trimWhitespace = trimWhitespace;
+  public CsvParserBuilder trimWhitespace() {
+    this.trimWhitespace = true;
     return this;
   }
 
-  CsvParserBuilder allowUnbalancedQuotes(final boolean allowUnbalancedQuotes) {
-    this.allowUnbalancedQuotes = allowUnbalancedQuotes;
+  public CsvParserBuilder allowUnbalancedQuotes() {
+    this.allowUnbalancedQuotes = true;
     return this;
   }
 
-  CsvParserBuilder retainQuotes(final boolean retainQuoteChars) {
-    this.retainOuterQuotes = retainQuoteChars;
+  public CsvParserBuilder retainOuterQuotes() {
+    this.retainOuterQuotes = true;
     return this;
   }
 
   /**
    * Constructs Parser2
    */
-  CsvParser build() {
+  public CsvParser build() {
     return new CsvParser(
         separator,
         quoteChar,
