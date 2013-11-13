@@ -214,170 +214,148 @@ public class CsvParserInternalsTest {
     assertEquals(exp, act);
   }  
   
-  
-  @Test
-  public void testHandleRegular() {
+//  @Test
+//  public void testTrimIfQuotesPresent() {
+//    String input = "music";
+//    String exp = input;
+//    String act = parser.trimIfOuterQuotesPresent(input);
+//    assertEquals(exp, act);
+//    
+//    input = "\"music\"";
+//    exp = input;
+//    act = parser.trimIfOuterQuotesPresent(input);
+//    assertEquals(exp, act);
+//    
+//    input = "\"music\" ";
+//    exp = "\"music\"";
+//    act = parser.trimIfOuterQuotesPresent(input);
+//    assertEquals(exp, act);
+//    
+//    input = " \"music\"";
+//    exp = "\"music\"";
+//    act = parser.trimIfOuterQuotesPresent(input);
+//    assertEquals(exp, act);
+//
+//    input = "123\"music\"456";
+//    exp = input;
+//    act = parser.trimIfOuterQuotesPresent(input);
+//    assertEquals(exp, act);
+//
+//    input = "\"\"music\"\"";
+//    exp = "\"\"music\"\"";
+//    act = parser.trimIfOuterQuotesPresent(input);
+//    assertEquals(exp, act);
+//    
+//    input = "\t\"music\"\t";
+//    exp = "\"music\"";
+//    act = parser.trimIfOuterQuotesPresent(input);
+//    assertEquals(exp, act);
+//
+//    input = "\t    \" music \" \t ";
+//    exp = "\" music \"";
+//    act = parser.trimIfOuterQuotesPresent(input);
+//    assertEquals(exp, act);
+//    
+//    input = "\t";
+//    exp = input;
+//    act = parser.trimIfOuterQuotesPresent(input);
+//    assertEquals(exp, act);
+//    
+//    input = " a ";
+//    exp = input;
+//    act = parser.trimIfOuterQuotesPresent(input);
+//    assertEquals(exp, act);   
+//
+//    input = "z";
+//    exp = input;
+//    act = parser.trimIfOuterQuotesPresent(input);
+//    assertEquals(exp, act);   
+//
+//    input = "";
+//    exp = input;
+//    act = parser.trimIfOuterQuotesPresent(input);
+//    assertEquals(exp, act);   
+//  }
+//  
+//
+//  
+//  @Test
+//  public void testPluckOuterQuotes() {
+//    String input = "music";
+//    String exp = input;
+//    String act = parser.pluckOuterQuotes(input);
+//    assertEquals(exp, act);
+//    
+//    input = "\"music\"";
+//    exp = "music";
+//    act = parser.pluckOuterQuotes(input);
+//    assertEquals(exp, act);
+//    
+//    input = "\"music\" ";
+//    exp = "music ";
+//    act = parser.pluckOuterQuotes(input);
+//    assertEquals(exp, act);
+//
+//    input = " \"music\"";
+//    exp = " music";
+//    act = parser.pluckOuterQuotes(input);
+//    assertEquals(exp, act);
+//
+//    input = "123\"music\"456";
+//    exp = input;
+//    act = parser.pluckOuterQuotes(input);
+//    assertEquals(exp, act);
+//
+//    input = "\"\"music\"\"";
+//    exp = "\"music\"";
+//    act = parser.pluckOuterQuotes(input);
+//    assertEquals(exp, act);
+//
+//    input = "\t\"music\"\t";
+//    exp = "\tmusic\t";
+//    act = parser.pluckOuterQuotes(input);
+//    assertEquals(exp, act);
+//
+//    input = "\t    \" music \" \t ";
+//    exp = "\t     music  \t ";
+//    act = parser.pluckOuterQuotes(input);
+//    assertEquals(exp, act);
+//  }
+//  
+//
+//  @Test
+//  public void testTrimEdgeQuotes() {
+//    String input = "music";
+//    String exp = input;
+//    String act = parser.trimEdgeQuotes(input);
+//    assertEquals(exp, act);
+//    
+//    input = "\"music\"";
+//    exp = "music";
+//    act = parser.trimEdgeQuotes(input);
+//    assertEquals(exp, act);
+//    
+//    input = "\"music\" ";
+//    exp = input;
+//    act = parser.trimEdgeQuotes(input);
+//    assertEquals(exp, act);
+//
+//    input = " \"music\"";
+//    exp = input;
+//    act = parser.trimEdgeQuotes(input);
+//    assertEquals(exp, act);
+//
+//    input = "123\"music\"456";
+//    exp = input;
+//    act = parser.trimEdgeQuotes(input);
+//    assertEquals(exp, act);
+//
+//    input = "\"\"music\"\"";
+//    exp = "\"music\"";
+//    act = parser.trimEdgeQuotes(input);
+//    assertEquals(exp, act);
+//  }
 
-  }
-
-  @Test
-  public void testHandleEscape() {
-
-  }
-
-  @Test
-  public void testHandleQuote() {
-
-  }
-
-  @Test
-  public void testTrimIfQuotesPresent() {
-    String input = "music";
-    String exp = input;
-    String act = parser.trimIfOuterQuotesPresent(input);
-    assertEquals(exp, act);
-    
-    input = "\"music\"";
-    exp = input;
-    act = parser.trimIfOuterQuotesPresent(input);
-    assertEquals(exp, act);
-    
-    input = "\"music\" ";
-    exp = "\"music\"";
-    act = parser.trimIfOuterQuotesPresent(input);
-    assertEquals(exp, act);
-    
-    input = " \"music\"";
-    exp = "\"music\"";
-    act = parser.trimIfOuterQuotesPresent(input);
-    assertEquals(exp, act);
-
-    input = "123\"music\"456";
-    exp = input;
-    act = parser.trimIfOuterQuotesPresent(input);
-    assertEquals(exp, act);
-
-    input = "\"\"music\"\"";
-    exp = "\"\"music\"\"";
-    act = parser.trimIfOuterQuotesPresent(input);
-    assertEquals(exp, act);
-    
-    input = "\t\"music\"\t";
-    exp = "\"music\"";
-    act = parser.trimIfOuterQuotesPresent(input);
-    assertEquals(exp, act);
-
-    input = "\t    \" music \" \t ";
-    exp = "\" music \"";
-    act = parser.trimIfOuterQuotesPresent(input);
-    assertEquals(exp, act);
-    
-    input = "\t";
-    exp = input;
-    act = parser.trimIfOuterQuotesPresent(input);
-    assertEquals(exp, act);
-    
-    input = " a ";
-    exp = input;
-    act = parser.trimIfOuterQuotesPresent(input);
-    assertEquals(exp, act);   
-
-    input = "z";
-    exp = input;
-    act = parser.trimIfOuterQuotesPresent(input);
-    assertEquals(exp, act);   
-
-    input = "";
-    exp = input;
-    act = parser.trimIfOuterQuotesPresent(input);
-    assertEquals(exp, act);   
-  }
-  
-
-  
-  @Test
-  public void testPluckOuterQuotes() {
-    String input = "music";
-    String exp = input;
-    String act = parser.pluckOuterQuotes(input);
-    assertEquals(exp, act);
-    
-    input = "\"music\"";
-    exp = "music";
-    act = parser.pluckOuterQuotes(input);
-    assertEquals(exp, act);
-    
-    input = "\"music\" ";
-    exp = "music ";
-    act = parser.pluckOuterQuotes(input);
-    assertEquals(exp, act);
-
-    input = " \"music\"";
-    exp = " music";
-    act = parser.pluckOuterQuotes(input);
-    assertEquals(exp, act);
-
-    input = "123\"music\"456";
-    exp = input;
-    act = parser.pluckOuterQuotes(input);
-    assertEquals(exp, act);
-
-    input = "\"\"music\"\"";
-    exp = "\"music\"";
-    act = parser.pluckOuterQuotes(input);
-    assertEquals(exp, act);
-
-    input = "\t\"music\"\t";
-    exp = "\tmusic\t";
-    act = parser.pluckOuterQuotes(input);
-    assertEquals(exp, act);
-
-    input = "\t    \" music \" \t ";
-    exp = "\t     music  \t ";
-    act = parser.pluckOuterQuotes(input);
-    assertEquals(exp, act);
-  }
-  
-
-  @Test
-  public void testTrimEdgeQuotes() {
-    String input = "music";
-    String exp = input;
-    String act = parser.trimEdgeQuotes(input);
-    assertEquals(exp, act);
-    
-    input = "\"music\"";
-    exp = "music";
-    act = parser.trimEdgeQuotes(input);
-    assertEquals(exp, act);
-    
-    input = "\"music\" ";
-    exp = input;
-    act = parser.trimEdgeQuotes(input);
-    assertEquals(exp, act);
-
-    input = " \"music\"";
-    exp = input;
-    act = parser.trimEdgeQuotes(input);
-    assertEquals(exp, act);
-
-    input = "123\"music\"456";
-    exp = input;
-    act = parser.trimEdgeQuotes(input);
-    assertEquals(exp, act);
-
-    input = "\"\"music\"\"";
-    exp = "\"music\"";
-    act = parser.trimEdgeQuotes(input);
-    assertEquals(exp, act);
-  }
-
-  @Test
-  public void testTrimQuotes() {
-    // ??
-  }
-
-  
   ////////////// EXPERIMENTAL /////////////
   
   @Test
@@ -527,5 +505,135 @@ public class CsvParserInternalsTest {
     assertTrue("length should NOT have been shortened", lenBefore == sb.length());
     assertEquals(" 1-2-3\"", sb.toString());
   }
+  
+  
+  // idxTrimSpaces
+  
+  @Test
+  public void testIdxTrimSpacesSingleSpaceOnLeft() {
+    //idxTrimSpaces
+    StringBuilder sb = new StringBuilder(" 1-2-3\"");
+    int[] indexes = parser.idxTrimSpaces(sb, 0, sb.length()-1);
+    assertEquals(2, indexes.length);
+    assertEquals(1, indexes[0]);
+    assertEquals(sb.length()-1, indexes[1]);
+  }
 
+  @Test
+  public void testIdxTrimSpacesMultipleSpacesBothSides() {
+    //                                    0 1234567890
+    StringBuilder sb = new StringBuilder(" \tone two 3   ");
+    int[] indexes = parser.idxTrimSpaces(sb, 0, sb.length()-1);
+    assertEquals(2, indexes.length);
+    assertEquals(2, indexes[0]);
+    assertEquals(10, indexes[1]);
+    assertEquals("one two 3", sb.subSequence(indexes[0], indexes[1]+1));
+
+    indexes = parser.idxTrimSpaces(sb, 2, 10);
+    assertEquals(2, indexes[0]);
+    assertEquals(10, indexes[1]);
+
+    indexes = parser.idxTrimSpaces(sb, 3, 9);
+    assertEquals(3, indexes[0]);
+    assertEquals(8, indexes[1]);
+    assertEquals("ne two", sb.subSequence(indexes[0], indexes[1]+1));    
+  }
+
+  @Test
+  public void testIdxTrimSpacesNoSpaces() {
+    //                                    0123456
+    StringBuilder sb = new StringBuilder("one two");
+    int[] indexes = parser.idxTrimSpaces(sb, 0, sb.length()-1);
+    assertEquals(2, indexes.length);
+    assertEquals(0, indexes[0]);
+    assertEquals(6, indexes[1]);
+    assertEquals("one two", sb.substring(indexes[0], indexes[1]+1));
+  }
+
+  @Test
+  public void testIdxTrimSpacesEdgeCases() {
+    StringBuilder sb = new StringBuilder("");
+    int[] indexes = parser.idxTrimSpaces(sb, 0, 0);
+    assertEquals(2, indexes.length);
+    assertEquals(0, indexes[0]);
+    assertEquals(0, indexes[1]);
+
+    sb.append(" ");
+    indexes = parser.idxTrimSpaces(sb, 0, 0);
+    assertEquals(0, indexes[0]);
+    assertEquals(0, indexes[1]);    
+  }
+  
+  
+  //// trimEdgeQuotes
+  
+  @Test
+  public void testIdxTrimEdgeQuotes() {
+    //                                     012345678 9
+    StringBuilder sb = new StringBuilder("\"standard\"");
+    int[] indexes = parser.idxTrimEdgeQuotes(sb, 0, 9);
+    assertEquals(2, indexes.length);
+    assertEquals(1, indexes[0]);
+    assertEquals(8, indexes[1]);
+    assertEquals("standard", sb.substring(indexes[0], indexes[1]+1));
+  }
+  
+  @Test
+  public void testIdxTrimEdgeQuotesOnlyOneEdgeQuote() {
+    StringBuilder sb = new StringBuilder("\"standard\" ");
+    int[] indexes = parser.idxTrimEdgeQuotes(sb, 0, sb.length()-1);
+    assertEquals("\"standard\" ", sb.substring(indexes[0], indexes[1]+1));
+  }
+
+  @Test
+  public void testIdxTrimEdgeQuotesZeroEdgeQuote() {
+    StringBuilder sb = new StringBuilder("standard\"");
+    int[] indexes = parser.idxTrimEdgeQuotes(sb, 0, sb.length()-1);
+    assertEquals("standard\"", sb.substring(indexes[0], indexes[1]+1));
+  }
+
+  @Test
+  public void testIdxTrimEdgeQuotesEdgeCases() {
+    StringBuilder sb = new StringBuilder("");
+    int[] indexes = parser.idxTrimEdgeQuotes(sb, 0, 0);
+    assertEquals(0, indexes[0]);
+    assertEquals(0, indexes[1]);
+
+    sb.append("\"");
+    indexes = parser.idxTrimEdgeQuotes(sb, 0, 1);
+    assertEquals(0, indexes[0]);
+    assertEquals(1, indexes[1]);
+
+    sb.append("\"");
+    indexes = parser.idxTrimEdgeQuotes(sb, 0, 1);
+    assertEquals(1, indexes[0]);
+    assertEquals(0, indexes[1]);
+    assertEquals("", sb.substring(indexes[0], indexes[1]+1));
+  }
+
+  
+  @Test
+  public void testTrim2DefaultParser() {
+    // default: will remove outer quotes, but not trim whitespace
+    StringBuilder sb = new StringBuilder("\"standard\" ");
+    assertEquals("standard ", parser.trim(sb));
+  
+    sb.setLength(0);
+    sb.append(" standard ");
+    assertEquals(" standard ", parser.trim(sb));
+
+    sb.setLength(0);
+    sb.append("\"\"standard\"\"");
+    assertEquals("\"standard\"", parser.trim(sb));
+
+    sb.setLength(0);
+    sb.append("\"\"");
+    assertEquals("", parser.trim(sb));
+
+    sb.setLength(0);
+    sb.append("");
+    assertEquals("", parser.trim(sb));
+  }
+
+  
 }

@@ -22,7 +22,7 @@ public class CsvParser {
   public static final boolean DEFAULT_RETAIN_OUTER_QUOTES = false;
   public static final boolean DEFAULT_ALLOW_UNBALANCED_QUOTES = false;
   
-  private static final int INITIAL_READ_SIZE = 128;
+  static final int INITIAL_READ_SIZE = 128;
   
   // This is the "null" character - if a value is set to this then it is ignored.
   static final char NULL_CHARACTER = '\0';
@@ -218,137 +218,137 @@ public class CsvParser {
   
   
   //TODO: make this more efficient by operating on char[] or StringBuilder
-  String trim(StringBuilder sb) {
-    String tok = sb.toString();
+//  String trim2(StringBuilder sb) {
+//    String tok = sb.toString();
+//
+//    if (!retainOuterQuotes) {
+//      if (trimWhiteSpace) {
+//        tok = tok.trim();
+//        tok = trimEdgeQuotes(tok);  // removes the first and last char only if they are quotes
+//        tok = tok.trim();
+//      } else {
+//        tok = pluckOuterQuotes(tok);  // removes first left quote and last right quote, but doesn't remove any white space  
+//      }
+//    
+//    } else if (trimWhiteSpace) {
+//      tok = tok.trim();
+//    }
+//    return tok;
+//  }
 
-    if (!retainOuterQuotes) {
-      if (trimWhiteSpace) {
-        tok = tok.trim();
-        tok = trimEdgeQuotes(tok);  // removes the first and last char only if they are quotes
-        tok = tok.trim();
-      } else {
-        tok = pluckOuterQuotes(tok);  // removes first left quote and last right quote, but doesn't remove any white space  
-      }
-    
-    } else if (trimWhiteSpace) {
-      tok = tok.trim();
-    }
-    return tok;
-  }
 
-
-  String trimIfOuterQuotesPresent(String s) {
-    if (s.length() < 2) {
-      return s;
-    }
-    
-    int leftidx = readLeftWhiteSpace(s);
-    int rightidx = readRightWhiteSpace(s);
-    
-    if (rightidx - leftidx < 2) {
-      return s;
-    }
-    
-    if (s.charAt(leftidx) != quotechar || s.charAt(rightidx) != quotechar) {
-      return s;
-    }
-    
-    return s.substring(leftidx, rightidx + 1);
-  }
-  
-  
-  String pluckOuterQuotes(String s) {
-    if (s.length() < 2) {
-      return s;
-    }
-    // easy route if outer quotes are first and last char
-    String s2 = trimEdgeQuotes(s);
-    // trimEdgeQuotes will return the original string if first and last chars are not quotes
-    if (s != s2) {
-      return s2;
-    }
-    
-    // if get here: there is either some white space outside of the quotes or no quotes at all
-    StringBuilder sb = new StringBuilder(s.length());
-    int leftidx = readLeftWhiteSpace(s);
-    if (leftidx + 1 < s.length() && s.charAt(leftidx) == this.quotechar) {
-      sb.append(s.substring(0, leftidx));
-    } else {
-      return s;
-    }
-    
-    int rightidx = readRightWhiteSpace(s);
-    if (rightidx > 1 && s.charAt(rightidx) == this.quotechar) {
-      sb.append( s.substring(leftidx + 1, rightidx) );
-      sb.append(s.substring(rightidx+1));
-    } else {
-      return s;
-    }
-    return sb.toString();
-  }
-  
-  /**
-   * Starting from the left side of the string reads to the first
-   * non-white space char (or end of string)
-   * @param s
-   * @return idx one beyond the last white space char
-   */
-  int readLeftWhiteSpace(String s) {
-    for (int i = 0; i < s.length(); i++) {
-      if (!Character.isWhitespace(s.charAt(i))) {
-        return i;
-      }
-    }
-    return 0;
-  }
-  
-  /**
-   * Starting from the right side of the string reads to the first
-   * non-white space char (or start of string)
-   * @param s
-   * @return idx one before the last white space char (reading from the right)
-   */
-  int readRightWhiteSpace(String s) {
-    for (int i = s.length() - 1; i >= 0; i--) {
-      if (!Character.isWhitespace(s.charAt(i))) {
-        return i;
-      }
-    }
-    return s.length();
-  }
-  
-  String trimEdgeQuotes(String s) {
-    if (s.charAt(0) == quotechar && s.charAt(s.length()-1) == quotechar) {
-      return s.substring(1, s.length()-1);
-    } else {
-      return s;
-    }
-  }
-  
-  String trimQuotes(String s) {
-    int leftidx = 0;
-    int rightidx = 0;
-    
-    for (int i = 0; i < s.length(); i++) {
-      leftidx = i;
-      if (s.charAt(i) != quotechar && !Character.isWhitespace(s.charAt(i))) {
-        break;
-      }
-    }
-    
-    for (int i = s.length() - 1; i >= 0; i--) {
-      rightidx = i;
-      if (s.charAt(i) != quotechar && !Character.isWhitespace(s.charAt(i))) {
-        break;
-      }
-    }
-
-    return s.substring(leftidx, rightidx + 1);
-  }
+//  String trimIfOuterQuotesPresent(String s) {
+//    if (s.length() < 2) {
+//      return s;
+//    }
+//    
+//    int leftidx = readLeftWhiteSpace(s);
+//    int rightidx = readRightWhiteSpace(s);
+//    
+//    if (rightidx - leftidx < 2) {
+//      return s;
+//    }
+//    
+//    if (s.charAt(leftidx) != quotechar || s.charAt(rightidx) != quotechar) {
+//      return s;
+//    }
+//    
+//    return s.substring(leftidx, rightidx + 1);
+//  }
+//  
+//  
+//  String pluckOuterQuotes(String s) {
+//    if (s.length() < 2) {
+//      return s;
+//    }
+//    // easy route if outer quotes are first and last char
+//    String s2 = trimEdgeQuotes(s);
+//    // trimEdgeQuotes will return the original string if first and last chars are not quotes
+//    if (s != s2) {
+//      return s2;
+//    }
+//    
+//    // if get here: there is either some white space outside of the quotes or no quotes at all
+//    StringBuilder sb = new StringBuilder(s.length());
+//    int leftidx = readLeftWhiteSpace(s);
+//    if (leftidx + 1 < s.length() && s.charAt(leftidx) == this.quotechar) {
+//      sb.append(s.substring(0, leftidx));
+//    } else {
+//      return s;
+//    }
+//    
+//    int rightidx = readRightWhiteSpace(s);
+//    if (rightidx > 1 && s.charAt(rightidx) == this.quotechar) {
+//      sb.append( s.substring(leftidx + 1, rightidx) );
+//      sb.append(s.substring(rightidx+1));
+//    } else {
+//      return s;
+//    }
+//    return sb.toString();
+//  }
+//  
+//  /**
+//   * Starting from the left side of the string reads to the first
+//   * non-white space char (or end of string)
+//   * @param s
+//   * @return idx one beyond the last white space char
+//   */
+//  int readLeftWhiteSpace(String s) {
+//    for (int i = 0; i < s.length(); i++) {
+//      if (!Character.isWhitespace(s.charAt(i))) {
+//        return i;
+//      }
+//    }
+//    return 0;
+//  }
+//  
+//  /**
+//   * Starting from the right side of the string reads to the first
+//   * non-white space char (or start of string)
+//   * @param s
+//   * @return idx one before the last white space char (reading from the right)
+//   */
+//  int readRightWhiteSpace(String s) {
+//    for (int i = s.length() - 1; i >= 0; i--) {
+//      if (!Character.isWhitespace(s.charAt(i))) {
+//        return i;
+//      }
+//    }
+//    return s.length();
+//  }
+//  
+//  String trimEdgeQuotes(String s) {
+//    if (s.charAt(0) == quotechar && s.charAt(s.length()-1) == quotechar) {
+//      return s.substring(1, s.length()-1);
+//    } else {
+//      return s;
+//    }
+//  }
+//  
+//  String trimQuotes(String s) {
+//    int leftidx = 0;
+//    int rightidx = 0;
+//    
+//    for (int i = 0; i < s.length(); i++) {
+//      leftidx = i;
+//      if (s.charAt(i) != quotechar && !Character.isWhitespace(s.charAt(i))) {
+//        break;
+//      }
+//    }
+//    
+//    for (int i = s.length() - 1; i >= 0; i--) {
+//      rightidx = i;
+//      if (s.charAt(i) != quotechar && !Character.isWhitespace(s.charAt(i))) {
+//        break;
+//      }
+//    }
+//
+//    return s.substring(leftidx, rightidx + 1);
+//  }
 
 
   /// START EXPERIMENTAL ////
-  String trim2(StringBuilder sb) {
+  String trim(StringBuilder sb) {
     int left = 0;
     int right = sb.length() - 1;
     
@@ -366,8 +366,6 @@ public class CsvParser {
         left = indexes[0];
         right = indexes[1];      
       } else {
-        // this block is tricky => 
-        // IDEAS: mod the underlying sb to shift ?
         pluckOuterQuotes2(sb, left, right);
         left = 0;
         right = sb.length() - 1;
@@ -382,20 +380,45 @@ public class CsvParser {
     return sb.substring(left, right+1);
   }
 
+  /**
+   * Only adjusts the left and right index if both the first and last char
+   * in the buffer are quotechars.
+   * The left and right indexes returned should be used to create a string
+   * without edge quotes with: sb.substring(left, right+1)
+   * 
+   * Note: if the string of empty quotes (not empty string), meaning "\"\""
+   * is passed in, it will return left = 1, right = 0, which gives you empty
+   * string when you do: sb.substring(left, right+1)
+   * @param sb
+   * @param left index to look for left quote at
+   * @param right index to look for right quote at
+   * @return int[2]:  int[0]=> adjusted left index, which will be left or left + 1
+   *                  int[1]=> adjusted left index, which will be right or right - 1
+   */
   int[] idxTrimEdgeQuotes(StringBuilder sb, int left, int right) {
     if (sb.length() < 2) {
       return new int[]{left, right};
     
     } else if (sb.charAt(left) == quotechar && sb.charAt(right) == quotechar) {
-      return new int[]{left+1, right+1};      
+      return new int[]{left+1, right-1};      
     
     } else {
       return new int[]{left, right};
     }
   }
   
-  
+  /**
+   * 
+   * @param sb
+   * @param left
+   * @param right
+   * @return
+   */
   int[] idxTrimSpaces(final StringBuilder sb, int left, int right) {
+    if (sb.length() < 2) {
+      return new int[]{left, right};
+    }
+    
     int newLeft  = readLeftWhiteSpace2(sb, left, right);
     int newRight = readRightWhiteSpace2(sb, left, right);
 
