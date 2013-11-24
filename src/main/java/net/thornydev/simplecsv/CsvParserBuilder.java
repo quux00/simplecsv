@@ -24,23 +24,23 @@ public class CsvParserBuilder {
     return this;
   }
 
-  public CsvParserBuilder strictQuotes() {
-    this.strictQuotes = true;
+  public CsvParserBuilder strictQuotes(boolean beStrict) {
+    this.strictQuotes = beStrict;
     return this;
   }
 
-  public CsvParserBuilder trimWhitespace() {
-    this.trimWhitespace = true;
+  public CsvParserBuilder trimWhitespace(boolean trim) {
+    this.trimWhitespace = trim;
     return this;
   }
 
-  public CsvParserBuilder allowUnbalancedQuotes() {
-    this.allowUnbalancedQuotes = true;
+  public CsvParserBuilder allowUnbalancedQuotes(boolean allow) {
+    this.allowUnbalancedQuotes = allow;
     return this;
   }
 
-  public CsvParserBuilder retainOuterQuotes() {
-    this.retainOuterQuotes = true;
+  public CsvParserBuilder retainOuterQuotes(boolean retain) {
+    this.retainOuterQuotes = retain;
     return this;
   }
 

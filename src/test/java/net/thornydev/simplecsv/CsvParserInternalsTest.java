@@ -42,7 +42,7 @@ public class CsvParserInternalsTest {
 
   @Test
   public void testTrimWithTrimWhiteSpaceSettings() {
-    CsvParser p = new CsvParserBuilder().trimWhitespace().build();
+    CsvParser p = new CsvParserBuilder().trimWhitespace(true).build();
     
     StringBuilder input = new StringBuilder("music");
     String exp = input.toString();
@@ -72,7 +72,7 @@ public class CsvParserInternalsTest {
 
   @Test
   public void testTrimWithRetainOuterQuotesSettings() {
-    CsvParser p = new CsvParserBuilder().retainOuterQuotes().build();
+    CsvParser p = new CsvParserBuilder().retainOuterQuotes(true).build();
     
     StringBuilder input = new StringBuilder("music");
     String exp = input.toString();
@@ -104,8 +104,8 @@ public class CsvParserInternalsTest {
   @Test
   public void testTrimWithRetainOuterQuotesAndTrimWhitespaceSettings() {
     CsvParser p = new CsvParserBuilder().
-        retainOuterQuotes().
-        trimWhitespace().
+        retainOuterQuotes(true).
+        trimWhitespace(true).
         build();
     
     StringBuilder input = new StringBuilder("music");
@@ -138,8 +138,8 @@ public class CsvParserInternalsTest {
   @Test
   public void testTrimWithRetainOuterQuotesAndTrimWhitespaceNonDefaultQuoteCharSettings() {
     CsvParser p = new CsvParserBuilder().
-        retainOuterQuotes().
-        trimWhitespace().
+        retainOuterQuotes(true).
+        trimWhitespace(true).
         quoteChar('\'').
         build();
     
@@ -172,7 +172,7 @@ public class CsvParserInternalsTest {
   @Test
   public void testTrimWithAllowUnbalancedQuotesSettings() {
     CsvParser p = new CsvParserBuilder().
-        allowUnbalancedQuotes().
+        allowUnbalancedQuotes(true).
         build();
     
     StringBuilder input = new StringBuilder("music");
@@ -194,8 +194,8 @@ public class CsvParserInternalsTest {
   @Test
   public void testTrimWithAllowUbalancedQuotesAndTrimWhiteSpace() {
     CsvParser p = new CsvParserBuilder().
-        allowUnbalancedQuotes().
-        trimWhitespace().
+        allowUnbalancedQuotes(true).
+        trimWhitespace(true).
         build();
     
     StringBuilder input = new StringBuilder("music");

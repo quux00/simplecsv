@@ -4,23 +4,20 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.notNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.nio.CharBuffer;
-import java.util.Arrays;
-import java.util.Iterator;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
-
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.notNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class CsvReaderTest {
 
@@ -91,12 +88,10 @@ public class CsvReaderTest {
   @Test
   public void test101() throws IOException {
     FileReader fr = new FileReader("src/test/resources/basic.csv");
-    CsvParser parser = new CsvParserBuilder().strictQuotes().build();
+    CsvParser parser = new CsvParserBuilder().strictQuotes(true).build();
     csvr = new CsvReader(fr, parser);
     String[] toks = csvr.readNext();
-    System.out.println(Arrays.asList(toks));
     toks = csvr.readNext();
-    System.out.println(Arrays.asList(toks));
 
     // TODO: need to do asserts and create better test data file
   }
@@ -156,12 +151,11 @@ public class CsvReaderTest {
     sb.append("\"\"\"\"\"\",\"test\"\n"); // """""","test"  representing:  "", test
     sb.append("\"a\\nb\",b,\"\\nd\",e\n");
 
-    CsvParser parser = new CsvParserBuilder().strictQuotes().build();
+    CsvParser parser = new CsvParserBuilder().strictQuotes(true).build();
     csvr = new CsvReader(new StringReader(sb.toString()), parser);
 
     // test normal case
     String[] toks = csvr.readNext();
-    System.out.println(Arrays.asList(toks));
     assertEquals("", toks[0]);
     assertEquals("", toks[1]);
     assertEquals("", toks[2]);
@@ -394,7 +388,7 @@ public class CsvReaderTest {
     StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
     sb.append("\"a\",\"b\",\"c\"   ");
 
-    CsvParser parser = new CsvParserBuilder().strictQuotes().build();
+    CsvParser parser = new CsvParserBuilder().strictQuotes(true).build();
     CsvReader cr = new CsvReader(new StringReader(sb.toString()), parser);
 
     String[] nextLine = cr.readNext();
@@ -467,7 +461,7 @@ public class CsvReaderTest {
     StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
     sb.append("\"a\",\"1234567\",\"c\"").append("\n"); // "a","1234567","c"
 
-    CsvParser parser = new CsvParserBuilder().strictQuotes().build();
+    CsvParser parser = new CsvParserBuilder().strictQuotes(true).build();
     CsvReader cr = new CsvReader(new StringReader(sb.toString()), parser);
 
     String[] nextLine = cr.readNext();
