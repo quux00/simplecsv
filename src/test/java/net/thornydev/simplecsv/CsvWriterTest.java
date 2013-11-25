@@ -118,7 +118,7 @@ public class CsvWriterTest {
     // test quoted line
     String[] quoteLine = {"This is a \" multiline entry", "so is \n this"};
     output = invokeWriter(quoteLine);
-    assertEquals("'This is a \"\" multiline entry','so is \n this'\n", output);
+    assertEquals("'This is a \" multiline entry','so is \n this'\n", output);
 
   }
 
@@ -135,7 +135,7 @@ public class CsvWriterTest {
     // test quoted line
     String[] quoteLine = {"This is a 'multiline' entry", "so is \n this"};
     String output = invokeWriter(quoteLine);
-    assertEquals("'This is a \"'multiline\"' entry','so is \n this'\n", output);
+    assertEquals("'This is a \\'multiline\\' entry','so is \n this'\n", output);
   }
 
   /**
@@ -279,7 +279,7 @@ public class CsvWriterTest {
     csvw.close();
     
     String result = sw.toString();
-    assertEquals("1,Foo,\"With,Separator\",\"Line\nBreak\",\"Hello \"\"Foo Bar\"\" World\",Bar\n", result);
+    assertEquals("1,Foo,\"With,Separator\",\"Line\nBreak\",\"Hello \\\"Foo Bar\\\" World\",Bar\n", result);
   }
 
 
@@ -364,7 +364,7 @@ public class CsvWriterTest {
   @Test
   public void testNestedQuotes() {
     String[] data = new String[]{"\"\"", "test"};
-    String oracle = new String("\"\"\"\"\"\",\"test\"\n");
+    String oracle = new String("\"\\\"\\\"\",\"test\"\n");
 
     CsvWriter writer = null;
     File tempFile = null;
@@ -415,8 +415,9 @@ public class CsvWriterTest {
       fail();
     }
 
-    assertTrue(oracle.equals(fileContents.toString()));
+    assertEquals(oracle, fileContents.toString());
   }
+  
 
   @Test
   public void testAlternateLineFeeds() throws IOException {
