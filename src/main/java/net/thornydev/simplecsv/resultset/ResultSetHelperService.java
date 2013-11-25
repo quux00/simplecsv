@@ -83,6 +83,18 @@ public class ResultSetHelperService implements ResultSetHelper {
     long lv = rs.getLong(columnIndex);
     return rs.wasNull() ? "" : Long.toString(lv);
   }
+  
+  private String handleLongOrInt(ResultSet rs, int colIdx) throws SQLException {
+    long lv = rs.getLong(colIdx);
+    if (rs.wasNull()) return "";
+    
+    if (lv <= Integer.MAX_VALUE && lv >= Integer.MIN_VALUE) {
+      int iv = rs.getInt(colIdx);
+      return Integer.toString(iv);
+    } else {
+      return Long.toString(lv);
+    }
+  }
 
   private String handleInteger(ResultSet rs, int columnIndex) throws SQLException {
     int i = rs.getInt(columnIndex);
@@ -140,8 +152,10 @@ public class ResultSetHelperService implements ResultSetHelper {
         value = handleBigDecimal(rs.getBigDecimal(colIndex));
         break;
       case Types.INTEGER:
-        // TODO: some DBs like MySQL can have unsigned ints, which will cause an overflow with this code
-        value = handleInteger(rs, colIndex);
+        // Some DBs, like MySQL, can have unsigned ints, which will cause an overflow with this code
+        // so first grab as a Long and if within the INT size limits, change it to an Int
+        value = handleLongOrInt(rs, colIndex);
+        break;
       case Types.TINYINT:
       case Types.SMALLINT:
         value = handleInteger(rs, colIndex);
