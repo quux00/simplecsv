@@ -5,7 +5,6 @@ import java.io.Reader;
 public class CsvReaderBuilder {
   final Reader reader;
   int skipLines = CsvReader.DEFAULT_SKIP_LINES;
-  CsvParserBuilder CsvParserBuilder = new CsvParserBuilder();
   CsvParser parser = null;
 
   /**
