@@ -9,6 +9,7 @@ public class CsvParserBuilder {
   boolean allowUnbalancedQuotes = CsvParser.DEFAULT_ALLOW_UNBALANCED_QUOTES;
   boolean retainOuterQuotes = CsvParser.DEFAULT_RETAIN_OUTER_QUOTES;
   boolean retainEscapeChars = CsvParser.DEFAULT_RETAIN_ESCAPE_CHARS;
+  boolean alwaysQuoteOutput = CsvParser.DEFAULT_ALWAYS_QUOTE_OUTPUT;
   
   public CsvParserBuilder separator(final char separator) {
     this.separator = separator;
@@ -49,6 +50,11 @@ public class CsvParserBuilder {
     this.retainEscapeChars = retain;
     return this;
   }
+  
+  public CsvParserBuilder alwaysQuoteOutput(boolean alwaysQuote) {
+    this.alwaysQuoteOutput = alwaysQuote;
+    return this;
+  }
 
   /**
    * Constructs Parser
@@ -62,6 +68,7 @@ public class CsvParserBuilder {
         trimWhitespace,
         allowUnbalancedQuotes,
         retainOuterQuotes,
-        retainEscapeChars);
+        retainEscapeChars,
+        alwaysQuoteOutput);
   }
 }

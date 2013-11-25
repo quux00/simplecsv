@@ -39,6 +39,71 @@ public class CsvParserInternalsTest {
     act = parser.trim(input);
     assertEquals(exp, act);
   }
+  
+  @Test
+  public void testEnsureQuotedNoQuotesNoSpacesOnEdge() {
+    StringBuilder sb = new StringBuilder(32);
+    sb.append("123456");
+    
+    String rt = parser.ensureQuoted(sb, 0, sb.length()-1);
+    assertEquals("\"123456\"", rt);
+  }
+  
+  @Test
+  public void testEnsureQuotedEmptyStringShouldNotBeQuoted() {
+    StringBuilder sb = new StringBuilder(32);
+    
+    String rt = parser.ensureQuoted(sb, 0, sb.length()-1);
+    assertEquals("", rt);
+  }
+
+  @Test
+  public void testEnsureQuotedNoQuotesSpacesOnEdge() {
+    StringBuilder sb = new StringBuilder(32);
+    sb.append("\t123456   ");
+    
+    String rt = parser.ensureQuoted(sb, 0, sb.length()-1);
+    assertEquals("\"\t123456   \"", rt);
+  }
+
+  @Test
+  public void testEnsureQuotedNoQuotesSpacesOnEdgeInternalIndices() {
+    StringBuilder sb = new StringBuilder(32);
+    sb.append("\t123456   ");
+    
+    String rt = parser.ensureQuoted(sb, 1, 6);
+    assertEquals("\"123456\"", rt);
+  }
+
+  @Test
+  public void testEnsureQuotedQuotesWithOuterSpaces() {
+    StringBuilder sb = new StringBuilder(32);
+    //          0 12345678 901
+    sb.append("\t\"123456 \"  ");
+    
+    String rt = parser.ensureQuoted(sb, 0, sb.length()-1);
+    assertEquals("\t\"123456 \"  ", rt);
+  }
+
+  @Test
+  public void testEnsureQuotedQuotesWithOuterSpacesRightSideOnly() {
+    StringBuilder sb = new StringBuilder(32);
+    //          0 12345678 901
+    sb.append("\t\"123456 \"  ");
+    
+    String rt = parser.ensureQuoted(sb, 1, sb.length()-1);
+    assertEquals("\"123456 \"  ", rt);
+  }
+  
+  @Test
+  public void testEnsureQuotedQuotesWithOuterSpacesLeftSideOnly() {
+    StringBuilder sb = new StringBuilder(32);
+    //          0 12345678 901
+    sb.append("\t\"123456 \"  ");
+    
+    String rt = parser.ensureQuoted(sb, 0, 9);
+    assertEquals("\t\"123456 \"", rt);
+  }
 
   @Test
   public void testTrimWithTrimWhiteSpaceSettings() {
@@ -214,152 +279,9 @@ public class CsvParserInternalsTest {
     assertEquals(exp, act);
   }  
   
-//  @Test
-//  public void testTrimIfQuotesPresent() {
-//    String input = "music";
-//    String exp = input;
-//    String act = parser.trimIfOuterQuotesPresent(input);
-//    assertEquals(exp, act);
-//    
-//    input = "\"music\"";
-//    exp = input;
-//    act = parser.trimIfOuterQuotesPresent(input);
-//    assertEquals(exp, act);
-//    
-//    input = "\"music\" ";
-//    exp = "\"music\"";
-//    act = parser.trimIfOuterQuotesPresent(input);
-//    assertEquals(exp, act);
-//    
-//    input = " \"music\"";
-//    exp = "\"music\"";
-//    act = parser.trimIfOuterQuotesPresent(input);
-//    assertEquals(exp, act);
-//
-//    input = "123\"music\"456";
-//    exp = input;
-//    act = parser.trimIfOuterQuotesPresent(input);
-//    assertEquals(exp, act);
-//
-//    input = "\"\"music\"\"";
-//    exp = "\"\"music\"\"";
-//    act = parser.trimIfOuterQuotesPresent(input);
-//    assertEquals(exp, act);
-//    
-//    input = "\t\"music\"\t";
-//    exp = "\"music\"";
-//    act = parser.trimIfOuterQuotesPresent(input);
-//    assertEquals(exp, act);
-//
-//    input = "\t    \" music \" \t ";
-//    exp = "\" music \"";
-//    act = parser.trimIfOuterQuotesPresent(input);
-//    assertEquals(exp, act);
-//    
-//    input = "\t";
-//    exp = input;
-//    act = parser.trimIfOuterQuotesPresent(input);
-//    assertEquals(exp, act);
-//    
-//    input = " a ";
-//    exp = input;
-//    act = parser.trimIfOuterQuotesPresent(input);
-//    assertEquals(exp, act);   
-//
-//    input = "z";
-//    exp = input;
-//    act = parser.trimIfOuterQuotesPresent(input);
-//    assertEquals(exp, act);   
-//
-//    input = "";
-//    exp = input;
-//    act = parser.trimIfOuterQuotesPresent(input);
-//    assertEquals(exp, act);   
-//  }
-//  
-//
-//  
-//  @Test
-//  public void testPluckOuterQuotes() {
-//    String input = "music";
-//    String exp = input;
-//    String act = parser.pluckOuterQuotes(input);
-//    assertEquals(exp, act);
-//    
-//    input = "\"music\"";
-//    exp = "music";
-//    act = parser.pluckOuterQuotes(input);
-//    assertEquals(exp, act);
-//    
-//    input = "\"music\" ";
-//    exp = "music ";
-//    act = parser.pluckOuterQuotes(input);
-//    assertEquals(exp, act);
-//
-//    input = " \"music\"";
-//    exp = " music";
-//    act = parser.pluckOuterQuotes(input);
-//    assertEquals(exp, act);
-//
-//    input = "123\"music\"456";
-//    exp = input;
-//    act = parser.pluckOuterQuotes(input);
-//    assertEquals(exp, act);
-//
-//    input = "\"\"music\"\"";
-//    exp = "\"music\"";
-//    act = parser.pluckOuterQuotes(input);
-//    assertEquals(exp, act);
-//
-//    input = "\t\"music\"\t";
-//    exp = "\tmusic\t";
-//    act = parser.pluckOuterQuotes(input);
-//    assertEquals(exp, act);
-//
-//    input = "\t    \" music \" \t ";
-//    exp = "\t     music  \t ";
-//    act = parser.pluckOuterQuotes(input);
-//    assertEquals(exp, act);
-//  }
-//  
-//
-//  @Test
-//  public void testTrimEdgeQuotes() {
-//    String input = "music";
-//    String exp = input;
-//    String act = parser.trimEdgeQuotes(input);
-//    assertEquals(exp, act);
-//    
-//    input = "\"music\"";
-//    exp = "music";
-//    act = parser.trimEdgeQuotes(input);
-//    assertEquals(exp, act);
-//    
-//    input = "\"music\" ";
-//    exp = input;
-//    act = parser.trimEdgeQuotes(input);
-//    assertEquals(exp, act);
-//
-//    input = " \"music\"";
-//    exp = input;
-//    act = parser.trimEdgeQuotes(input);
-//    assertEquals(exp, act);
-//
-//    input = "123\"music\"456";
-//    exp = input;
-//    act = parser.trimEdgeQuotes(input);
-//    assertEquals(exp, act);
-//
-//    input = "\"\"music\"\"";
-//    exp = "\"music\"";
-//    act = parser.trimEdgeQuotes(input);
-//    assertEquals(exp, act);
-//  }
-
-  ////////////// EXPERIMENTAL /////////////
   
   @Test
-  public void testReadLeftAndWhiteSpace2_StringWithSpacesOnBothSides() {
+  public void testReadLeftAndWhiteSpace_StringWithSpacesOnBothSides() {
     //                                    01 234567 89
     StringBuilder sb = new StringBuilder("\t \" mail\" ");
     
@@ -386,7 +308,7 @@ public class CsvParserInternalsTest {
 
 
   @Test
-  public void testReadRightWhiteSpace2() {
+  public void testReadRightWhiteSpace() {
     //                                                 1
     //                                    01 234567 8 90
     StringBuilder sb = new StringBuilder("  \" mail\t\" ");
@@ -405,7 +327,7 @@ public class CsvParserInternalsTest {
   }
 
   @Test
-  public void testReadLeftAndWhiteSpace2_Various() {
+  public void testReadLeftAndWhiteSpace_Various() {
     StringBuilder sb1 = new StringBuilder().append("");
     StringBuilder sb2 = new StringBuilder().append("hi there");
     StringBuilder sb3 = new StringBuilder().append("1");
@@ -452,7 +374,7 @@ public class CsvParserInternalsTest {
   }
   
   @Test
-  public void testPluckOuterQuotes2SpacesOnBothSides() {
+  public void testPluckOuterQuotesSpacesOnBothSides() {
     StringBuilder sb = new StringBuilder("  \" mail\t\" ");
     
     int lenBefore = sb.length();
@@ -462,7 +384,7 @@ public class CsvParserInternalsTest {
   }
 
   @Test
-  public void testPluckOuterQuotes2SpacesOnLeftSide() {
+  public void testPluckOuterQuotesSpacesOnLeftSide() {
     StringBuilder sb = new StringBuilder("\t\"hi there\"");
     int lenBefore = sb.length();
     parser.pluckOuterQuotes(sb, 0, sb.length() - 1);
@@ -471,7 +393,7 @@ public class CsvParserInternalsTest {
   }
 
   @Test
-  public void testPluckOuterQuotes2SpacesOnRightSide() {
+  public void testPluckOuterQuotesSpacesOnRightSide() {
     StringBuilder sb = new StringBuilder("\"hi there\" ");
     int lenBefore = sb.length();
     parser.pluckOuterQuotes(sb, 0, sb.length() - 1);
@@ -480,7 +402,7 @@ public class CsvParserInternalsTest {
   }
 
   @Test
-  public void testPluckOuterQuotes2SpacesOnNeitherSide() {
+  public void testPluckOuterQuotesSpacesOnNeitherSide() {
     StringBuilder sb = new StringBuilder("\"hi\"");
     int lenBefore = sb.length();
     parser.pluckOuterQuotes(sb, 0, sb.length() - 1);
@@ -489,7 +411,7 @@ public class CsvParserInternalsTest {
   }
 
   @Test
-  public void testPluckOuterQuotes2NoQuotes() {
+  public void testPluckOuterQuotesNoQuotes() {
     StringBuilder sb = new StringBuilder(" 1-2-3 ");
     int lenBefore = sb.length();
     parser.pluckOuterQuotes(sb, 0, sb.length() - 1);
@@ -498,7 +420,7 @@ public class CsvParserInternalsTest {
   }
 
   @Test
-  public void testPluckOuterQuotes2UnbalancedQuotesShouldNotBePlucked() {
+  public void testPluckOuterQuotesUnbalancedQuotesShouldNotBePlucked() {
     StringBuilder sb = new StringBuilder(" 1-2-3\"");
     int lenBefore = sb.length();
     parser.pluckOuterQuotes(sb, 0, sb.length() - 1);
@@ -613,7 +535,7 @@ public class CsvParserInternalsTest {
 
   
   @Test
-  public void testTrim2DefaultParser() {
+  public void testTrimDefaultParser() {
     // default: will remove outer quotes, but not trim whitespace
     StringBuilder sb = new StringBuilder("\"standard\" ");
     assertEquals("standard ", parser.trim(sb));
@@ -634,6 +556,4 @@ public class CsvParserInternalsTest {
     sb.append("");
     assertEquals("", parser.trim(sb));
   }
-
-  
 }

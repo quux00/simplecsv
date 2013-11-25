@@ -17,6 +17,7 @@ public class CsvParser {
   final boolean allowedUnbalancedQuotes;  // if true, allows unbalanced quotes in a token
   final boolean retainOuterQuotes;        // if true, outer quote chars are retained
   final boolean retainEscapeChars;        // if true, leaves escape chars in; if false removes them
+  final boolean alwaysQuoteOutput;        // if true, put quote around around all outgoing tokens
   
   final State state = new State();
   
@@ -28,6 +29,7 @@ public class CsvParser {
   public static final boolean DEFAULT_RETAIN_OUTER_QUOTES = false;
   public static final boolean DEFAULT_ALLOW_UNBALANCED_QUOTES = false;
   public static final boolean DEFAULT_RETAIN_ESCAPE_CHARS = true;
+  public static final boolean DEFAULT_ALWAYS_QUOTE_OUTPUT = false;
   
   static final int INITIAL_READ_SIZE = 128;
   
@@ -43,6 +45,7 @@ public class CsvParser {
     allowedUnbalancedQuotes = DEFAULT_ALLOW_UNBALANCED_QUOTES;
     retainOuterQuotes = DEFAULT_RETAIN_OUTER_QUOTES;
     retainEscapeChars = DEFAULT_RETAIN_ESCAPE_CHARS;
+    alwaysQuoteOutput = DEFAULT_ALWAYS_QUOTE_OUTPUT;
   }
 
   /**
@@ -58,7 +61,7 @@ public class CsvParser {
    */
   public CsvParser(final char separator, final char quotechar, final char escapechar,
       final boolean strictQuotes, final boolean trimWhiteSpace, final boolean allowedUnbalancedQuotes,
-      final boolean retainOuterQuotes, final boolean retainEscapeChars) 
+      final boolean retainOuterQuotes, final boolean retainEscapeChars, final boolean alwaysQuoteOutput) 
   {
     this.separator = separator;
     this.quotechar = quotechar;
@@ -68,6 +71,7 @@ public class CsvParser {
     this.allowedUnbalancedQuotes = allowedUnbalancedQuotes;
     this.retainOuterQuotes = retainOuterQuotes;
     this.retainEscapeChars = retainEscapeChars;
+    this.alwaysQuoteOutput = alwaysQuoteOutput;
     
     checkInvariants();
   }
@@ -78,6 +82,9 @@ public class CsvParser {
     }
     if (separator == NULL_CHARACTER) {
       throw new UnsupportedOperationException("The separator character must be defined!");
+    }
+    if (quotechar == NULL_CHARACTER && alwaysQuoteOutput) {
+      throw new UnsupportedOperationException("The quote character must be defined to set alwaysQuoteOutput=true!");      
     }
   }
   
@@ -224,7 +231,6 @@ public class CsvParser {
     }
   }
   
-  // TODO: this gets state and handleRegular doesn't -> INCONSISTENT; pick one way or 'tother
   void handleEscape(StringBuilder sb) {
     state.escapeFound(true);
     if (retainEscapeChars) {
@@ -265,32 +271,71 @@ public class CsvParser {
     int left = 0;
     int right = sb.length() - 1;
     
-    if (!retainOuterQuotes) {
+    if (alwaysQuoteOutput) {
       if (trimWhiteSpace) {
         int[] indexes = idxTrimSpaces(sb, left, right);
         left = indexes[0];
         right = indexes[1];
-        
-        indexes = idxTrimEdgeQuotes(sb, left, right);
-        left = indexes[0];
-        right = indexes[1];
+      } 
+      return ensureQuoted(sb, left, right);
+      
+    } else { 
+      if (!retainOuterQuotes) {
+        if (trimWhiteSpace) {
+          int[] indexes = idxTrimSpaces(sb, left, right);
+          left = indexes[0];
+          right = indexes[1];
 
-        indexes = idxTrimSpaces(sb, left, right);
+          indexes = idxTrimEdgeQuotes(sb, left, right);
+          left = indexes[0];
+          right = indexes[1];
+
+          indexes = idxTrimSpaces(sb, left, right);
+          left = indexes[0];
+          right = indexes[1];      
+        } else {
+          pluckOuterQuotes(sb, left, right);
+          left = 0;
+          right = sb.length() - 1;
+        }
+
+      } else if (trimWhiteSpace) {
+        int[] indexes = idxTrimSpaces(sb, left, right);
         left = indexes[0];
         right = indexes[1];      
-      } else {
-        pluckOuterQuotes(sb, left, right);
-        left = 0;
-        right = sb.length() - 1;
-        
       }
-    } else if (trimWhiteSpace) {
-      int[] indexes = idxTrimSpaces(sb, left, right);
-      left = indexes[0];
-      right = indexes[1];      
+      return sb.substring(left, right+1);
+    }
+  }
+
+  String ensureQuoted(StringBuilder sb, int left, int right) {
+    if (left > right) {
+      return "";  // do not quote empty string
     }
     
-    return sb.substring(left, right+1);
+    int newLeft  = readLeftWhiteSpace(sb, left, right);
+    int newRight = readRightWhiteSpace(sb, left, right);
+    
+    // if there are already edge quotes (ignoring spaces) then just return the 
+    // string marked by the left and right indices
+    if (sb.charAt(newLeft) == quotechar && sb.charAt(newRight) == quotechar) {
+      return sb.substring(left, right + 1);
+    
+    } else {
+      if (right == sb.length() - 1) {
+        sb.append(quotechar);
+      } else {
+        sb.setCharAt(right + 1, quotechar);
+      }
+      
+      if (left == 0) {
+        return String.valueOf(quotechar) + sb.substring(left, right + 2);
+
+      } else {
+        sb.setCharAt(left - 1, quotechar);
+        return sb.substring(left - 1, right + 2);
+      }
+    }
   }
 
   /**

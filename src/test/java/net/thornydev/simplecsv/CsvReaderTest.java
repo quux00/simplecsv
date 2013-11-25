@@ -98,6 +98,32 @@ public class CsvReaderTest {
     cr.close();
   }
   
+  @Test
+  public void testIteratorFunctionalityWithRetainEscapeCharsFalseAndAlwaysQuoteOutput() throws IOException {
+    CsvParser parser = new CsvParserBuilder().
+        retainEscapeChars(false).
+        alwaysQuoteOutput(true).
+        build();
+    CsvReader cr = new CsvReader(new StringReader(lines), parser);
+    
+    String[][] expectedResult = new String[7][];
+    expectedResult[0] = new String[]{"\"a\"", "\"b\"", "\"c\""};
+    expectedResult[1] = new String[]{"\"a\"", "\"b,b,b\"", "\"c\""};
+    expectedResult[2] = new String[]{"", "", ""};
+    expectedResult[3] = new String[]{"\"a\"", "\"PO Box 123,\nKippax,ACT. 2615.\nAustralia\"", "\"d.\""};
+    expectedResult[4] = new String[]{"\"Glen \"\"The Man\"\" Smith\"", "\"Athlete\"", "\"Developer\""};
+    expectedResult[5] = new String[]{"\"\"\"\"\"\"", "\"test\""};
+    expectedResult[6] = new String[]{"\"a\nb\"", "\"b\"", "\"\nd\"", "\"e\""};
+
+    int idx = 0;
+    for (String[] line : cr) {
+      String[] expectedLine = expectedResult[idx++];
+      assertArrayEquals(expectedLine, line);
+    }
+    
+    cr.close();
+  }
+  
   
   @Test(expected = RuntimeException.class)
   public void creatingIteratorForReaderWithNullDataThrowsRuntimeException() throws IOException {
@@ -342,7 +368,55 @@ public class CsvReaderTest {
     toks = csvr.readNext();
     assertNull(toks);
   }
-  
+
+  @Test
+  public void testRecordsFromFileWithAlwaysQuoteOutputAndTrimWhitespaceAndRetainEscapeCharFalse() throws IOException {
+    FileReader fr = new FileReader("src/test/resources/basic.csv");
+    CsvParser p = new CsvParserBuilder().
+        trimWhitespace(true).
+        retainEscapeChars(false).
+        alwaysQuoteOutput(true).
+        build();
+    csvr = new CsvReaderBuilder(fr).skipLines(1).csvParser(p).build();
+        
+    String[] toks = csvr.readNext();
+    assertEquals(5, toks.length);
+    assertEquals("\"1\"", toks[0]);
+    assertEquals("\"abc\"", toks[1]);
+    assertEquals("\"Stan \"The Man\" Musial\"", toks[2]);
+    assertEquals("\"Mike \"The Situation\"\"", toks[3]);
+    assertEquals("\"I\nlike\nIke\"", toks[4]);
+
+    toks = csvr.readNext();
+    assertEquals(5, toks.length);
+    assertEquals("\"2\"", toks[0]);
+    assertEquals("\"def\"", toks[1]);
+    assertEquals("", toks[2]);
+    assertEquals("", toks[3]);
+    assertEquals("", toks[4]);
+    
+    toks = csvr.readNext();
+    assertEquals(2, toks.length);
+    assertEquals("\"abc\"d\"efg\"", toks[0]);
+    assertEquals("\"Stan \"The Man\" Musial\"", toks[1]);
+
+    toks = csvr.readNext();
+    assertEquals(1, toks.length);
+    assertEquals("", toks[0]);
+    
+    toks = csvr.readNext();
+    assertEquals(6, toks.length);
+    assertEquals("\"2n\"", toks[0]);
+    assertEquals("\"\f\"", toks[1]);
+    assertEquals("\"\b\"", toks[2]);
+    assertEquals("\"\r\n\"", toks[3]);
+    assertEquals("\"\t\"", toks[4]);
+    assertEquals("\"last\"", toks[5]);
+
+    toks = csvr.readNext();
+    assertNull(toks);
+  }
+
   
   /* ---------------------------------- */  
   /* ---[ StringReader based tests ]--- */
@@ -747,7 +821,29 @@ public class CsvReaderTest {
     cr.close();
   }
 
+  @Test
+  public void testIssue2992134OutOfPlaceQuotesAlwaysQuoteOutput() throws IOException {
+    StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
+    sb.append("a,b,c,ddd\\\"eee\nf,g,h,\"iii,jjj\"");
 
+    CsvParser p = new CsvParserBuilder().alwaysQuoteOutput(true).build();
+    CsvReader cr = new CsvReader(new StringReader(sb.toString()), p);
+
+    String[] nextLine = cr.readNext();
+    assertEquals("\"a\"", nextLine[0]);
+    assertEquals("\"b\"", nextLine[1]);
+    assertEquals("\"c\"", nextLine[2]);
+    assertEquals("\"ddd\\\"eee\"", nextLine[3]);
+
+    nextLine = cr.readNext();
+    assertEquals("\"f\"", nextLine[0]);
+    assertEquals("\"g\"", nextLine[1]);
+    assertEquals("\"h\"", nextLine[2]);
+    assertEquals("\"iii,jjj\"", nextLine[3]);
+
+    cr.close();
+  }
+  
   @Test
   public void testASingleQuoteAsDataElementWithEmptyField2() throws IOException {
     StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
