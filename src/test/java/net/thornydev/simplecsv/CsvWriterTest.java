@@ -15,15 +15,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
  */
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import org.junit.Test;
-
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
+import net.thornydev.simplecsv.resultset.MockResultSetBuilder;
+import net.thornydev.simplecsv.resultset.ResultSetHelperService;
+
+import org.junit.Test;
 
 
 public class CsvWriterTest {
@@ -37,7 +49,10 @@ public class CsvWriterTest {
    */
   private String invokeWriter(String[] args) throws IOException {
     StringWriter sw = new StringWriter();
-    CsvWriter csvw = new CsvWriter(sw, ',', '\'');
+    CsvWriter csvw = new CsvWriterBuilder(sw).
+        quoteChar('\'').
+        build();
+
     csvw.writeNext(args);
     csvw.close();
     return sw.toString();
@@ -45,7 +60,10 @@ public class CsvWriterTest {
 
   private String invokeNoEscapeWriter(String[] args) throws IOException {
     StringWriter sw = new StringWriter();
-    CsvWriter csvw = new CsvWriter(sw, CsvWriter.DEFAULT_SEPARATOR, '\'', CsvWriter.NO_ESCAPE_CHARACTER);
+    CsvWriter csvw = new CsvWriterBuilder(sw).
+        quoteChar('\'').
+        escapeChar(CsvWriter.NO_ESCAPE_CHARACTER).
+        build();
     csvw.writeNext(args);
     csvw.close();
     return sw.toString();
@@ -54,7 +72,7 @@ public class CsvWriterTest {
   @Test
   public void correctlyParseNullString() throws IOException {
     StringWriter sw = new StringWriter();
-    CsvWriter csvw = new CsvWriter(sw, ',', '\'');
+    CsvWriter csvw = new CsvWriterBuilder(sw).quoteChar('\'').build();
     csvw.writeNext(null);
     assertEquals(0, sw.toString().length());
     csvw.close();
@@ -63,7 +81,7 @@ public class CsvWriterTest {
   @Test
   public void correctlyParserNullObject() throws IOException {
     StringWriter sw = new StringWriter();
-    CsvWriter csvw = new CsvWriter(sw, ',', '\'');
+    CsvWriter csvw = new CsvWriterBuilder(sw).quoteChar('\'').build();
     csvw.writeNext(null, false);
     assertEquals(0, sw.toString().length());
     csvw.close();
@@ -76,7 +94,6 @@ public class CsvWriterTest {
    */
   @Test
   public void testParseLine() throws IOException {
-
     // test normal case
     String[] normal = {"a", "b", "c"};
     String output = invokeWriter(normal);
@@ -238,7 +255,10 @@ public class CsvWriterTest {
   public void testNoQuoteCharsAndNoEscapeChars() throws IOException {
     String[] line = {"Foo", "Bar", "Baz"};
     StringWriter sw = new StringWriter();
-    CsvWriter csvw = new CsvWriter(sw, CsvWriter.DEFAULT_SEPARATOR, CsvWriter.NO_QUOTE_CHARACTER, CsvWriter.NO_ESCAPE_CHARACTER);
+    CsvWriter csvw = new CsvWriterBuilder(sw).
+        quoteChar(CsvWriter.NO_QUOTE_CHARACTER).
+        escapeChar(CsvWriter.NO_ESCAPE_CHARACTER).
+        build();
     csvw.writeNext(line);
     csvw.close();
     String result = sw.toString();
@@ -254,7 +274,7 @@ public class CsvWriterTest {
   public void testIntelligentQuotes() throws IOException {
     String[] line = {"1", "Foo", "With,Separator", "Line\nBreak", "Hello \"Foo Bar\" World", "Bar"};
     StringWriter sw = new StringWriter();
-    CsvWriter csvw = new CsvWriter(sw, CsvWriter.DEFAULT_SEPARATOR, CsvWriter.DEFAULT_QUOTE_CHARACTER, CsvWriter.DEFAULT_ESCAPE_CHARACTER);
+    CsvWriter csvw = new CsvWriter(sw);
     csvw.writeNext(line, false);
     csvw.close();
     
@@ -322,7 +342,7 @@ public class CsvWriterTest {
   public void testAlternateEscapeChar() throws IOException {
     String[] line = {"Foo", "bar's"};
     StringWriter sw = new StringWriter();
-    CsvWriter csvw = new CsvWriter(sw, CsvWriter.DEFAULT_SEPARATOR, CsvWriter.DEFAULT_QUOTE_CHARACTER, '\'');
+    CsvWriter csvw = new CsvWriterBuilder(sw).escapeChar('\'').build();
     csvw.writeNext(line);
     csvw.close();
     assertEquals("\"Foo\",\"bar''s\"\n", sw.toString());
@@ -332,7 +352,10 @@ public class CsvWriterTest {
   public void testNoQuotingNoEscaping() throws IOException {
     String[] line = {"\"Foo\",\"Bar\""};
     StringWriter sw = new StringWriter();
-    CsvWriter csvw = new CsvWriter(sw, CsvWriter.DEFAULT_SEPARATOR, CsvWriter.NO_QUOTE_CHARACTER, CsvWriter.NO_ESCAPE_CHARACTER);
+    CsvWriter csvw = new CsvWriterBuilder(sw).
+        escapeChar(CsvWriter.NO_ESCAPE_CHARACTER).
+        quoteChar(CsvWriter.NO_QUOTE_CHARACTER).
+        build();
     csvw.writeNext(line);
     csvw.close();
     assertEquals("\"Foo\",\"Bar\"\n", sw.toString());
@@ -399,7 +422,7 @@ public class CsvWriterTest {
   public void testAlternateLineFeeds() throws IOException {
     String[] line = {"Foo", "Bar", "baz"};
     StringWriter sw = new StringWriter();
-    CsvWriter csvw = new CsvWriter(sw, CsvWriter.DEFAULT_SEPARATOR, CsvWriter.DEFAULT_QUOTE_CHARACTER, "\r");
+    CsvWriter csvw = new CsvWriterBuilder(sw).lineEnd("\r").build();
     csvw.writeNext(line);
     csvw.close();
     
@@ -407,99 +430,104 @@ public class CsvWriterTest {
     assertTrue(result.endsWith("\r"));
   }
 
-//  @Test
-//  public void testResultSetWithHeaders() throws SQLException, IOException {
-//    String[] header = {"Foo", "Bar", "baz"};
-//    String[] value = {"v1", "v2", "v3"};
-//
-//    StringWriter sw = new StringWriter();
-//    CsvWriter csvw = new CsvWriter(sw);
-//    csvw.setResultService(new ResultSetHelperService());
-//
-//    ResultSet rs = MockResultSetBuilder.buildResultSet(header, value, 1);
-//
-//    csvw.writeAll(rs, true); // don't need a result set since I am mocking the result.
-//    assertFalse(csvw.checkError());
-//    String result = sw.toString();
-//
-//    assertNotNull(result);
-//    assertEquals("\"Foo\",\"Bar\",\"baz\"\n\"v1\",\"v2\",\"v3\"\n", result);
-//  }
-//
-//  @Test
-//  public void testMultiLineResultSetWithHeaders() throws SQLException, IOException {
-//    String[] header = {"Foo", "Bar", "baz"};
-//    String[] value = {"v1", "v2", "v3"};
-//
-//    StringWriter sw = new StringWriter();
-//    CsvWriter csvw = new CsvWriter(sw);
-//    csvw.setResultService(new ResultSetHelperService());
-//
-//    ResultSet rs = MockResultSetBuilder.buildResultSet(header, value, 3);
-//
-//    csvw.writeAll(rs, true); // don't need a result set since I am mocking the result.
-//    assertFalse(csvw.checkError());
-//    String result = sw.toString();
-//
-//    assertNotNull(result);
-//    assertEquals("\"Foo\",\"Bar\",\"baz\"\n\"v1\",\"v2\",\"v3\"\n\"v1\",\"v2\",\"v3\"\n\"v1\",\"v2\",\"v3\"\n", result);
-//  }
+  @Test
+  public void testResultSetWithHeaders() throws SQLException, IOException {
+    String[] header = {"Foo", "Bar", "baz"};
+    String[] value = {"v1", "v2", "v3"};
 
-//  @Test
-//  public void testResultSetWithoutHeaders() throws SQLException, IOException {
-//    String[] header = {"Foo", "Bar", "baz"};
-//    String[] value = {"v1", "v2", "v3"};
-//
-//    StringWriter sw = new StringWriter();
-//    CsvWriter csvw = new CsvWriter(sw);
-//    csvw.setResultService(new ResultSetHelperService());
-//
-//    ResultSet rs = MockResultSetBuilder.buildResultSet(header, value, 1);
-//
-//    csvw.writeAll(rs, false); // don't need a result set since I am mocking the result.
-//    assertFalse(csvw.checkError());
-//    String result = sw.toString();
-//
-//    assertNotNull(result);
-//    assertEquals("\"v1\",\"v2\",\"v3\"\n", result);
-//  }
-//
-//  @Test
-//  public void testMultiLineResultSetWithoutHeaders() throws SQLException, IOException {
-//    String[] header = {"Foo", "Bar", "baz"};
-//    String[] value = {"v1", "v2", "v3"};
-//
-//    StringWriter sw = new StringWriter();
-//    CsvWriter csvw = new CsvWriter(sw);
-//    csvw.setResultService(new ResultSetHelperService());
-//
-//    ResultSet rs = MockResultSetBuilder.buildResultSet(header, value, 3);
-//
-//    csvw.writeAll(rs, false); // don't need a result set since I am mocking the result.
-//
-//    assertFalse(csvw.checkError());
-//    String result = sw.toString();
-//
-//    assertNotNull(result);
-//    assertEquals("\"v1\",\"v2\",\"v3\"\n\"v1\",\"v2\",\"v3\"\n\"v1\",\"v2\",\"v3\"\n", result);
-//  }
-//
-//  @Test
-//  public void testResultSetTrim() throws SQLException, IOException {
-//    String[] header = {"Foo", "Bar", "baz"};
-//    String[] value = {"v1         ", "v2 ", "v3"};
-//
-//    StringWriter sw = new StringWriter();
-//    CsvWriter csvw = new CsvWriter(sw);
-//    csvw.setResultService(new ResultSetHelperService());
-//
-//    ResultSet rs = MockResultSetBuilder.buildResultSet(header, value, 1);
-//
-//    csvw.writeAll(rs, true, true); // don't need a result set since I am mocking the result.
-//    assertFalse(csvw.checkError());
-//    String result = sw.toString();
-//
-//    assertNotNull(result);
-//    assertEquals("\"Foo\",\"Bar\",\"baz\"\n\"v1\",\"v2\",\"v3\"\n", result);
-//  }
+    StringWriter sw = new StringWriter();
+    CsvWriter csvw = new CsvWriter(sw);
+    csvw.setResultService(new ResultSetHelperService());
+
+    ResultSet rs = MockResultSetBuilder.buildResultSet(header, value, 1);
+
+    csvw.writeAll(rs, true); // don't need a result set since I am mocking the result.
+    csvw.close();
+    assertFalse(csvw.checkError());
+    String result = sw.toString();
+
+    assertNotNull(result);
+    assertEquals("\"Foo\",\"Bar\",\"baz\"\n\"v1\",\"v2\",\"v3\"\n", result);
+  }
+
+  @Test
+  public void testMultiLineResultSetWithHeaders() throws SQLException, IOException {
+    String[] header = {"Foo", "Bar", "baz"};
+    String[] value = {"v1", "v2", "v3"};
+
+    StringWriter sw = new StringWriter();
+    CsvWriter csvw = new CsvWriter(sw);
+    csvw.setResultService(new ResultSetHelperService());
+
+    ResultSet rs = MockResultSetBuilder.buildResultSet(header, value, 3);
+
+    csvw.writeAll(rs, true); // don't need a result set since I am mocking the result.
+    assertFalse(csvw.checkError());
+    String result = sw.toString();
+
+    assertNotNull(result);
+    assertEquals("\"Foo\",\"Bar\",\"baz\"\n\"v1\",\"v2\",\"v3\"\n\"v1\",\"v2\",\"v3\"\n\"v1\",\"v2\",\"v3\"\n", result);
+    csvw.close();
+  }
+
+  @Test
+  public void testResultSetWithoutHeaders() throws SQLException, IOException {
+    String[] header = {"Foo", "Bar", "baz"};
+    String[] value = {"v1", "v2", "v3"};
+
+    StringWriter sw = new StringWriter();
+    CsvWriter csvw = new CsvWriter(sw);
+    csvw.setResultService(new ResultSetHelperService());
+
+    ResultSet rs = MockResultSetBuilder.buildResultSet(header, value, 1);
+
+    csvw.writeAll(rs, false); // don't need a result set since I am mocking the result.
+    assertFalse(csvw.checkError());
+    String result = sw.toString();
+
+    assertNotNull(result);
+    assertEquals("\"v1\",\"v2\",\"v3\"\n", result);
+    csvw.close();
+  }
+
+  @Test
+  public void testMultiLineResultSetWithoutHeaders() throws SQLException, IOException {
+    String[] header = {"Foo", "Bar", "baz"};
+    String[] value = {"v1", "v2", "v3"};
+
+    StringWriter sw = new StringWriter();
+    CsvWriter csvw = new CsvWriter(sw);
+    csvw.setResultService(new ResultSetHelperService());
+
+    ResultSet rs = MockResultSetBuilder.buildResultSet(header, value, 3);
+
+    csvw.writeAll(rs, false); // don't need a result set since I am mocking the result.
+
+    assertFalse(csvw.checkError());
+    String result = sw.toString();
+
+    assertNotNull(result);
+    assertEquals("\"v1\",\"v2\",\"v3\"\n\"v1\",\"v2\",\"v3\"\n\"v1\",\"v2\",\"v3\"\n", result);
+    csvw.close();
+  }
+
+  @Test
+  public void testResultSetTrim() throws SQLException, IOException {
+    String[] header = {"Foo", "Bar", "baz"};
+    String[] value = {"v1         ", "v2 ", "v3"};
+
+    StringWriter sw = new StringWriter();
+    CsvWriter csvw = new CsvWriter(sw);
+    csvw.setResultService(new ResultSetHelperService());
+
+    ResultSet rs = MockResultSetBuilder.buildResultSet(header, value, 1);
+
+    csvw.writeAll(rs, true, true); // don't need a result set since I am mocking the result.
+    assertFalse(csvw.checkError());
+    String result = sw.toString();
+
+    assertNotNull(result);
+    assertEquals("\"Foo\",\"Bar\",\"baz\"\n\"v1\",\"v2\",\"v3\"\n", result);
+    csvw.close();
+  }
 }

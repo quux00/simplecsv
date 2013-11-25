@@ -25,6 +25,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+import net.thornydev.simplecsv.resultset.ResultSetHelper;
+import net.thornydev.simplecsv.resultset.ResultSetHelperService;
+
 /**
  * A very simple CSV writer released under a commercial-friendly license.
  *
@@ -35,13 +38,10 @@ public class CsvWriter implements Closeable, Flushable {
   public static final int INITIAL_STRING_SIZE = 128;
 
   private Writer rawWriter;
-
   private PrintWriter pw;
 
   private char separator;
-
   private char quotechar;
-
   private char escapechar;
 
   private String lineEnd;
@@ -77,7 +77,7 @@ public class CsvWriter implements Closeable, Flushable {
    */
   public static final String DEFAULT_LINE_END = "\n";
 
-//  private ResultSetHelper resultService = new ResultSetHelperService();
+  private ResultSetHelper resultService = new ResultSetHelperService();
 
   /**
    * Constructs CsvWriter using a comma for the separator.
@@ -182,11 +182,9 @@ public class CsvWriter implements Closeable, Flushable {
     }
   }
 
-//  protected void writeColumnNames(ResultSet rs)
-//      throws SQLException {
-//
-//    writeNext(resultService.getColumnNames(rs));
-//  }
+  protected void writeColumnNames(ResultSet rs) throws SQLException {
+    writeNext(resultService.getColumnNames(rs));
+  }
 
   /**
    * Writes the entire ResultSet to a CSV file.
@@ -198,9 +196,9 @@ public class CsvWriter implements Closeable, Flushable {
    * @throws java.io.IOException   thrown by getColumnValue
    * @throws java.sql.SQLException thrown by getColumnValue
    */
-//  public void writeAll(java.sql.ResultSet rs, boolean includeColumnNames) throws SQLException, IOException {
-//    writeAll(rs, includeColumnNames, false);
-//  }
+  public void writeAll(java.sql.ResultSet rs, boolean includeColumnNames) throws SQLException, IOException {
+    writeAll(rs, includeColumnNames, false);
+  }
 
   /**
    * Writes the entire ResultSet to a CSV file.
@@ -210,17 +208,15 @@ public class CsvWriter implements Closeable, Flushable {
    * @throws java.io.IOException   thrown by getColumnValue
    * @throws java.sql.SQLException thrown by getColumnValue
    */
-//  public void writeAll(java.sql.ResultSet rs, boolean includeColumnNames, boolean trim) throws SQLException, IOException {
-//
-//
-//    if (includeColumnNames) {
-//      writeColumnNames(rs);
-//    }
-//
-//    while (rs.next()) {
-//      writeNext(resultService.getColumnValues(rs, trim));
-//    }
-//  }
+  public void writeAll(java.sql.ResultSet rs, boolean includeColumnNames, boolean trim) throws SQLException, IOException {
+    if (includeColumnNames) {
+      writeColumnNames(rs);
+    }
+
+    while (rs.next()) {
+      writeNext(resultService.getColumnValues(rs, trim));
+    }
+  }
 
   /**
    * Writes the next line to the file.
@@ -231,13 +227,11 @@ public class CsvWriter implements Closeable, Flushable {
    *                         to values which contain the separator, escape, quote or new line characters.
    */
   public void writeNext(String[] nextLine, boolean applyQuotesToAll) {
-
     if (nextLine == null)
       return;
 
     StringBuilder sb = new StringBuilder(INITIAL_STRING_SIZE);
     for (int i = 0; i < nextLine.length; i++) {
-
       if (i != 0) {
         sb.append(separator);
       }
@@ -325,9 +319,9 @@ public class CsvWriter implements Closeable, Flushable {
     return pw.checkError();
   }
 
-//  public void setResultService(ResultSetHelper resultService) {
-//    this.resultService = resultService;
-//  }
+  public void setResultService(ResultSetHelper resultService) {
+    this.resultService = resultService;
+  }
 
   public void flushQuietly() {
     try {
