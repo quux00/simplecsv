@@ -3,6 +3,11 @@ package net.thornydev.simplecsv;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * DOCUMENT ME!!
+ * 
+ * @NotThreadSafe
+ */
 public class CsvParser {
   final char separator;
   final char quotechar;
@@ -11,7 +16,8 @@ public class CsvParser {
   final boolean trimWhiteSpace;           // if true, trim leading/trailing white space from tokens
   final boolean allowedUnbalancedQuotes;  // if true, allows unbalanced quotes in a token
   final boolean retainOuterQuotes;        // if true, outer quote chars are retained
-
+  final boolean retainEscapeChars;        // if true, leaves escape chars in; if false removes them
+  
   final State state = new State();
   
   public static final char DEFAULT_SEPARATOR = ',';
@@ -21,6 +27,7 @@ public class CsvParser {
   public static final boolean DEFAULT_TRIM_WS = false;
   public static final boolean DEFAULT_RETAIN_OUTER_QUOTES = false;
   public static final boolean DEFAULT_ALLOW_UNBALANCED_QUOTES = false;
+  public static final boolean DEFAULT_RETAIN_ESCAPE_CHARS = true;
   
   static final int INITIAL_READ_SIZE = 128;
   
@@ -35,6 +42,7 @@ public class CsvParser {
     trimWhiteSpace = DEFAULT_TRIM_WS;
     allowedUnbalancedQuotes = DEFAULT_ALLOW_UNBALANCED_QUOTES;
     retainOuterQuotes = DEFAULT_RETAIN_OUTER_QUOTES;
+    retainEscapeChars = DEFAULT_RETAIN_ESCAPE_CHARS;
   }
 
   /**
@@ -50,7 +58,7 @@ public class CsvParser {
    */
   public CsvParser(final char separator, final char quotechar, final char escapechar,
       final boolean strictQuotes, final boolean trimWhiteSpace, final boolean allowedUnbalancedQuotes,
-      final boolean retainOuterQuotes) 
+      final boolean retainOuterQuotes, final boolean retainEscapeChars) 
   {
     this.separator = separator;
     this.quotechar = quotechar;
@@ -59,6 +67,7 @@ public class CsvParser {
     this.trimWhiteSpace = trimWhiteSpace;
     this.allowedUnbalancedQuotes = allowedUnbalancedQuotes;
     this.retainOuterQuotes = retainOuterQuotes;
+    this.retainEscapeChars = retainEscapeChars;
     
     checkInvariants();
   }
@@ -123,10 +132,10 @@ public class CsvParser {
       char c = ln.charAt(i);
       
       if (c == quotechar) {
-        handleQuote(sb, state);
+        handleQuote(sb);
       
       } else if (c == escapechar) {
-        handleEscape(sb, state);
+        handleEscape(sb);
       
       } else if (c == separator && !state.inQuotes) {
         toks.add( handleEndOfToken(sb) );
@@ -177,23 +186,59 @@ public class CsvParser {
     return tok;
   }
 
-  void handleRegular(StringBuilder sb, char c) {
-    if (strictQuotes) {
-      if (state.inQuotes) {
-        sb.append(c);
+  void appendRegularChar(StringBuilder sb, char c) {
+    if (state.inEscape && !retainEscapeChars) {
+      switch (c) {
+        case 'n': 
+          sb.append('\n');
+          break;
+        case 't': 
+          sb.append('\t');
+          break;
+        case 'r': 
+          sb.append('\r');
+          break;
+        case 'b': 
+          sb.append('\b');
+          break;
+        case 'f': 
+          sb.append('\f');
+          break;
+        default:
+          sb.append(c);
+          break;
       }
     } else {
       sb.append(c);
     }
-    state.escapeFound(false);
+    state.escapeFound(false);    
   }
   
-  void handleEscape(StringBuilder sb, State state) {
+  void handleRegular(StringBuilder sb, char c) {
+    if (strictQuotes) {
+      if (state.inQuotes) {
+        appendRegularChar(sb, c);
+      }
+    } else {
+      appendRegularChar(sb, c);
+    }
+  }
+  
+  // TODO: this gets state and handleRegular doesn't -> INCONSISTENT; pick one way or 'tother
+  void handleEscape(StringBuilder sb) {
     state.escapeFound(true);
-    sb.append(escapechar);
+    if (retainEscapeChars) {
+      if (strictQuotes) {
+        if (state.inQuotes) {
+          sb.append(escapechar);
+        }
+      } else {
+        sb.append(escapechar);        
+      }
+    }
   }
   
-  void handleQuote(StringBuilder sb, State state) {
+  void handleQuote(StringBuilder sb) {
     // always retain outer quotes while parsing and then remove them at the end if appropriate
     if (strictQuotes) {
       if (state.inQuotes) {
@@ -216,138 +261,6 @@ public class CsvParser {
     state.escapeFound(false);       
   }
   
-  
-  //TODO: make this more efficient by operating on char[] or StringBuilder
-//  String trim2(StringBuilder sb) {
-//    String tok = sb.toString();
-//
-//    if (!retainOuterQuotes) {
-//      if (trimWhiteSpace) {
-//        tok = tok.trim();
-//        tok = trimEdgeQuotes(tok);  // removes the first and last char only if they are quotes
-//        tok = tok.trim();
-//      } else {
-//        tok = pluckOuterQuotes(tok);  // removes first left quote and last right quote, but doesn't remove any white space  
-//      }
-//    
-//    } else if (trimWhiteSpace) {
-//      tok = tok.trim();
-//    }
-//    return tok;
-//  }
-
-
-//  String trimIfOuterQuotesPresent(String s) {
-//    if (s.length() < 2) {
-//      return s;
-//    }
-//    
-//    int leftidx = readLeftWhiteSpace(s);
-//    int rightidx = readRightWhiteSpace(s);
-//    
-//    if (rightidx - leftidx < 2) {
-//      return s;
-//    }
-//    
-//    if (s.charAt(leftidx) != quotechar || s.charAt(rightidx) != quotechar) {
-//      return s;
-//    }
-//    
-//    return s.substring(leftidx, rightidx + 1);
-//  }
-//  
-//  
-//  String pluckOuterQuotes(String s) {
-//    if (s.length() < 2) {
-//      return s;
-//    }
-//    // easy route if outer quotes are first and last char
-//    String s2 = trimEdgeQuotes(s);
-//    // trimEdgeQuotes will return the original string if first and last chars are not quotes
-//    if (s != s2) {
-//      return s2;
-//    }
-//    
-//    // if get here: there is either some white space outside of the quotes or no quotes at all
-//    StringBuilder sb = new StringBuilder(s.length());
-//    int leftidx = readLeftWhiteSpace(s);
-//    if (leftidx + 1 < s.length() && s.charAt(leftidx) == this.quotechar) {
-//      sb.append(s.substring(0, leftidx));
-//    } else {
-//      return s;
-//    }
-//    
-//    int rightidx = readRightWhiteSpace(s);
-//    if (rightidx > 1 && s.charAt(rightidx) == this.quotechar) {
-//      sb.append( s.substring(leftidx + 1, rightidx) );
-//      sb.append(s.substring(rightidx+1));
-//    } else {
-//      return s;
-//    }
-//    return sb.toString();
-//  }
-//  
-//  /**
-//   * Starting from the left side of the string reads to the first
-//   * non-white space char (or end of string)
-//   * @param s
-//   * @return idx one beyond the last white space char
-//   */
-//  int readLeftWhiteSpace(String s) {
-//    for (int i = 0; i < s.length(); i++) {
-//      if (!Character.isWhitespace(s.charAt(i))) {
-//        return i;
-//      }
-//    }
-//    return 0;
-//  }
-//  
-//  /**
-//   * Starting from the right side of the string reads to the first
-//   * non-white space char (or start of string)
-//   * @param s
-//   * @return idx one before the last white space char (reading from the right)
-//   */
-//  int readRightWhiteSpace(String s) {
-//    for (int i = s.length() - 1; i >= 0; i--) {
-//      if (!Character.isWhitespace(s.charAt(i))) {
-//        return i;
-//      }
-//    }
-//    return s.length();
-//  }
-//  
-//  String trimEdgeQuotes(String s) {
-//    if (s.charAt(0) == quotechar && s.charAt(s.length()-1) == quotechar) {
-//      return s.substring(1, s.length()-1);
-//    } else {
-//      return s;
-//    }
-//  }
-//  
-//  String trimQuotes(String s) {
-//    int leftidx = 0;
-//    int rightidx = 0;
-//    
-//    for (int i = 0; i < s.length(); i++) {
-//      leftidx = i;
-//      if (s.charAt(i) != quotechar && !Character.isWhitespace(s.charAt(i))) {
-//        break;
-//      }
-//    }
-//    
-//    for (int i = s.length() - 1; i >= 0; i--) {
-//      rightidx = i;
-//      if (s.charAt(i) != quotechar && !Character.isWhitespace(s.charAt(i))) {
-//        break;
-//      }
-//    }
-//
-//    return s.substring(leftidx, rightidx + 1);
-//  }
-
-
-  /// START EXPERIMENTAL ////
   String trim(StringBuilder sb) {
     int left = 0;
     int right = sb.length() - 1;
@@ -366,7 +279,7 @@ public class CsvParser {
         left = indexes[0];
         right = indexes[1];      
       } else {
-        pluckOuterQuotes2(sb, left, right);
+        pluckOuterQuotes(sb, left, right);
         left = 0;
         right = sb.length() - 1;
         
@@ -419,8 +332,8 @@ public class CsvParser {
       return new int[]{left, right};
     }
     
-    int newLeft  = readLeftWhiteSpace2(sb, left, right);
-    int newRight = readRightWhiteSpace2(sb, left, right);
+    int newLeft  = readLeftWhiteSpace(sb, left, right);
+    int newRight = readRightWhiteSpace(sb, left, right);
 
     if (newLeft > newRight) {
       newLeft = left;
@@ -434,13 +347,13 @@ public class CsvParser {
   }
   
   
-  void pluckOuterQuotes2(StringBuilder sb, int left, int right) {
+  void pluckOuterQuotes(StringBuilder sb, int left, int right) {
     if (sb.length() < 2) {
       return;
     }
 
-    int newLeft  = readLeftWhiteSpace2(sb, left, right);
-    int newRight = readRightWhiteSpace2(sb, left, right);
+    int newLeft  = readLeftWhiteSpace(sb, left, right);
+    int newRight = readRightWhiteSpace(sb, left, right);
     
     if (sb.charAt(newLeft) == quotechar && sb.charAt(newRight) == quotechar) {
       sb.deleteCharAt(newRight);
@@ -459,7 +372,7 @@ public class CsvParser {
    * @param right right boundary index of the current xxx 
    * @return idx one beyond the last white space char
    */
-  int readLeftWhiteSpace2(StringBuilder sb, int left, int right) {
+  int readLeftWhiteSpace(StringBuilder sb, int left, int right) {
     for (int i = left; i <= right; i++) {
       if (!Character.isWhitespace(sb.charAt(i))) {
         return i;
@@ -478,7 +391,7 @@ public class CsvParser {
    * @param right right boundary index of the current xxx 
    * @return idx one before the last white space char (reading from the right)
    */
-  int readRightWhiteSpace2(StringBuilder sb, int left, int right) {
+  int readRightWhiteSpace(StringBuilder sb, int left, int right) {
     for (int i = right; i >= left; i--) {
       if (!Character.isWhitespace(sb.charAt(i))) {
         return i;
@@ -486,7 +399,4 @@ public class CsvParser {
     }
     return right;
   }
-
-  
-  /// END EXPERIMENTAL ////  
 }

@@ -28,7 +28,7 @@ public class CsvParserTest {
   @Test(expected = UnsupportedOperationException.class)
   public void quoteAndEscapeCannotBeTheSameViaParserCtor() {
     new CsvParser(DEFAULT_SEPARATOR, DEFAULT_QUOTE_CHAR, DEFAULT_QUOTE_CHAR,
-        false, false, false, false);
+        false, false, false, false, true);
   }
   
   @Test(expected = UnsupportedOperationException.class)
@@ -112,6 +112,7 @@ public class CsvParserTest {
 
   
   // RFC4180 examples from: https://en.wikipedia.org/wiki/Comma-separated_values
+  // This shows how simplecsv rejects the "quotes as escape chars" philosophy of that RFC
   @Test
   public void testRFC4180Examples() {
     String text = "1997,Ford,E350,\"Super, \"\"luxurious\"\" truck\"";
@@ -193,8 +194,8 @@ public class CsvParserTest {
   
   @Test
   public void returnNullWhenNullPassedIn() {
-    String[] nextLine = parser.parseLine(null);
-    assertNull(nextLine);
+    String[] toks = parser.parseLine(null);
+    assertNull(toks);
   }
   
   @Test
@@ -218,12 +219,12 @@ public class CsvParserTest {
   
   @Test
   public void testADoubleQuoteAsDataElement() {
-    String[] nextLine = parser.parseLine("a,\"\"\"\",c");  // a,"""",c
+    String[] toks = parser.parseLine("a,\"\"\"\",c");  // a,"""",c
 
-    assertEquals(3, nextLine.length);
-    assertEquals("a", nextLine[0]);
-    assertEquals("\"\"", nextLine[1]);
-    assertEquals("c", nextLine[2]);
+    assertEquals(3, toks.length);
+    assertEquals("a", toks[0]);
+    assertEquals("\"\"", toks[1]);
+    assertEquals("c", toks[2]);
   }
   
   @Test
@@ -340,12 +341,12 @@ public class CsvParserTest {
   @Test  // issue from the old opencsv sourceforge project
   public void testIssue2859181() {
     CsvParser p = new CsvParserBuilder().separator(';').build();
-    String[] nextLine = p.parseLine("field1;\\=field2;\"\"\"field3\"\"\""); // field1;\=field2;"""field3"""
+    String[] toks = p.parseLine("field1;\\=field2;\"\"\"field3\"\"\""); // field1;\=field2;"""field3"""
 
-    assertEquals(3, nextLine.length);
-    assertEquals("field1", nextLine[0]);
-    assertEquals("\\=field2", nextLine[1]);
-    assertEquals("\"\"field3\"\"", nextLine[2]);
+    assertEquals(3, toks.length);
+    assertEquals("field1", toks[0]);
+    assertEquals("\\=field2", toks[1]);
+    assertEquals("\"\"field3\"\"", toks[2]);
   }
   
   @Test    // https://sourceforge.net/p/opencsv/bugs/93/
@@ -788,11 +789,81 @@ public class CsvParserTest {
     assertEquals("''''", toks[1]);
     assertEquals("c", toks[2]);
   }
+
+
+  /* ----------------------------------- */  
+  /* ---[ RetainEscapeChars = false ]--- */
+  /* ----------------------------------- */  
+
+  @Test
+  public void testEscapedDoubleQuoteAsDataElementWithRetainEscapeCharsFalse() {
+    CsvParser p = new CsvParserBuilder().retainEscapeChars(false).build();
+    //                                        "test","this,test,is,good","\"test\",\"quote\""
+    String[] toks = p.parseLine("\"test\",\"this,test,is,good\",\"\\\"test\\\"\",\"\\\"quote\\\"\""); 
+
+    assertEquals(4, toks.length);
+    assertEquals("test", toks[0]);
+    assertEquals("this,test,is,good", toks[1]);
+    assertEquals("\"test\"", toks[2]);
+    assertEquals("\"quote\"", toks[3]);
+  }
   
+  @Test  // issue from the old opencsv sourceforge project
+  public void testIssue2859181WithRetainEscapeCharsFalse() {
+    CsvParser p = new CsvParserBuilder().separator(';').retainEscapeChars(false).build();
+    String[] toks = p.parseLine("field1;\\=field2;\"\"\"field3\"\"\""); // field1;\=field2;"""field3"""
+
+    assertEquals(3, toks.length);
+    assertEquals("field1", toks[0]);
+    assertEquals("=field2", toks[1]);
+    assertEquals("\"\"field3\"\"", toks[2]);
+  }
+  
+  
+  @Test
+  public void testEscapesBeforeNewLinesEscapeCharsFalse() {
+    CsvParser p = new CsvParserBuilder().retainEscapeChars(false).build();
+    String[] toks = p.parseLine("\"a\\nb\",b,\"\\nd\",e\n");
+    
+    assertEquals(4, toks.length);
+    assertEquals("a\nb", toks[0]);
+    assertEquals("b", toks[1]);
+    assertEquals("\nd", toks[2]);
+    assertEquals("e\n", toks[3]);
+  }
   
   /* ------------------------------------- */  
   /* ---[ Various Mixed Mode Settings ]--- */
   /* ------------------------------------- */  
+  
+  @Test
+  public void testIssue2859181WithRetainQuotesAndRetainEscapeCharsFalse() {
+    CsvParser p = new CsvParserBuilder().
+        separator(';').
+        retainOuterQuotes(true).
+        retainEscapeChars(false).
+        build();
+
+    String[] toks = p.parseLine("field1;\\=field2;\"\"\"field3\"\"\""); // field1;\=field2;"""field3"""
+
+    assertEquals(3, toks.length);
+    assertEquals("field1", toks[0]);
+    assertEquals("=field2", toks[1]);
+    assertEquals("\"\"\"field3\"\"\"", toks[2]);
+  }
+  
+  @Test
+  public void testEscapedDoubleQuoteAsDataElementWithRetainQuotesAndRetainEscapeCharsFalse() {
+    CsvParser p = new CsvParserBuilder().retainOuterQuotes(true).retainEscapeChars(false).build();
+
+    String[] toks = p.parseLine("\"test\",\"this,test,is,good\",\"\\\"test\\\"\",\"\\\"quote\\\"\""); // "test","this,test,is,good","\"test\",\"quote\""
+
+    assertEquals(4, toks.length);
+    assertEquals("\"test\"", toks[0]);
+    assertEquals("\"this,test,is,good\"", toks[1]);
+    assertEquals("\"\"test\"\"", toks[2]);
+    assertEquals("\"\"quote\"\"", toks[3]);
+  }
   
   @Test
   public void parseSimpleQuotedStringWithSpacesWithRetainQuotesAndStrictQuotes() {
@@ -873,6 +944,31 @@ public class CsvParserTest {
     assertEquals(2, toks.length);
     assertEquals("\"Line with\"", toks[0]);
     assertEquals("\"spaces at end\"", toks[1]);
+  }
+  
+  @Test
+  public void testStrictQuoteWithGarbageWithRetainEscapeCharsFalse() {
+    CsvParser p = new CsvParserBuilder().strictQuotes(true).retainEscapeChars(false).build();
+    String testString = "abc',!@#\",\\\"\"   xyz,";
+
+    String[] toks = p.parseLine(testString);
+    assertEquals(3, toks.length);
+    assertEquals("", toks[0]);
+    assertEquals(",\"", toks[1]);
+    assertEquals("", toks[2]);
+  }
+  
+  @Test
+  public void whitespaceBeforeEscapeWithAllowUnbalancedQuotesWithRetainEscapeCharsFalse() {
+    CsvParser p = new CsvParserBuilder().
+        allowUnbalancedQuotes(true).
+        retainEscapeChars(false).
+        build();
+
+    String[] toks = p.parseLine("\"this\", \"is\",\"a test\""); //"this", "is","a test"
+    assertEquals("this", toks[0]);
+    assertEquals(" is", toks[1]);
+    assertEquals("a test", toks[2]);
   }
   
   
