@@ -4,9 +4,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * DOCUMENT ME!!
+ * The heart of the simplecsv library is the parser.
+ * If you want to construct anything except the default parser, it is recommended
+ * that you use the CsvParserBuilder.
  * 
- * @NotThreadSafe
+ * The parser can be used standalone without the Reader. For example in a Hadoop
+ * MapReduce scenario, no reader is needed, just a parser, so almost all of the
+ * core logic of the library is in the CsvParser, not other classes.
+ * 
+ * Options / configurations:
+ *   - change the separator/delimiter char
+ *   - change the quote char, including specifying no quote char by setting it to NULL_CHARACTER
+ *   - change the escape char, including specifying no escape by setting it to NULL_CHARACTER
+ *   - turn on strictQuotes mode
+ *   - turn on trimWhitespace mode
+ *   - turn on allowUnbalancedQuotes mode
+ *   - turn off retainEscapeChars mode
+ *   - turn on alwaysQuoteOutput mode
+ * 
+ * @NotThreadSafe - only use one CsvParser per thread
  */
 public class CsvParser {
   final char separator;
@@ -161,18 +177,6 @@ public class CsvParser {
     return toks;
   }
   
-  boolean isEscapeChar(char c) {
-    // if the escapechar is set to the NULL_CHAR then it shouldn't
-    // match anything => nothing is the escapechar
-    return c == escapechar && escapechar != NULL_CHARACTER;
-  }
-  
-  boolean isQuoteChar(char c) {
-    // if the quotechar is set to the NULL_CHAR then it shouldn't
-    // match anything => nothing is the quotechar
-    return c == quotechar && quotechar != NULL_CHARACTER;
-  }
-  
   /**
    * 
    * @param ln
@@ -191,6 +195,18 @@ public class CsvParser {
   /* --------------------------------- */
   /* ---[ internal helper methods ]--- */
   /* --------------------------------- */
+  
+  boolean isEscapeChar(char c) {
+    // if the escapechar is set to the NULL_CHAR then it shouldn't
+    // match anything => nothing is the escapechar
+    return c == escapechar && escapechar != NULL_CHARACTER;
+  }
+  
+  boolean isQuoteChar(char c) {
+    // if the quotechar is set to the NULL_CHAR then it shouldn't
+    // match anything => nothing is the quotechar
+    return c == quotechar && quotechar != NULL_CHARACTER;
+  }
   
   String handleEndOfToken(StringBuilder sb) {
     // in strictQuotes mode you don't know when to add the last seen
