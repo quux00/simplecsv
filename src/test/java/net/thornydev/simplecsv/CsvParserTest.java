@@ -1677,5 +1677,4 @@ public class CsvParserTest {
     exp = "[, \"abc\\\"def\"]";
     assertEquals(exp, asList);
   }
-
 }

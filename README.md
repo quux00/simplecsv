@@ -10,13 +10,19 @@ After trying unsuccessfully to fix some of the key bugs in OpenCSV, I concluded 
 
 The philosophy of simplecsv is largely based upon the OpenCSV library behavior but corrects flaws, inconsistencies and behaviors in that library that seem wrong to me.  In particular, I follow the approach of typical programming language compilers (e.g., javac) in how escaped characters are treated.  And yes, sadly, this is likely #15:  http://xkcd.com/927/
 
+I toyed with keeping the name "OpenCSV" or even calling the library "ReOpenCSV", but in the end I believe the behavior is just different enough that that would be misleading.  My goal has been to simplify, so I call this "simplecsv".
+
+
 
 ## Differences from OpenCSV
 
 Almost all of the differences are in the parser.  The other classes were largely copied over from the OpenCSV library as is or with minor changes/bug fixes.
 
-See the DIFFERENCES.md document for details.
+I'll refer you to the [DIFFERENCES.md](https://github.com/quux00/simplecsv/blob/master/DIFFERENCES.md) document for details, but I will point out two big differences:
 
+1. simplecsv does not adhere to [RFC 4180](http://tools.ietf.org/html/rfc4180), which says that two quotes in a row should be viewed as an an escape character and a quote.  OpenCSV did follow this, so that is a big difference.
+
+2. simplecsv does not handle single CSV records spread across multiple lines. One record is assumed to be on each line.
 
 
 ## Options to the CsvParser
@@ -28,31 +34,36 @@ As with OpenCSV, the separator or delimiter, the escape char and the quote char 
 simplecsv also preserves many of the nice configurable options that OpenCSV provided, changes a few to be more consistent or sensible and adds a number of new ones.  Here is a quick breakdown of those options:
 
 
+<br><br>
 **Default behavior**
 
 By default, fields do not have whitespace trimmed, unbalanced quotes will cause an exception to be thrown, the outer quotes, if present and not escaped, will be removed, and the entire string between the separators will be returned, including whitespace, escape characters and things outside of quotes if quotes are present.
 
 The default separator is comma; the default escape char is backslash; the default quote char is double quote.
 
-In the example the "<<" and ">>" characters represent the start and end of the string.  Also these are examples are shown as if in a text file - not as they would appear in a Java string.
+In the example the `<<` and `>>` characters are not part of the string - they just indicate its start and end, so whitespace can be "seen" in the input.  Also these are examples are shown as if in a text file - not as they would appear in a Java string.  The outputs are shown with braces to indicate that the output is a `String[]` (if you call `parseLine()`) or a `List<String>` (if you call `parse()`).
 
     _Input_                                  _Output_
-    >>"one", " two " , "3 3",\"four\"<<  =>  >>one,  two  , 3 3,\"four\"<<
+    >>"one", " two " , "3 3",\"four\"<<  =>  [one,  two  , 3 3,\"four\"]
 
 
+<br><br>
 **TrimWhitespace=true**
 
-Changes the default behavior to trim all outer whitespace, as defined by Java's `Character.isWhitespace()` method (which includes CR and LF characters).  Outer quotes are still removed if not escaped.
+This changes the default behavior to trim all outer whitespace, as defined by Java's `Character.isWhitespace()` method (which includes CR and LF characters).  Outer quotes are still removed if not escaped.
 
     CsvParser p = new CsvParserBuilder().
       trimWhitespace(true).
       build();
 
     _Input_                                  _Output_
-    >>"one", " two " , "3 3",\"four\"<<  =>  >>one,two,3 3,\"four\"<<
+    >>"one", " two " , "3 3",\"four\"<<  =>  [one,two,3 3,\"four\"]
 
 
-* AllowUnbalancedQuotes=true:  changes the default behavior to accept unbalanced quotes as pass them on
+<br><br>
+**AllowUnbalancedQuotes=true**
+
+This changes the default behavior to accept unbalanced quotes and pass them on to the output, rather than throw an Exception.
 
 If AllowUnbalancedQuotes=false (the default), you will get:
 
@@ -66,10 +77,11 @@ If AllowUnbalancedQuotes=true, you will get:
       build();
 
     _Input_          _Output_
-    >>one,"""<<  =>  >>one,"<<
+    >>one,"""<<  =>  [one,"]
 
 
-* RetainEscapeChars=false: xxx
+<br><br>
+**RetainEscapeChars=false**
 
 By default, escape chars are retained, like so:
 
@@ -78,7 +90,7 @@ By default, escape chars are retained, like so:
       build();
 
     _Input_             _Output_
-    >>one,'\'\''<<  =>  >>one,\'\'<<
+    >>one,'\'\''<<  =>  [one,\'\']  (The escapes are in the string.)
 
 But with
 
@@ -88,54 +100,94 @@ But with
       build();
 
     _Input_             _Output_
-    >>one,'\'\''<<  =>  >>one,''<<
+    >>one,'\'\''<<  =>  [one,'']
 
-Here it kept the inner quotes are kept.  The outer quotes are removed as normal and the escape chars are removed.
+Here it kept the inner quotes.  The outer quotes are removed as normal and the escape chars are removed.
 
 
-* RetainOuterQuotes=true:  xxx
+<br><br>
+**RetainOuterQuotes=true**
 
-If you want to retain outer quotes that are present, but not add them where they were not present, use this setting.
+If you want to retain outer quotes that are present in the input, but *not* add them where they were not present, use this setting.
 
     CsvParser p = new CsvParserBuilder().
       quoteChar('\'').
       retainOuterQuotes(true).    
       build();
 
+
     _Input_                       _Output_
-    >>one,'\'\'', 'three' <<  =>  >>one,'\'\'', 'three' <<
+    >>one,'\'\'', 'three' <<  =>  [one,'\'\'', 'three' ]
 
 
-* AlwaysQuoteOutput=true:  xxx
+<br><br>
+**AlwaysQuoteOutput=true**
 
-If you want the output to always be quoted, regardless of whether it was originally quoted, use this setting:
+If you want the output to always be quoted, regardless of whether the each input field was originally quoted, use this setting:
 
     CsvParser p = new CsvParserBuilder().
       quoteChar('\'').
       alwaysQuoteOutput(true).
       build();
 
+
     _Input_                       _Output_
-    >>one,'\'\'', 'three' <<  =>  >>'one','\'\'', 'three' <<
+    >>one,'\'\'', 'three' <<  =>  ['one','\'\'', 'three' ]
 
 
-* StrictQuotes=true:  xxx
+**StrictQuotes=true**
 
-This settings means to only keep things that are inside quote chars. This sounds promising and can be useful at times, but it is the trickiest setting and it can have unexpected consequences, so make sure this is really what you want.  Look at the CsvParserTest unit test for many examples.  Here's a straightforward example:
+This setting informs the parser to only keep characters that lie between unescaped quote chars. This sounds promising and can be useful at times, but it is the trickiest setting and it can have unexpected consequences, so make sure this is really what you want.  Look at the CsvParserTest unit test for many examples.  Here's a straightforward example:
 
     CsvParser p = new CsvParserBuilder().strictQuotes(true).build();
 
-    _Input_                       _Output_
-    >>this, "is","a test" xyz<<  =>  >>,is,a test<<
 
-Since the first field ("this") was not in quotes, it is gone.  The extra "xyz" at the end of the third field was not in quotes, so it is gone as well.  This setting has the by product of trimming whitespace around the outsides of the quotes, but if that is all you want use the trimWhiteSpace=true option instead.
+    _Input_                       _Output_
+    >>this, "is","a test" xyz<<  =>  [,is,a test]
+
+Since the first field (`this`) was not in quotes, it is gone.  The extra `xyz` at the end of the third field was not between quotes, so it is also left behind.  This setting has the by-product of trimming whitespace around the outsides of the quotes, but if that is all you want use the `trimWhiteSpace=true` option instead.
    
 Here's a more complicated example:
 
     _Input_                               _Output_
-    >>"abc"d"efg",1,"2", w"x"y""z <<  =>  >>abcefg,,2,x<<
+    >>"abc"d"efg",1,"2", w"x"y""z <<  =>  [abcefg,,2,x]
  
-Like I said, think carefully if this is the setting you really want.  I retained it from the original Open CSVParser.
+Like I said, think carefully if this is the setting you really want.  I retained it from the original Open CSVParser in case others have found it beneficial.
+
+
+Finally, you can combine any of the above options together.  The CsvParserTest unit tests shows a number of variations.  Here are some examples to give you an idea of how they combine:
+
+    CsvParser p = new CsvParserBuilder().
+      quoteChar('\'').
+      separator('|').
+      trimWhitespace(true).
+      retainOuterQuotes(true).
+      build();
+
+    _Input_                      _Output_
+    >> 'a' |' 'hello' '|c<<  =>  ['a',' 'hello' ',c]
 
 
 
+    CsvParser p = new CsvParserBuilder().
+      retainOuterQuotes(true).
+      allowUnbalancedQuotes(true).
+      build();
+
+
+    _Input_                  _Output_
+    >>1, \"abc\"def\"<<  =>  [1, \"abc\"def\"]
+    
+
+
+    CsvParser p = new CsvParserBuilder().
+      strictQuotes(true).
+      retainEscapeChars(false).
+      alwaysQuoteOutput(true).
+      build();
+
+
+    _Input_                           _Output_
+    >>abc',!@#",\""   xyz,<<  =>  [,","",]  field1: empty
+                                            field2: ",""
+                                            field3: empty
