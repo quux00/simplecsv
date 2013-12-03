@@ -546,11 +546,21 @@ public class CsvParserTest {
   }
   
   @Test
-  public void whitespaceBeforeEscapeWithStrictQuotes() {
+  public void testWhitespaceBeforeEscapeWithStrictQuotes() {
     CsvParser p = new CsvParserBuilder().strictQuotes(true).build();
 
     String[] toks = p.parseLine("\"this\", \"is\",\"a test\""); //"this", "is","a test"
     assertEquals("this", toks[0]);
+    assertEquals("is", toks[1]);
+    assertEquals("a test", toks[2]);
+  }
+
+  @Test
+  public void testSomeFieldsWithoutQuotesWithStrictQuotes() {
+    CsvParser p = new CsvParserBuilder().strictQuotes(true).build();
+
+    String[] toks = p.parseLine("this, \"is\",\"a test\" xyz");
+    assertEquals("", toks[0]);
     assertEquals("is", toks[1]);
     assertEquals("a test", toks[2]);
   }
@@ -919,7 +929,6 @@ public class CsvParserTest {
     assertEquals("", toks[5]);
   }
   
-  
   @Test
   public void parseQuotedStringWithCommasAndWhitespaceAlwaysQuoteOutputAndTrimWhitespace() {
     CsvParser p = new CsvParserBuilder().
@@ -1251,6 +1260,33 @@ public class CsvParserTest {
   /* ------------------------------------- */  
   
   @Test
+  public void testCrLfAsWhiteSpace() {
+    CsvParser p = new CsvParserBuilder().
+        trimWhitespace(true).
+        build();
+
+    String[] toks = p.parseLine("a\n,\r\nb\n,c\r");
+    assertEquals(3, toks.length);
+    assertEquals("a", toks[0]);
+    assertEquals("b", toks[1]);
+    assertEquals("c", toks[2]);
+  }
+  
+  @Test
+  public void testCrLfAsWhiteSpaceAlwaysQuoteOutput() {
+    CsvParser p = new CsvParserBuilder().
+        trimWhitespace(true).
+        alwaysQuoteOutput(true).
+        build();
+
+    String[] toks = p.parseLine("a\n,\r\nb\n,c\r");
+    assertEquals(3, toks.length);
+    assertEquals("\"a\"", toks[0]);
+    assertEquals("\"b\"", toks[1]);
+    assertEquals("\"c\"", toks[2]);
+  }
+  
+  @Test
   public void testIssue2859181WithRetainQuotesAndRetainEscapeCharsFalse() {
     CsvParser p = new CsvParserBuilder().
         separator(';').
@@ -1347,6 +1383,7 @@ public class CsvParserTest {
     assertEquals("\"1\"", toks[0]);
     assertEquals("\"2\"", toks[1]);
   }
+
   
   @Test
   public void spacesAtEndOfQuotedStringDoNotCountIfStrictQuotesIsTrueWithRetainQuotes() {
@@ -1640,4 +1677,5 @@ public class CsvParserTest {
     exp = "[, \"abc\\\"def\"]";
     assertEquals(exp, asList);
   }
+
 }
