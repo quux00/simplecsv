@@ -22,9 +22,9 @@
  * simplecsv gives you the option of not retaining escape chars if desired; OpenCSV gave no such option
 
 
-## RFC 4180
+### RFC 4180
 
-### Using double quote to escape double quote
+#### Using double quote to escape double quote
 
 * OpenCSV reduces multiples quotes in a row to a single quote; simplecsv does not.
   * OpenCSV  : input `"Stan ""The Man"""`    output: `Stan "The Man"`
@@ -41,7 +41,7 @@ Frankly, using a character to escape itself is simply flawed thinking and I find
 However, if there is a strong desire to have an RFC 4180 compliant option by users of simplecsv, I believe it should not be tacked onto the current CsvParser.  Instead, a second parser should be written just to handle that.  I'm open to feedback.
 
 
-### Additional dictums in RFC 4180
+#### Additional dictums in RFC 4180
 
 RFC 4180 has a number of other tenets, some of which I find dubious.  I list below how simplecsv approaches these:
 
