@@ -9,11 +9,16 @@ import static org.mockito.Matchers.notNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.nio.CharBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 import net.quux00.simplecsv.CsvParser;
 import net.quux00.simplecsv.CsvParserBuilder;
@@ -891,4 +896,75 @@ public class CsvReaderTest {
       if (cr != null) cr.close();
     }
   }
+  
+  
+
+  /* ---[ Test OpenCSV bug 97 ]--- */
+  // https://sourceforge.net/p/opencsv/bugs/97/
+  
+  private List<String[]> getTestData() {
+    List<String[]> list = new ArrayList<String[]>();
+    list.add(new String[] {"quote\"", "escape\\", "normal"});
+    list.add(new String[] {"double \"quote\"", "middle \\escape", "regular"});
+    list.add(new String[] {"typical", "end escape\\", "ordinary"});
+    list.add(new String[] {"one", "two", "three"});
+    return list;
+}
+  
+  @Test
+  public void defaultWriterDefaultReader() throws Exception {
+      File file = new File("./tmptesting.csv");
+      try {
+        CsvWriter writer = new CsvWriter(new BufferedWriter(new FileWriter(file)));
+        writer.writeAll(getTestData());
+        writer.close();
+        CsvReader reader = new CsvReader(new FileReader(file));
+        List<String[]> list = reader.readAll();
+        reader.close();
+        assertEquals(4, list.size());
+      } finally {
+        file.delete();
+      }
+  }
+
+  @Test
+  public void customWriterDefaultReader() throws Exception {
+      File file = new File("./tmptesting.csv");
+      try {
+        CsvWriter writer = new CsvWriter(new BufferedWriter(new FileWriter(file)), ',', '"', '\\');
+        writer.writeAll(getTestData());
+        writer.close();
+        CsvReader reader = new CsvReader(new FileReader(file));
+        List<String[]> list = reader.readAll();
+        reader.close();
+        assertEquals(4, list.size());
+      
+      } finally {
+        file.delete();
+      }
+  }
+
+  @Test
+  public void defaultWriterCustomReader() throws Exception {
+      File file = new File("./tmptesting.csv");
+      try {
+        CsvWriter writer = new CsvWriter(new BufferedWriter(new FileWriter(file)));
+        writer.writeAll(getTestData());
+        writer.close();
+        CsvParser p = new CsvParserBuilder().
+            escapeChar('\0').
+            allowUnbalancedQuotes(true).
+            build();
+        CsvReader reader = new CsvReader(new FileReader(file), p);
+        List<String[]> list = reader.readAll();
+        reader.close();
+        assertEquals(4, list.size());
+        
+      } finally {
+        file.delete();
+      }
+  }
+
+  /* ---[ END Test OpenCSV bug 97 ]--- */
+
 }
