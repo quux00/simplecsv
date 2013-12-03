@@ -13,6 +13,7 @@ The philosophy of simplecsv is largely based upon the OpenCSV library behavior b
 I toyed with keeping the name "OpenCSV" or even calling the library "ReOpenCSV", but in the end I believe the behavior is just different enough that that would be misleading.  My goal has been to simplify, so I call this "simplecsv".
 
 ----
+
 ### TOC
 * [Similarities and Differences from OpenCSV](#differences)
 * [Options to the CsvParser](#options)
@@ -22,6 +23,7 @@ I toyed with keeping the name "OpenCSV" or even calling the library "ReOpenCSV",
  * [CsvWriter](#csvwriter)
  * [Dump SQL tables to CSV](#tables_to_csv)
  * [Bind CSV to a Java bean](#csv_to_beans)
+
 ----
 
 
@@ -219,82 +221,87 @@ In the last example, note that even with `alwaysQuoteOutput(true)` set, empty re
 <a name="csvparser"></a>
 ### CsvParser
 
-    // Construct a default parser
-    CsvParser p1 = new CsvParser();
+```java
+// Construct a default parser
+CsvParser p1 = new CsvParser();
 
-    // Construct a default with non-default options
-    // using the CsvParserBuilder
-    CsvParser p2 = new CsvParserBuilder().
-      separator('|').
-      retainOuterQuotes(true).
-      allowUnbalancedQuotes(true).
-      build();
+// Construct a default with non-default options
+// using the CsvParserBuilder
+CsvParser p2 = new CsvParserBuilder().
+  separator('|').
+  retainOuterQuotes(true).
+  allowUnbalancedQuotes(true).
+  build();
 
-    String line = getNextLine();
-    // get parsed tokens as a String array
-    String[] aryToks = p2.parseLine();
+String line = getNextLine();
+// get parsed tokens as a String array
+String[] aryToks = p2.parseLine();
 
-    line = getNextLine();
-    // get parsed tokens as a List<String>
-    List<String> lsToks = p2.parse();
+line = getNextLine();
+// get parsed tokens as a List<String>
+List<String> lsToks = p2.parse();
+```
 
 <br>
 <a name="csvreader"></a>
 ### CsvReader
 
-    // create CsvReader with default CsvParser and skips no header lines
-    FileReader fr = new FileReader("src/test/resources/basic.csv");
-    CsvReader csvr = new CsvReader(fr);
-    
-    // create custom parser via CsvParserBuilder
-    // and custom reader via CsvReaderBuilder, specifying the custom parser
-    // to skip 1 header line and passing it the FileReader
-    FileReader fr = new FileReader("src/test/resources/basic.csv");
-    CsvParser p = new CsvParserBuilder().trimWhitespace(true).retainEscapeChars(false).build();
-    CsvReader csvr = new CsvReaderBuilder(fr).skipLines(1).csvParser(p).build();
-    
-    // now read until all records are exhausted
-    String[] toks;
-    while ((toks = csvr.readNext()) != null) {
-        // toks[] is an array of values from the line
-        System.out.println(toks[0] + toks[1] + "etc...");
-    }
+```java
+// create CsvReader with default CsvParser and skips no header lines
+FileReader fr = new FileReader("src/test/resources/basic.csv");
+CsvReader csvr = new CsvReader(fr);
+
+// create custom parser via CsvParserBuilder
+// and custom reader via CsvReaderBuilder, specifying the custom parser
+// to skip 1 header line and passing it the FileReader
+FileReader fr = new FileReader("src/test/resources/basic.csv");
+CsvParser p = new CsvParserBuilder().trimWhitespace(true).retainEscapeChars(false).build();
+CsvReader csvr = new CsvReaderBuilder(fr).skipLines(1).csvParser(p).build();
+  
+// now read until all records are exhausted
+String[] toks;
+while ((toks = csvr.readNext()) != null) {
+  // toks[] is an array of values from the line
+  System.out.println(toks[0] + toks[1] + "etc...");
+}
+```
 
 <br>
 <a name="csvwriter"></a>
 ### CsvWriter
 
-    // create a default CsvWriter, which will write a comma separated file as output
-    // For example, by default the output will be double quoted
-    FileWriter fw = new FileWriter("yourfile.csv")
-    CsvWriter csvw = new CsvWriter(fw);
-    
-    // With the CsvWriterBuilder you can specify a non-default:
-    // separator, quoteChar, escapeChar and lineEnd
-    // For example you can specify that you don't want any quotes in the output
-    // and want a tab-separated output:
+```java
+// create a default CsvWriter, which will write a comma separated file as output
+// For example, by default the output will be double quoted
+FileWriter fw = new FileWriter("yourfile.csv")
+CsvWriter csvw = new CsvWriter(fw);
 
-    String[] line = {"Foo", "Bar's", "Baz"};
-    StringWriter sw = new StringWriter();
-    CsvWriter csvw = new CsvWriterBuilder(sw).
-        quoteChar(CsvWriter.NO_QUOTE_CHARACTER).
-        separator('\t').
-        build();
-    csvw.writeNext(line);
-    csvw.close();
-    String result = sw.toString();
+// With the CsvWriterBuilder you can specify a non-default:
+// separator, quoteChar, escapeChar and lineEnd
+// For example you can specify that you don't want any quotes in the output
+// and want a tab-separated output:
 
-    assertEquals("Foo\tBar's\tBaz\n", result);
+String[] line = {"Foo", "Bar's", "Baz"};
+StringWriter sw = new StringWriter();
+CsvWriter csvw = new CsvWriterBuilder(sw).
+  quoteChar(CsvWriter.NO_QUOTE_CHARACTER).
+  separator('\t').
+  build();
+csvw.writeNext(line);
+csvw.close();
+String result = sw.toString();
 
+assertEquals("Foo\tBar's\tBaz\n", result);
+```
 
 <br>
 <a name="tables_to_csv"></a>
 ### Dump SQL tables to CSV
 
 ```java
-    // Exactly the same as with OpenCSV
-    java.sql.ResultSet myResultSet = ....
-    writer.writeAll(myResultSet, includeHeaders);
+// Exactly the same as with OpenCSV
+java.sql.ResultSet myResultSet = ....
+writer.writeAll(myResultSet, includeHeaders);
 ```
 
 <br>
