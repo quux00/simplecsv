@@ -289,10 +289,11 @@ In the last example, note that even with `alwaysQuoteOutput(true)` set, empty re
 <a name="tables_to_csv"></a>
 ### Dump SQL tables to CSV
 
+```java
     // Exactly the same as with OpenCSV
     java.sql.ResultSet myResultSet = ....
     writer.writeAll(myResultSet, includeHeaders);
-
+```
 
 <br>
 <a name="csv_to_beans"></a>
