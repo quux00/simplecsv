@@ -12,7 +12,8 @@ The philosophy of simplecsv is largely based upon the OpenCSV library behavior b
 
 I toyed with keeping the name "OpenCSV" or even calling the library "ReOpenCSV", but in the end I believe the behavior is just different enough that that would be misleading.  My goal has been to simplify, so I call this "simplecsv".
 
-
+----
+### TOC
 * [Similarities and Differences from OpenCSV](#differences)
 * [Options to the CsvParser](#options)
 * [Examples](#examples)
@@ -21,6 +22,7 @@ I toyed with keeping the name "OpenCSV" or even calling the library "ReOpenCSV",
  * [CsvWriter](#csvwriter)
  * [Dump SQL tables to CSV](#tables_to_csv)
  * [Bind CSV to a Java bean](#csv_to_beans)
+----
 
 
 <a name="differences"></a>
@@ -299,11 +301,13 @@ In the last example, note that even with `alwaysQuoteOutput(true)` set, empty re
 <a name="csv_to_beans"></a>
 ### Bind CSV to a Java bean
 
-    // Exactly the same as with OpenCSV
-    ColumnPositionMappingStrategy strat = new ColumnPositionMappingStrategy();
-    strat.setType(YourOrderBean.class);
-    String[] columns = new String[] {"name", "orderNumber", "id"}; // the fields to bind do in your JavaBean
-    strat.setColumnMapping(columns);
-    
-    CsvToBean csv = new CsvToBean();
-    List list = csv.parse(strat, yourReader);
+```java
+// Exactly the same as with OpenCSV
+ColumnPositionMappingStrategy strat = new ColumnPositionMappingStrategy();
+strat.setType(YourOrderBean.class);
+String[] columns = new String[] {"name", "orderNumber", "id"}; // the fields to bind do in your JavaBean
+strat.setColumnMapping(columns);
+
+CsvToBean csv = new CsvToBean();
+List list = csv.parse(strat, yourReader);
+```
