@@ -138,10 +138,10 @@ public class CsvParser {
     for (int i = 0; i < ln.length(); i++) {
       char c = ln.charAt(i);
       
-      if (c == quotechar) {
+      if (isQuoteChar(c)) {
         handleQuote(sb);
       
-      } else if (c == escapechar) {
+      } else if (isEscapeChar(c)) {
         handleEscape(sb);
       
       } else if (c == separator && !state.inQuotes) {
@@ -159,6 +159,18 @@ public class CsvParser {
     toks.add( handleEndOfToken(sb) );
 
     return toks;
+  }
+  
+  boolean isEscapeChar(char c) {
+    // if the escapechar is set to the NULL_CHAR then it shouldn't
+    // match anything => nothing is the escapechar
+    return c == escapechar && escapechar != NULL_CHARACTER;
+  }
+  
+  boolean isQuoteChar(char c) {
+    // if the quotechar is set to the NULL_CHAR then it shouldn't
+    // match anything => nothing is the quotechar
+    return c == quotechar && quotechar != NULL_CHARACTER;
   }
   
   /**
