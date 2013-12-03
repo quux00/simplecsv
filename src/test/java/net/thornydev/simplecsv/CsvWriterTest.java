@@ -253,17 +253,17 @@ public class CsvWriterTest {
    */
   @Test
   public void testNoQuoteCharsAndNoEscapeChars() throws IOException {
-    String[] line = {"Foo", "Bar", "Baz"};
+    String[] line = {"Foo", "Bar's", "Baz"};
     StringWriter sw = new StringWriter();
     CsvWriter csvw = new CsvWriterBuilder(sw).
         quoteChar(CsvWriter.NO_QUOTE_CHARACTER).
-        escapeChar(CsvWriter.NO_ESCAPE_CHARACTER).
+        separator('\t').
         build();
     csvw.writeNext(line);
     csvw.close();
     String result = sw.toString();
 
-    assertEquals("Foo,Bar,Baz\n", result);
+    assertEquals("Foo\tBar's\tBaz\n", result);
   }
 
   /**

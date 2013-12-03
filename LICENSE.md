@@ -1,4 +1,10 @@
+The `CsvParser`, `CsvParserBuilder` and `CsvParserTest` code are:
+
 Copyright 2013 Michael Peterson
+
+Many of the other classes were copied directly from the OpenCSV svn, taking the unpublished (to maven central) OpenCSV-2.4 version.  Most of those classes retain their original copyright notices from the OpenCSV authors and contributors.
+
+I've kept the same license as OpenCSV, so simplcsv is released under the Apache 2.0 license, reproduced here:
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
