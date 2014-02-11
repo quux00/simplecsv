@@ -15,6 +15,7 @@ I toyed with keeping the name "OpenCSV" or even calling the library "ReOpenCSV",
 ----
 
 ### TOC
+* [Release Status](#status)
 * [Similarities and Differences from OpenCSV](#differences)
 * [Options to the CsvParser](#options)
 * [Examples](#examples)
@@ -26,7 +27,12 @@ I toyed with keeping the name "OpenCSV" or even calling the library "ReOpenCSV",
 
 ----
 
+<a name="status"></a>
+## Release Status
 
+A 1.0 tag was applied on 11-Feb-2014 and will be available in maven central soon.  Thanks for the nudge from [benburton](https://github.com/benburton).
+
+<br>
 <a name="differences"></a>
 ## Similarities and Differences from OpenCSV
 
@@ -37,6 +43,7 @@ Almost all of the differences are in the parser.
 I'll refer you to the [DIFFERENCES.md](https://github.com/quux00/simplecsv/blob/master/DIFFERENCES.md) document for details, but I will point out two big differences:
 
 1. simplecsv does not adhere to [RFC 4180](http://tools.ietf.org/html/rfc4180), which says that two quotes in a row should be viewed as an an escape character and a quote.  OpenCSV did follow this, so that is a big difference.
+  * The rationale for this is in the [DIFFERENCES.md](https://github.com/quux00/simplecsv/blob/master/DIFFERENCES.md) document, including some discussion of how an RFC 4180 compliant parser could be added to simplecsv if there is demand.
 
 2. simplecsv does not handle single CSV records spread across multiple lines. One record is assumed to be on each line.  OpenCSV had a "multi-line mode".
 

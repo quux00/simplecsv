@@ -1,24 +1,25 @@
 ### Differences between simplecsv and OpenCSV-2.3 (and 2.4)
 
 * Default settings in simplecsv do not trim any whitespace
- * In OpenCSV, the default parser of `this", "is","a test"` returns `>>is<<` for the second token, having removed the leading whitespace.  In simplecsv, the second token is `>> is<<`.  (The `<<` chars are shown to demarcate the start and end of the string.)
+ * In OpenCSV, the default parser of `"this", "is","a test"` returns `>>is<<` for the second token, having removed the leading whitespace.  In simplecsv, the second token is `>> is<<`.  (The `<<` chars are shown to demarcate the start and end of the string.)
  * With simplecsv:
-   * use the `withTrimWhitespace(true)` setting
-   * or use `withStrictQuotes(true)` setting
+     * use the `withTrimWhitespace(true)` setting
+     * or use `withStrictQuotes(true)` setting
+   
 
 * simplecsv replaces the `ignoreLeadingWhitespace` option with `trimWhitespace`
 
-* The CsvParser no longer throws `IOException` (which makes no sense for a CSVParser that does no IO)
+* The CsvParser no longer throws `IOException` (which makes no sense for a parser that does no IO)
  * instead, malformed entries (around unbalanced quotes) now throw the unchecked IllegalArgumentException
  * so you can remove all those try/catch blocks catching IOException if you'd like
  * the CsvReader still throws IOExceptions for actual IO issues
 
 * Changed the behavior of whether to retain escapes
  * the OpenCSV library actively removes escape characters, like so:
-   * input: `"\"word\""`    output: `"word"`
-   * *Note*: these strings are printed as if they are in a text file, so the <tt>\</tt> character is literally in the string
- * but a Csv parser is not a regex library, it is simply parsing what comes between separators and giving you that value, so the simplecsv parser behavior is:
-   * input: `"\"word\""`    output: `\"word\"` (same except for leading quotes stripped)
+     * input: `"\"word\""`    output: `"word"`
+     * *Note*: these strings are printed as if they are in a text file, so the `\` character is literally in the string
+ * a Csv parser is not a regex library, it is simply parsing what comes between separators and giving you that value, so the simplecsv parser behavior is:
+     * input: `"\"word\""`    output: `\"word\"` (same except for leading quotes stripped)
  * simplecsv gives you the option of not retaining escape chars if desired; OpenCSV gave no such option
 
 
@@ -33,7 +34,7 @@
 The notion of escaping a quote with a quote comes from [RFC 4180](https://tools.ietf.org/html/rfc4180).  I believe that a significant reason that the OpenCSV parser code is so complex is due to following this rule.  The problem is that OpenCSV has to detect, differentiate and deal with three **different kinds** of quotes:
 
 1. opening and closing quotes, which are not considered part of the value and discarded
-2. quotes that are escapes
+2. quotes that are RFC 4180 escapes
 3. internal (non opening-closing) quotes that are not escapes
 
 Frankly, using a character to escape itself is simply flawed thinking and I find it unfortunate RFC 4180 ever saw the light of day.  I much prefer the programming language model: escape with backslashes.
@@ -47,8 +48,8 @@ RFC 4180 has a number of other tenets, some of which I find dubious.  I list bel
 
 Quoting from the [wikipedia entry](https://en.wikipedia.org/wiki/Comma-separated_values), tenets include:
 
-* CSV docs should DOS-style lines that end with (CR/LF) characters (optional for the last line)
- * `[simplecsv]`: **rejected**: all line endings are accepted and treated as whitespace
+* CSV docs should use DOS-style lines that end with (CR/LF) characters (optional for the last line)
+ * `[simplecsv]`: **rejected**: both Unix style and DOS styles lines endings are accepted and treated as whitespace
 
 * An optional header record is allowed (there is no sure way to detect whether it is present)
  * `[simplecsv]`: **accepted** by the CSVReader, irrelevant to the CSVParser.  As with OpenCSV, you specify how many header lines there are to skip
