@@ -138,9 +138,12 @@ public class CsvParser {
   }
   
   /**
-   * DOCUMENT ME
-   * @param ln
-   * @return
+   * Parses a single line of text (as defined by the presence of LF or CRLF chars)
+   * according to the parser parameters you've set up and returns each parsed token
+   * as an List of String.
+   * 
+   * @param ln Single line of text to parse
+   * @return parsed tokens as List<String>
    */
   public List<String> parse(String ln) {
     if (ln == null) { 
@@ -178,9 +181,12 @@ public class CsvParser {
   }
   
   /**
+   * Parses a single line of text (as defined by the presence of LF or CRLF chars)
+   * according to the parser parameters you've set up and returns each parsed token
+   * as an array of String.  Delegates to the parse method for the actual work.
    * 
-   * @param ln
-   * @return
+   * @param ln Single line of text
+   * @return parsed tokens as String[]
    */
   public String[] parseLine(String ln) {
     List<String> toks = parse(ln);
@@ -394,11 +400,18 @@ public class CsvParser {
   }
   
   /**
+   * Searches the StringBuilder passed in for white space on the left and
+   * right sides, starting at the left and right indices provided and returns
+   * a tuple (as int[2]) of the revised left and right indices after adjusting
+   * for spaces on the "edges" (starting from initial left and right indices).
+   * Does NOT mutate any state.
    * 
-   * @param sb
+   * @param sb StringBuilder to parse
    * @param left
    * @param right
-   * @return
+   * @return array of int, actual a two-entry tuple. [0] is the left index
+   * and [1] is the right index into the StringBuilder after "trimming" for
+   * spaces.
    */
   int[] idxTrimSpaces(final StringBuilder sb, int left, int right) {
     if (sb.length() < 2) {
@@ -440,9 +453,10 @@ public class CsvParser {
    * For speed reasons, this code assumes your left and right boundary
    * conditions are correct and that the StringBuilder is of size >= 1,
    * so make sure to do checks before calling this method.
+   * 
    * @param sb StringBuilder with at least one char (should not be null or size 0)
-   * @param left left boundary index of the current xxx
-   * @param right right boundary index of the current xxx 
+   * @param left left boundary index of the current StringBuilder
+   * @param right right boundary index of the current StringBuilder
    * @return idx one beyond the last white space char
    */
   int readLeftWhiteSpace(StringBuilder sb, int left, int right) {
@@ -460,8 +474,9 @@ public class CsvParser {
    * For speed reasons, this code assumes your left and right boundary
    * conditions are correct and that the StringBuilder is of size >= 1,
    * so make sure to do checks before calling this method.
-   * @param sb StringBuilder with at least one char (should not be null or size 0)
-   * @param right right boundary index of the current xxx 
+   * @param sb     StringBuilder with at least one char (should not be null or size 0)
+   * @param left   left boundary index of the current StringBuilder 
+   * @param right  right boundary index of the current StringBuilder 
    * @return idx one before the last white space char (reading from the right)
    */
   int readRightWhiteSpace(StringBuilder sb, int left, int right) {

@@ -68,8 +68,8 @@ public class CsvReader implements Closeable, Iterable<String[]> {
   /**
    * Constructs CsvReader with supplied separator and quote char.
    *
-   * @param reader    the reader to an underlying CSV source.
-   * @param line      the line number to skip for start reading
+   * @param reader     the reader to an underlying CSV source.
+   * @param csvParser  the parser to use
    */
   public CsvReader(Reader reader, CsvParser csvParser) {
     this(reader, DEFAULT_SKIP_LINES, csvParser);
