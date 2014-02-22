@@ -12,7 +12,7 @@
     <connection>scm:git:git@github.com:quux00/simplecsv.git</connection>
     <developerConnection>scm:git:git@github.com:quux00/simplecsv.git</developerConnection>
     <url>https://github.com/quux00/simplecsv</url>
-    <tag>simplecsv-1.1</tag>
+    <tag>simplecsv-1.0</tag>
   </scm>
   
   <parent>
