@@ -3,7 +3,7 @@
   <groupId>net.quux00.simplecsv</groupId>
   <artifactId>simplecsv</artifactId>
   <packaging>jar</packaging>
-  <version>1.0</version>
+  <version>1.0-SNAPSHOT</version>
   <name>simplecsv</name>
   <description>A simple library for parsing CSV in Java, based on the OpenCSV library</description>
   <url>http://github.com/midpeter444/simplecsv</url>
@@ -106,7 +106,6 @@
         <version>2.4.2</version>
         <configuration>
           <mavenExecutorId>forked-path</mavenExecutorId>
-          <!-- <arguments>-Dgpg.passphrase=${gpg.passphrase}</arguments> -->
         </configuration>
       </plugin>    
     </plugins>
