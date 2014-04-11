@@ -104,6 +104,27 @@ If AllowUnbalancedQuotes=true, you will get:
     >>one,"""<<  =>  [one,"]
 
 
+The key meaning of "allow unbalanced quotes" is that no Exception is thrown if the quotes are balanced when the parser gets to the end of the line/tuple.  The first quote that is seen is still considered the start of a quoted field.
+
+Here's an example (many thanks to [Patricia Goldweic](https://github.com/pgoldweic)):
+
+    CsvParser p = new CsvParserBuilder().
+      separator('|').
+      allowUnbalancedQuotes(true).
+      build();
+
+input:
+
+    blah|this is a long name for this" record|blah2
+
+The first `|` seen is interpreted as a field separator, but the second (between "record" and "blah2") is **not** because it is inside a quoted section.  It turns out that the quoted section doesn't have a close quote, but that is allowed since "allow unbalanced quotes" was set to true.
+
+Thus the expected output will be:
+
+    blah
+    this is a long name for this" record|blah2
+
+
 <br>
 **RetainEscapeChars=false**
 
