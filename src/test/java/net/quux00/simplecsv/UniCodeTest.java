@@ -32,7 +32,7 @@ public class UniCodeTest {
   public void canParseUnicode() throws IOException {
     csvParser = new CsvParser();
     String simpleString = COMPOUND_STRING;
-    String[] items = csvParser.parseLine(simpleString);
+    String[] items = csvParser.parseFirstRecord(simpleString);
     assertEquals(2, items.length);
     assertEquals(FIRST_STRING, items[0]);
     assertEquals(SECOND_STRING, items[1]);
