@@ -16,12 +16,14 @@ import java.util.Map;
  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  See the License for the specific language governing permissions and
  limitations under the License.
+ * @param <T>
  */
 
 public class HeaderColumnNameTranslateMappingStrategy<T> extends HeaderColumnNameMappingStrategy<T> {
   
-  private Map<String, String> columnMapping = new HashMap<String, String>();
+  private final Map<String, String> columnMapping = new HashMap<String, String>();
   
+  @Override
   protected String getColumnName(int col) {
     return col < header.length ? columnMapping.get(header[col].toUpperCase()) : null;
   }
