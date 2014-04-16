@@ -15,13 +15,16 @@ import java.util.List;
  * MapReduce scenario, no reader is needed, just a parser, so almost all of the
  * core logic of the library is in the CsvParser, not other classes.
  *
- * Options / configurations: - change the separator/delimiter char - change the
- * quote char, including specifying no quote char by setting it to
- * NULL_CHARACTER - change the escape char, including specifying no escape by
- * setting it to NULL_CHARACTER - turn on strictQuotes mode - turn on
- * trimWhitespace mode - turn on allowUnbalancedQuotes mode - turn off
- * retainEscapeChars mode - turn on alwaysQuoteOutput mode - turn on
- * alwaysAllowDoubleEscapedQuotes
+ * Options / configurations:
+ * - change the separator/delimiter char
+ * - change the quote char, including specifying no quote char by setting it to NULL_CHARACTER
+ * - change the escape char, including specifying no escape by setting it to NULL_CHARACTER
+ * - turn on strictQuotes mode
+ * - turn on trimWhitespace mode
+ * - turn on allowUnbalancedQuotes mode
+ * - turn off retainEscapeChars mode
+ * - turn on alwaysQuoteOutput mode
+ * - turn on alwaysAllowDoubleEscapedQuotes
  *
  * @ThreadSafe - Use came CsvParser in as many threads as you want.
  */
