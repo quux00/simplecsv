@@ -7,9 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The heart of the simplecsv library is the parser. If you want to construct
- * anything except the default parser, it is recommended that you use the
- * CsvParserBuilder.
+ * The heart of the simplecsv library is the parser.
+ * If you want to construct anything except the default parser, it is recommended
+ * that you use the CsvParserBuilder.
  *
  * The parser can be used standalone without the Reader. For example in a Hadoop
  * MapReduce scenario, no reader is needed, just a parser, so almost all of the
