@@ -22,6 +22,17 @@ public class HeaderColumnNameTranslateMappingStrategy<T> extends HeaderColumnNam
   
   private Map<String, String> columnMapping = new HashMap<String, String>();
   
+  public HeaderColumnNameTranslateMappingStrategy() {}
+  
+  /**
+   * Use this to set the type immediately rather than via the <code>setType</code> method
+   * 
+   * @param type
+   */
+  public HeaderColumnNameTranslateMappingStrategy(Class<T> type) {
+    super(type);
+  }
+  
   protected String getColumnName(int col) {
     return col < header.length ? columnMapping.get(header[col].toUpperCase()) : null;
   }

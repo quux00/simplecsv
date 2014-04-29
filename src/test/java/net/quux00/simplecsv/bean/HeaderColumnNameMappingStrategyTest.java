@@ -96,4 +96,20 @@ public class HeaderColumnNameMappingStrategyTest {
     assertEquals(strat.findDescriptor(0), strat.findDescriptor("name"));
     assertTrue(strat.matches("name", strat.findDescriptor("name")));
   }
+  
+  public void verifyColumnNamesSettingTypeInConstructor() throws IOException, IntrospectionException {
+    HeaderColumnNameMappingStrategy<MockBean> strat = 
+        new HeaderColumnNameMappingStrategy<MockBean>(MockBean.class);
+    assertNull(strat.getColumnName(0));
+    assertNull(strat.findDescriptor(0));
+
+    StringReader reader = new StringReader(TEST_STRING);
+
+    CsvReader csvReader = new CsvReader(reader);
+    strat.captureHeader(csvReader);
+
+    assertEquals("name", strat.getColumnName(0));
+    assertEquals(strat.findDescriptor(0), strat.findDescriptor("name"));
+    assertTrue(strat.matches("name", strat.findDescriptor("name")));
+  }
 }

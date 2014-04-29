@@ -31,6 +31,17 @@ public class HeaderColumnNameMappingStrategy<T> implements MappingStrategy<T> {
     protected Map<String, PropertyDescriptor> descriptorMap = null;
     protected Class<T> type;
 
+    public HeaderColumnNameMappingStrategy() {}
+    
+    /**
+     * Use this to set the type immediately rather than via the <code>setType</code> method
+     * 
+     * @param type
+     */
+    public HeaderColumnNameMappingStrategy(Class<T> type) {
+      setType(type);
+    }
+    
     public void captureHeader(CsvReader reader) throws IOException {
         header = reader.readNext();
     }

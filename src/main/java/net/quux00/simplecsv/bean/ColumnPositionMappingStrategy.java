@@ -22,6 +22,17 @@ import net.quux00.simplecsv.CsvReader;
 public class ColumnPositionMappingStrategy<T> extends HeaderColumnNameMappingStrategy<T> {
   private String[] columnMapping = new String[]{};
 
+  public ColumnPositionMappingStrategy() {}
+  
+  /**
+   * Use this to set the type immediately rather than via the <code>setType</code> method
+   * 
+   * @param type
+   */
+  public ColumnPositionMappingStrategy(Class<T> type) {
+    super(type);
+  }
+  
   public void captureHeader(CsvReader reader) throws IOException {
     //do nothing, first line is not header
   }
