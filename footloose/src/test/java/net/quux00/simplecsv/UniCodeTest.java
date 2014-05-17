@@ -1,6 +1,6 @@
 package net.quux00.simplecsv;
 
-import net.quux00.simplecsv.SimpleCsvParser;
+import net.quux00.simplecsv.CsvParser;
 import net.quux00.simplecsv.CsvReader;
 import net.quux00.simplecsv.CsvWriter;
 
@@ -17,7 +17,7 @@ import static org.junit.Assert.assertEquals;
 
 public class UniCodeTest {
   
-  SimpleCsvParser csvParser;
+  CsvParser csvParser;
   
   private static final String COMPOUND_STRING = "??,??";
   private static final String COMPOUND_STRING_WITH_QUOTES = "\"??\",\"??\"";
@@ -30,9 +30,9 @@ public class UniCodeTest {
 
   @Test
   public void canParseUnicode() throws IOException {
-    csvParser = new SimpleCsvParser();
+    csvParser = new CsvParser();
     String simpleString = COMPOUND_STRING;
-    String[] items = csvParser.parseLine(simpleString);
+    String[] items = csvParser.parseFirstRecord(simpleString);
     assertEquals(2, items.length);
     assertEquals(FIRST_STRING, items[0]);
     assertEquals(SECOND_STRING, items[1]);

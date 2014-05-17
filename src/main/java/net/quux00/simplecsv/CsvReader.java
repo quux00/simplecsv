@@ -25,21 +25,18 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * A very simple CSV reader released under a commercial-friendly license.
- *
- * @author Glen Smith
+ * A very CSV reader that can take any underlying parser that implements the 
+ * CsvParser interface.  Note that CsvReader does NOT implement the Reader interface,
+ * but instead must have a Reader supplied when it is constructed.
  */
 public class CsvReader implements Closeable, Iterable<String[]> {
 
   private BufferedReader br;
-
   private boolean hasNext = true;
+  private boolean linesSkiped;
 
   CsvParser parser;
-
   int skipLines;
-
-  private boolean linesSkiped;
 
   /**
    * The default line to start reading.
@@ -48,21 +45,23 @@ public class CsvReader implements Closeable, Iterable<String[]> {
 
   /**
    * Constructs CsvReader using a comma for the separator.
+   * Defaults to using a SimpleCsvParser.
    *
    * @param reader the reader to an underlying CSV source.
    */
   public CsvReader(Reader reader) {
-    this(reader, DEFAULT_SKIP_LINES, new CsvParser());
+    this(reader, DEFAULT_SKIP_LINES, new SimpleCsvParser());
   }
 
   /**
    * Constructs CsvReader with supplied separator and quote char.
+   * Defaults to using a SimpleCsvParser.
    *
    * @param reader    the reader to an underlying CSV source.
    * @param line      the line number to skip for start reading
    */
   public CsvReader(Reader reader, int line) {
-    this(reader, line, new CsvParser());
+    this(reader, line, new SimpleCsvParser());
   }
   
   /**
@@ -117,7 +116,7 @@ public class CsvReader implements Closeable, Iterable<String[]> {
    */
   public String[] readNext() throws IOException {
     String ln = getNextLine();
-    return parser.parseLine(ln);
+    return parser.parse(ln);
   }
 
   /**

@@ -1,8 +1,8 @@
 package net.quux00.simplecsv;
 
-import static net.quux00.simplecsv.CsvParser.DEFAULT_QUOTE_CHAR;
-import static net.quux00.simplecsv.CsvParser.DEFAULT_SEPARATOR;
-import static net.quux00.simplecsv.CsvParser.NULL_CHARACTER;
+import static net.quux00.simplecsv.SimpleCsvParser.DEFAULT_QUOTE_CHAR;
+import static net.quux00.simplecsv.SimpleCsvParser.DEFAULT_SEPARATOR;
+import static net.quux00.simplecsv.SimpleCsvParser.NULL_CHARACTER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -15,7 +15,7 @@ import net.quux00.simplecsv.CsvParserBuilder;
 import org.junit.Before;
 import org.junit.Test;
 
-public class CsvParserTest {
+public class SimpleCsvParserTest {
 
   static String longEntry1 = "aaaaaaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbbb cccccccccccccccccccccccccccccccccccccc ddddddddddddddddddddddddddddd efg 123456789012345678901234567890";
   static String longEntry2 = "Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of \"de Finibus Bonorum et Malorum\" (The Extremes of Good and Evil) by Cicero, written in 45 BC. This book is a treatise on the theory of ethics, very popular during the Renaissance. The first line of Lorem Ipsum, \"Lorem ipsum dolor sit amet..\", comes from a line in section 1.10.32.";
@@ -25,7 +25,7 @@ public class CsvParserTest {
   
   @Before
   public void setUp() {
-    parser = new CsvParser();
+    parser = new SimpleCsvParser();
   }
   
   /* --------------------------------- */  
@@ -34,7 +34,7 @@ public class CsvParserTest {
 
   @Test(expected = UnsupportedOperationException.class)
   public void quoteAndEscapeCannotBeTheSameViaParserCtor() {
-    new CsvParser(DEFAULT_SEPARATOR, DEFAULT_QUOTE_CHAR, DEFAULT_QUOTE_CHAR,
+    new SimpleCsvParser(DEFAULT_SEPARATOR, DEFAULT_QUOTE_CHAR, DEFAULT_QUOTE_CHAR,
         false, false, false, false, true, false);
   }
   
@@ -60,7 +60,7 @@ public class CsvParserTest {
   
   @Test(expected = UnsupportedOperationException.class)
   public void nullQuoteCharAndAlwaysQuoteOutputAreIncompatible() {
-    new CsvParserBuilder().quoteChar(CsvParser.NULL_CHARACTER).alwaysQuoteOutput(true).build();
+    new CsvParserBuilder().quoteChar(SimpleCsvParser.NULL_CHARACTER).alwaysQuoteOutput(true).build();
   }
 
   /* -------------------------------------------- */  
@@ -68,8 +68,8 @@ public class CsvParserTest {
   /* -------------------------------------------- */
   
   @Test
-  public void testParseLine() {
-    String toks[] = parser.parseLine("This, is, a, test.");
+  public void testparse() {
+    String toks[] = parser.parse("This, is, a, test.");
     assertEquals(4, toks.length);
     assertEquals("This", toks[0]);
     assertEquals(" is", toks[1]);
@@ -80,7 +80,7 @@ public class CsvParserTest {
   
   @Test
   public void parseSimpleQuotedString() {
-    String[] toks = parser.parseLine("\"a\",\"b\",\"c\"");
+    String[] toks = parser.parse("\"a\",\"b\",\"c\"");
     assertEquals(3, toks.length);
     assertEquals("a", toks[0]);
     assertEquals("b", toks[1]);
@@ -89,7 +89,7 @@ public class CsvParserTest {
   
   @Test
   public void parseSimpleQuotedStringWithSpaces() {
-    String[] toks = parser.parseLine(" \"a\" , \"b\" , \"c\" ");
+    String[] toks = parser.parse(" \"a\" , \"b\" , \"c\" ");
     assertEquals(3, toks.length);
     assertEquals(" a ", toks[0]);
     assertEquals(" b ", toks[1]);
@@ -98,14 +98,14 @@ public class CsvParserTest {
   
   @Test
   public void testParsedLineWithInternalQuota() {
-    String[] toks = parser.parseLine("a,123\"4\"567,c");
+    String[] toks = parser.parse("a,123\"4\"567,c");
     assertEquals(3, toks.length);
     assertEquals("123\"4\"567", toks[1]);
   }
   
   @Test
   public void parseQuotedStringWithCommas() {
-    String[] toks = parser.parseLine("a,\"b,b,b\",c");
+    String[] toks = parser.parse("a,\"b,b,b\",c");
     assertEquals(3, toks.length);
     assertEquals("a", toks[0]);
     assertEquals("b,b,b", toks[1]);
@@ -114,7 +114,7 @@ public class CsvParserTest {
   
   @Test
   public void parseEmptyElements() {
-    String[] toks = parser.parseLine(",,");
+    String[] toks = parser.parse(",,");
     assertEquals(3, toks.length);
     assertEquals("", toks[0]);
     assertEquals("", toks[1]);
@@ -127,7 +127,7 @@ public class CsvParserTest {
   @Test
   public void testRFC4180Examples() {
     String text = "1997,Ford,E350,\"Super, \"\"luxurious\"\" truck\"";
-    String[] toks = parser.parseLine(text);
+    String[] toks = parser.parse(text);
 
     assertEquals(4, toks.length);
     assertEquals("1997", toks[0]);
@@ -139,7 +139,7 @@ public class CsvParserTest {
   @Test
   public void testEscapedDoubleQuoteAsDataElement() {
     //                                        "test","this,test,is,good","\"test\",\"quote\""
-    String[] toks = parser.parseLine("\"test\",\"this,test,is,good\",\"\\\"test\\\"\",\"\\\"quote\\\"\""); 
+    String[] toks = parser.parse("\"test\",\"this,test,is,good\",\"\\\"test\\\"\",\"\\\"quote\\\"\""); 
 
     assertEquals(4, toks.length);
     assertEquals("test", toks[0]);
@@ -150,7 +150,7 @@ public class CsvParserTest {
 
   @Test
   public void parseMultipleQuotes() {
-    String[] toks = parser.parseLine("\"\"\"\"\"\",\"test\"\n"); // """""","test"  representing:  "", test
+    String[] toks = parser.parse("\"\"\"\"\"\",\"test\"\n"); // """""","test"  representing:  "", test
     assertEquals(2, toks.length);
     assertEquals("\"\"\"\"", toks[0]);  // check the tricky situation
     assertEquals("test\n", toks[1]);    // make sure we didn't ruin the next field..
@@ -158,7 +158,7 @@ public class CsvParserTest {
   
   @Test
   public void parseTrickyString() {
-    String[] toks = parser.parseLine("\"a\nb\",b,\"\nd\",e\n");
+    String[] toks = parser.parse("\"a\nb\",b,\"\nd\",e\n");
     assertEquals(4, toks.length);
     assertEquals("a\nb", toks[0]);
     assertEquals("b", toks[1]);
@@ -169,7 +169,7 @@ public class CsvParserTest {
   @Test
   public void testAMultiLineInsideQuotes() {
     String text = "Small test,\"This is a test across \ntwo lines.\"";
-    String[] toks = parser.parseLine(text);
+    String[] toks = parser.parse(text);
     assertEquals(2, toks.length);
     assertEquals("Small test", toks[0]);
     assertEquals("This is a test across \ntwo lines.", toks[1]);
@@ -185,7 +185,7 @@ public class CsvParserTest {
    */
   @Test
   public void testIssue2726363() {
-    String[] toks = parser.parseLine("\"804503689\",\"London\",\"\"London\"shop\",\"address\",\"116.453182\",\"39.918884\"");
+    String[] toks = parser.parse("\"804503689\",\"London\",\"\"London\"shop\",\"address\",\"116.453182\",\"39.918884\"");
 
     assertEquals(6, toks.length);
     assertEquals("804503689", toks[0]);
@@ -198,18 +198,18 @@ public class CsvParserTest {
   
   @Test(expected = IllegalArgumentException.class)
   public void anExceptionThrownifStringEndsInsideAQuotedString() {
-    parser.parseLine("This,is a \"bad line to parse.");
+    parser.parse("This,is a \"bad line to parse.");
   }
   
   @Test
   public void returnNullWhenNullPassedIn() {
-    String[] toks = parser.parseLine(null);
+    String[] toks = parser.parse(null);
     assertNull(toks);
   }
   
   @Test
   public void testInternalQuotes() {
-    String[] toks = parser.parseLine("a , \"b\",1000");
+    String[] toks = parser.parse("a , \"b\",1000");
     assertEquals(3, toks.length);
     assertEquals("a ", toks[0]);
     assertEquals(" b", toks[1]);
@@ -218,7 +218,7 @@ public class CsvParserTest {
   
   @Test
   public void testInternalQuotedQuotes() {
-    String[] toks = parser.parseLine("a , \"\\\"\",1000");  // a, "\"",1000
+    String[] toks = parser.parse("a , \"\\\"\",1000");  // a, "\"",1000
     assertEquals(3, toks.length);
     assertEquals("a ", toks[0]);
     assertEquals(" \\\"", toks[1]);
@@ -228,7 +228,7 @@ public class CsvParserTest {
   
   @Test
   public void testADoubleQuoteAsDataElement() {
-    String[] toks = parser.parseLine("a,\"\"\"\",c");  // a,"""",c
+    String[] toks = parser.parse("a,\"\"\"\",c");  // a,"""",c
 
     assertEquals(3, toks.length);
     assertEquals("a", toks[0]);
@@ -238,7 +238,7 @@ public class CsvParserTest {
   
   @Test
   public void testIssueThorny1a() {
-    String[] toks = parser.parseLine("a , \"\",1000");  // a, "",1000
+    String[] toks = parser.parse("a , \"\",1000");  // a, "",1000
     
     assertEquals(3, toks.length);
     assertEquals("a ", toks[0]);
@@ -248,7 +248,7 @@ public class CsvParserTest {
   
   @Test
   public void testIssueThorny1b() {
-    String[] toks = parser.parseLine("a , \"\" ,1000");  // a, "" ,1000
+    String[] toks = parser.parse("a , \"\" ,1000");  // a, "" ,1000
     assertEquals(3, toks.length);
     assertEquals("a ", toks[0]);
     assertEquals("  ", toks[1]);
@@ -257,7 +257,7 @@ public class CsvParserTest {
   
   @Test
   public void testIssueThorny1c() {
-    String[] toks = parser.parseLine("a ,Mike \"The Situation\" Sorrentino,1000");
+    String[] toks = parser.parse("a ,Mike \"The Situation\" Sorrentino,1000");
     assertEquals(3, toks.length);
     assertEquals("a ", toks[0]);
     assertEquals("Mike \"The Situation\" Sorrentino", toks[1]);
@@ -266,21 +266,21 @@ public class CsvParserTest {
   
   @Test
   public void testIssueThorny1d() {
-    String[] toks = parser.parseLine("a,\" \"hello\" \",c");
+    String[] toks = parser.parse("a,\" \"hello\" \",c");
     assertEquals(3, toks.length);
     assertEquals("a", toks[0]);
     assertEquals(" \"hello\" ", toks[1]);
     assertEquals("c", toks[2]);
     
     CsvParser p = new CsvParserBuilder().quoteChar('\'').build();
-    toks = p.parseLine("a,' 'hello' ',c");
+    toks = p.parse("a,' 'hello' ',c");
     assertEquals(3, toks.length);
     assertEquals("a", toks[0]);
     assertEquals(" 'hello' ", toks[1]);
     assertEquals("c", toks[2]);
 
     p = new CsvParserBuilder().quoteChar('\'').trimWhitespace(true).build();
-    toks = p.parseLine("a,' 'hello' ',c");
+    toks = p.parse("a,' 'hello' ',c");
     assertEquals(3, toks.length);
     assertEquals("a", toks[0]);
     assertEquals("'hello'", toks[1]);
@@ -289,7 +289,7 @@ public class CsvParserTest {
   
   @Test
   public void whitespaceBeforeEscape() {
-    String[] toks = parser.parseLine("\"this\", \"is\",\"a test\""); //"this", "is","a test"
+    String[] toks = parser.parse("\"this\", \"is\",\"a test\""); //"this", "is","a test"
     assertEquals("this", toks[0]);
     assertEquals(" is", toks[1]);
     assertEquals("a test", toks[2]);
@@ -297,7 +297,7 @@ public class CsvParserTest {
   
   @Test
   public void testFourSingleQuotes() {
-    String[] toks = parser.parseLine("a,'\'\'', c ");
+    String[] toks = parser.parse("a,'\'\'', c ");
     assertEquals(3, toks.length);
     assertEquals("a", toks[0]);
     assertEquals("''''", toks[1]);
@@ -308,7 +308,7 @@ public class CsvParserTest {
   
   @Test
   public void testLongTokens() {
-    String[] toks = parser.parseLine(longLine);
+    String[] toks = parser.parse(longLine);
     assertEquals(3, toks.length);
     assertEquals(longEntry1, toks[0]);
     assertEquals("", toks[1]);
@@ -321,9 +321,9 @@ public class CsvParserTest {
   /* -------------------------------------------- */
   
   @Test
-  public void testParseLinePipeDelimited() {
+  public void testparsePipeDelimited() {
     CsvParser p = new CsvParserBuilder().separator('|').build();
-    String toks[] = p.parseLine("This|is|a|test.");
+    String toks[] = p.parse("This|is|a|test.");
     assertEquals(4, toks.length);
     assertEquals("This", toks[0]);
     assertEquals("is", toks[1]);
@@ -336,7 +336,7 @@ public class CsvParserTest {
   public void parseQuotedStringWithDefinedSeperator() {
     CsvParser p = new CsvParserBuilder().separator(':').build();
 
-    String[] toks = p.parseLine("a:\"b:b:b\":c");
+    String[] toks = p.parse("a:\"b:b:b\":c");
     assertEquals(3, toks.length);
     assertEquals("a", toks[0]);
     assertEquals("b:b:b", toks[1]);
@@ -348,7 +348,7 @@ public class CsvParserTest {
   public void parseQuotedStringWithDefinedSeparatorAndQuote() {
     CsvParser p = new CsvParserBuilder().separator(':').quoteChar('\'').build();
 
-    String[] toks = p.parseLine("a:'b:b:b':c");
+    String[] toks = p.parse("a:'b:b:b':c");
     assertEquals(3, toks.length);
     assertEquals("a", toks[0]);
     assertEquals("b:b:b", toks[1]);
@@ -359,7 +359,7 @@ public class CsvParserTest {
   @Test  // issue from the old opencsv sourceforge project
   public void testIssue2859181() {
     CsvParser p = new CsvParserBuilder().separator(';').build();
-    String[] toks = p.parseLine("field1;\\=field2;\"\"\"field3\"\"\""); // field1;\=field2;"""field3"""
+    String[] toks = p.parse("field1;\\=field2;\"\"\"field3\"\"\""); // field1;\=field2;"""field3"""
 
     assertEquals(3, toks.length);
     assertEquals("field1", toks[0]);
@@ -371,12 +371,12 @@ public class CsvParserTest {
   public void testIssueSfBugs93() {
     CsvParser p = new CsvParserBuilder().separator(';').build();
 
-    String[] toks = p.parseLine("\"\";1");
+    String[] toks = p.parse("\"\";1");
     assertEquals(2, toks.length);
     assertEquals("", toks[0]);
     assertEquals("1", toks[1]);
 
-    toks = p.parseLine("\"\";2");
+    toks = p.parse("\"\";2");
     assertEquals(2, toks.length);
     assertEquals("", toks[0]);
     assertEquals("2", toks[1]);
@@ -388,7 +388,7 @@ public class CsvParserTest {
       quoteChar('\'').
       build();
 
-    String[] toks = p.parseLine("a,'\'\'',c");
+    String[] toks = p.parse("a,'\'\'',c");
     assertEquals(3, toks.length);
     assertEquals("a", toks[0]);
     assertEquals("\'\'", toks[1]);
@@ -410,12 +410,12 @@ public class CsvParserTest {
     // difference from OpenCSV: cleaner soln is to set quotechar to NULL_CHAR
     CsvParser p = new CsvParserBuilder().
         separator(';').
-        quoteChar(CsvParser.NULL_CHARACTER).
+        quoteChar(SimpleCsvParser.NULL_CHARACTER).
         allowUnbalancedQuotes(true).
         build();
     String testString = "RPO;2012;P; ; ; ;SDX;ACCESSORY WHEEL, 16\", ALUMINUM, DESIGN 1";
 
-    String[] toks = p.parseLine(testString);
+    String[] toks = p.parse(testString);
     assertEquals(8, toks.length);
     assertEquals("RPO", toks[0]);
     assertEquals("2012", toks[1]);
@@ -429,11 +429,11 @@ public class CsvParserTest {
     // you don't need "allowUnbalancedQuotes" if you set quotechar to be the NULL_CHAR
     p = new CsvParserBuilder().
         separator(';').
-        quoteChar(CsvParser.NULL_CHARACTER).
+        quoteChar(SimpleCsvParser.NULL_CHARACTER).
         build();
     testString = "RPO;2012;P; ; ; ;SDX;ACCESSORY WHEEL, 16\", ALUMINUM, DESIGN 1";
 
-    toks = p.parseLine(testString);
+    toks = p.parse(testString);
     assertEquals(8, toks.length);
     assertEquals("RPO", toks[0]);
     assertEquals("2012", toks[1]);
@@ -449,12 +449,12 @@ public class CsvParserTest {
     // NPEs or otherwise freak out
     p = new CsvParserBuilder().
         separator(';').
-        quoteChar(CsvParser.NULL_CHARACTER).
+        quoteChar(SimpleCsvParser.NULL_CHARACTER).
         retainOuterQuotes(true).
         build();
     testString = "RPO;2012;P; ; ; ;SDX;ACCESSORY WHEEL, 16\", ALUMINUM, DESIGN 1";
 
-    toks = p.parseLine(testString);
+    toks = p.parse(testString);
     assertEquals(8, toks.length);
     assertEquals("RPO", toks[0]);
     assertEquals("2012", toks[1]);
@@ -476,7 +476,7 @@ public class CsvParserTest {
         build();
 
     String text = "865,0,'AmeriKKKa\\'s_Most_Wanted','',294,0,0,0.734338696798625,'20081002052147',242429208,18448";
-    String[] toks = p.parseLine(text);
+    String[] toks = p.parse(text);
 
     assertEquals(11, toks.length);
     assertEquals("865", toks[0]);
@@ -496,7 +496,7 @@ public class CsvParserTest {
         build();
 
     String text = "\\x0\"\", two, \"three,four\"";
-    String[] toks = p.parseLine(text);
+    String[] toks = p.parse(text);
 
     assertEquals(3, toks.length);
     assertEquals("\\x0\"\"", toks[0]);
@@ -513,7 +513,7 @@ public class CsvParserTest {
   public void parseSimpleQuotedStringWithSpacesWithstrictQuotes() {
     CsvParser p = new CsvParserBuilder().strictQuotes(true).build();
     
-    String[] toks = p.parseLine(" \"a\" , \"b\" , \"c\" ");
+    String[] toks = p.parse(" \"a\" , \"b\" , \"c\" ");
     assertEquals(3, toks.length);
     assertEquals("a", toks[0]);
     assertEquals("b", toks[1]);
@@ -525,7 +525,7 @@ public class CsvParserTest {
     CsvParser p = new CsvParserBuilder().strictQuotes(true).build();
     String testString = "\"a\",\"b\",\"c\"";
 
-    String[] toks = p.parseLine(testString);
+    String[] toks = p.parse(testString);
     assertEquals(3, toks.length);
     assertEquals("a", toks[0]);
     assertEquals("b", toks[1]);
@@ -538,7 +538,7 @@ public class CsvParserTest {
 
     String testString = " \t      \"a\",\"b\"      \t       ,   \"c\"   ";
 
-    String[] toks = p.parseLine(testString);
+    String[] toks = p.parse(testString);
     assertEquals(3, toks.length);
     assertEquals("\"a\"", toks[0]);
     assertEquals("\"b\"", toks[1]);
@@ -548,7 +548,7 @@ public class CsvParserTest {
   @Test
   public void spacesAtEndOfQuotedStringDoNotCountIfStrictQuotesIsTrue() {
     CsvParser p = new CsvParserBuilder().strictQuotes(true).build();
-    String[] toks = p.parseLine("\"Line with\", \"spaces at end\"  ");
+    String[] toks = p.parse("\"Line with\", \"spaces at end\"  ");
     assertEquals(2, toks.length);
     assertEquals("Line with", toks[0]);
     assertEquals("spaces at end", toks[1]);
@@ -559,7 +559,7 @@ public class CsvParserTest {
     CsvParser p = new CsvParserBuilder().strictQuotes(true).build();
     String testString = "abc',!@#\",\\\"\"   xyz,";
 
-    String[] toks = p.parseLine(testString);
+    String[] toks = p.parse(testString);
     assertEquals(3, toks.length);
     assertEquals("", toks[0]);
     assertEquals(",\\\"", toks[1]);
@@ -570,7 +570,7 @@ public class CsvParserTest {
   public void testWhitespaceBeforeEscapeWithStrictQuotes() {
     CsvParser p = new CsvParserBuilder().strictQuotes(true).build();
 
-    String[] toks = p.parseLine("\"this\", \"is\",\"a test\""); //"this", "is","a test"
+    String[] toks = p.parse("\"this\", \"is\",\"a test\""); //"this", "is","a test"
     assertEquals("this", toks[0]);
     assertEquals("is", toks[1]);
     assertEquals("a test", toks[2]);
@@ -580,7 +580,7 @@ public class CsvParserTest {
   public void testSomeFieldsWithoutQuotesWithStrictQuotes() {
     CsvParser p = new CsvParserBuilder().strictQuotes(true).build();
 
-    String[] toks = p.parseLine("this, \"is\",\"a test\" xyz");
+    String[] toks = p.parse("this, \"is\",\"a test\" xyz");
     assertEquals("", toks[0]);
     assertEquals("is", toks[1]);
     assertEquals("a test", toks[2]);
@@ -594,7 +594,7 @@ public class CsvParserTest {
   @Test
   public void parseSimpleQuotedStringAllowUnbalancedQuotes() {
     CsvParser p = new CsvParserBuilder().allowUnbalancedQuotes(true).build();
-    String[] toks = p.parseLine("\"\"a\"\",\"b\",\"c\"");
+    String[] toks = p.parse("\"\"a\"\",\"b\",\"c\"");
     assertEquals(3, toks.length);
     assertEquals("\"a\"", toks[0]);
     assertEquals("b", toks[1]);
@@ -604,7 +604,7 @@ public class CsvParserTest {
   @Test
   public void testADoubleQuoteAsDataElementWithAllowUnbalancedQuotes() {
     CsvParser p = new CsvParserBuilder().allowUnbalancedQuotes(true).build();
-    String[] toks = p.parseLine("a,\"\"\"\",c");  // a,"""",c
+    String[] toks = p.parse("a,\"\"\"\",c");  // a,"""",c
 
     assertEquals(3, toks.length);
     assertEquals("a", toks[0]);
@@ -615,7 +615,7 @@ public class CsvParserTest {
   @Test
   public void testIssueThorny1WithAllowUnbalancedQuotes() {
     CsvParser p = new CsvParserBuilder().allowUnbalancedQuotes(true).build();
-    String[] toks = p.parseLine("a , \"\",1000");
+    String[] toks = p.parse("a , \"\",1000");
     assertEquals(3, toks.length);
     assertEquals("a ", toks[0]);
     assertEquals(" ", toks[1]);
@@ -627,7 +627,7 @@ public class CsvParserTest {
   public void whitespaceBeforeEscapeWithAllowUnbalancedQuotes() {
     CsvParser p = new CsvParserBuilder().allowUnbalancedQuotes(true).build();
 
-    String[] toks = p.parseLine("\"this\", \"is\",\"a test\""); //"this", "is","a test"
+    String[] toks = p.parse("\"this\", \"is\",\"a test\""); //"this", "is","a test"
     assertEquals("this", toks[0]);
     assertEquals(" is", toks[1]);
     assertEquals("a test", toks[2]);
@@ -641,9 +641,9 @@ public class CsvParserTest {
   /* ------------------------------------- */  
   
   @Test
-  public void testParseLineWithRetainQuotes() {
+  public void testparseWithRetainQuotes() {
     CsvParser p = new CsvParserBuilder().retainOuterQuotes(true).build();
-    String toks[] = p.parseLine("This, is,\"a\", test.");
+    String toks[] = p.parse("This, is,\"a\", test.");
     assertEquals(4, toks.length);
     assertEquals("This", toks[0]);
     assertEquals(" is", toks[1]);
@@ -654,7 +654,7 @@ public class CsvParserTest {
   @Test
   public void parseQuotedStringWithCommasWithRetainQuotes() {
     CsvParser p = new CsvParserBuilder().retainOuterQuotes(true).build();
-    String[] toks = p.parseLine("a,\"b,b,b\",c");
+    String[] toks = p.parse("a,\"b,b,b\",c");
     assertEquals(3, toks.length);
     assertEquals("a", toks[0]);
     assertEquals("\"b,b,b\"", toks[1]);
@@ -667,7 +667,7 @@ public class CsvParserTest {
     CsvParser p = new CsvParserBuilder().separator(':').
         retainOuterQuotes(true).build();
 
-    String[] toks = p.parseLine("a:\"b:b:b\":c");
+    String[] toks = p.parse("a:\"b:b:b\":c");
     assertEquals(3, toks.length);
     assertEquals("a", toks[0]);
     assertEquals("\"b:b:b\"", toks[1]);
@@ -681,7 +681,7 @@ public class CsvParserTest {
         retainOuterQuotes(true).
         build();
 
-    String[] toks = p.parseLine("a:'b:b:b':c");
+    String[] toks = p.parse("a:'b:b:b':c");
     assertEquals(3, toks.length);
     assertEquals("a", toks[0]);
     assertEquals("'b:b:b'", toks[1]);
@@ -691,7 +691,7 @@ public class CsvParserTest {
   @Test
   public void parseEmptyElementsWithRetainQuotes() {
     CsvParser p = new CsvParserBuilder().retainOuterQuotes(true).build();
-    String[] toks = p.parseLine(",,");
+    String[] toks = p.parse(",,");
     assertEquals(3, toks.length);
     assertEquals("", toks[0]);
     assertEquals("", toks[1]);
@@ -702,7 +702,7 @@ public class CsvParserTest {
   public void testADoubleQuoteAsDataElementWithRetainQuotes() {
     CsvParser p = new CsvParserBuilder().retainOuterQuotes(true).build();
 
-    String[] toks = p.parseLine("a,\"\"\"\",c");// a,"""",c
+    String[] toks = p.parse("a,\"\"\"\",c");// a,"""",c
 
     assertEquals(3, toks.length);
     assertEquals("a", toks[0]);
@@ -714,7 +714,7 @@ public class CsvParserTest {
   public void testEscapedDoubleQuoteAsDataElementWithRetainQuotes() {
     CsvParser p = new CsvParserBuilder().retainOuterQuotes(true).build();
 
-    String[] toks = p.parseLine("\"test\",\"this,test,is,good\",\"\\\"test\\\"\",\"\\\"quote\\\"\""); // "test","this,test,is,good","\"test\",\"quote\""
+    String[] toks = p.parse("\"test\",\"this,test,is,good\",\"\\\"test\\\"\",\"\\\"quote\\\"\""); // "test","this,test,is,good","\"test\",\"quote\""
 
     assertEquals(4, toks.length);
     assertEquals("\"test\"", toks[0]);
@@ -728,7 +728,7 @@ public class CsvParserTest {
   public void testEscapedDoubleQuoteAsDataElementPipeDelimitedWithRetainQuotes() {
     CsvParser p = new CsvParserBuilder().separator('|').retainOuterQuotes(true).build();
     //                            "test"|"this|test|is|good"|"\"test\"|\"quote\""
-    String[] toks = p.parseLine("\"test\"|\"this,test,is,good\"|\"\\\"test\\\"\"|\"\\\"quote\\\"\""); 
+    String[] toks = p.parse("\"test\"|\"this,test,is,good\"|\"\\\"test\\\"\"|\"\\\"quote\\\"\""); 
 
     assertEquals(4, toks.length);
     assertEquals("\"test\"", toks[0]);
@@ -740,7 +740,7 @@ public class CsvParserTest {
   @Test
   public void parseMultipleQuotesWithRetainQuotes() {
     CsvParser p = new CsvParserBuilder().retainOuterQuotes(true).build();
-    String[] toks = p.parseLine("\"\"\"\"\"\",\"test\"\n"); // """""","test"  representing:  "", test
+    String[] toks = p.parse("\"\"\"\"\"\",\"test\"\n"); // """""","test"  representing:  "", test
     assertEquals("\"\"\"\"\"\"", toks[0]); // check the tricky situation
     assertEquals("\"test\"\n", toks[1]);   // make sure we didn't ruin the next field..
     assertEquals(2, toks.length);
@@ -749,7 +749,7 @@ public class CsvParserTest {
   @Test
   public void parseTrickyStringWithRetainQuotes() {
     CsvParser p = new CsvParserBuilder().retainOuterQuotes(true).build();
-    String[] toks = p.parseLine("\"a\nb\",b,\"\nd\",e\n");
+    String[] toks = p.parse("\"a\nb\",b,\"\nd\",e\n");
     assertEquals(4, toks.length);
     assertEquals("\"a\nb\"", toks[0]);
     assertEquals("b", toks[1]);
@@ -762,7 +762,7 @@ public class CsvParserTest {
     CsvParser p = new CsvParserBuilder().retainOuterQuotes(true).build();
 
     String text = "Small test,\"This is a test across \ntwo lines.\"";
-    String[] toks = p.parseLine(text);
+    String[] toks = p.parse(text);
     assertEquals(2, toks.length);
     assertEquals("Small test", toks[0]);
     assertEquals("\"This is a test across \ntwo lines.\"", toks[1]);
@@ -773,7 +773,7 @@ public class CsvParserTest {
     CsvParser p = new CsvParserBuilder().retainOuterQuotes(true).strictQuotes(true).build();
     String testString = "\"a\",\"b\",\"c\"";
 
-    String[] toks = p.parseLine(testString);
+    String[] toks = p.parse(testString);
     assertEquals(3, toks.length);
     assertEquals("\"a\"", toks[0]);
     assertEquals("\"b\"", toks[1]);
@@ -787,7 +787,7 @@ public class CsvParserTest {
         retainOuterQuotes(true).
         build();
 
-    String[] toks = p.parseLine("field1;\\=field2;\"\"\"field3\"\"\""); // field1;\=field2;"""field3"""
+    String[] toks = p.parse("field1;\\=field2;\"\"\"field3\"\"\""); // field1;\=field2;"""field3"""
 
     assertEquals(3, toks.length);
     assertEquals("field1", toks[0]);
@@ -798,7 +798,7 @@ public class CsvParserTest {
   @Test(expected = IllegalArgumentException.class)
   public void anExceptionThrownifStringEndsInsideAQuotedStringWithRetainQuotes() {
     CsvParser p = new CsvParserBuilder().retainOuterQuotes(true).build();
-    p.parseLine("This,is a \"bad line to parse.");
+    p.parse("This,is a \"bad line to parse.");
   }
   
   @Test
@@ -806,7 +806,7 @@ public class CsvParserTest {
     CsvParser p = new CsvParserBuilder().
         retainOuterQuotes(true).
         build();
-    String[] toks = p.parseLine("a , \"\",1000");
+    String[] toks = p.parse("a , \"\",1000");
     assertEquals(3, toks.length);
     assertEquals("a ", toks[0]);
     assertEquals(" \"\"", toks[1]);
@@ -817,7 +817,7 @@ public class CsvParserTest {
   public void whitespaceBeforeEscapeWithRetainQuotes() {
     CsvParser p = new CsvParserBuilder().retainOuterQuotes(true).build();
 
-    String[] toks = p.parseLine("\"this\", \"is\",\"a test\""); //"this", "is","a test"
+    String[] toks = p.parse("\"this\", \"is\",\"a test\""); //"this", "is","a test"
     assertEquals("\"this\"", toks[0]);
     assertEquals(" \"is\"", toks[1]);
     assertEquals("\"a test\"", toks[2]);
@@ -829,7 +829,7 @@ public class CsvParserTest {
       separator(',').
       retainOuterQuotes(true).
       build();
-    String[] toks = p.parseLine("a,'\'\'',c");
+    String[] toks = p.parse("a,'\'\'',c");
     assertEquals(3, toks.length);
     assertEquals("a", toks[0]);
     assertEquals("''''", toks[1]);
@@ -840,7 +840,7 @@ public class CsvParserTest {
   public void testLongTokensRetainOuterQuotes() {
     CsvParser p = new CsvParserBuilder().retainOuterQuotes(true).build();
 
-    String[] toks = p.parseLine(longLine);
+    String[] toks = p.parse(longLine);
     assertEquals(3, toks.length);
     assertEquals(longEntry1, toks[0]);
     assertEquals("", toks[1]);
@@ -856,7 +856,7 @@ public class CsvParserTest {
   public void testEscapedDoubleQuoteAsDataElementWithRetainEscapeCharsFalse() {
     CsvParser p = new CsvParserBuilder().retainEscapeChars(false).build();
     //                                        "test","this,test,is,good","\"test\",\"quote\""
-    String[] toks = p.parseLine("\"test\",\"this,test,is,good\",\"\\\"test\\\"\",\"\\\"quote\\\"\""); 
+    String[] toks = p.parse("\"test\",\"this,test,is,good\",\"\\\"test\\\"\",\"\\\"quote\\\"\""); 
 
     assertEquals(4, toks.length);
     assertEquals("test", toks[0]);
@@ -868,7 +868,7 @@ public class CsvParserTest {
   @Test  // issue from the old opencsv sourceforge project
   public void testIssue2859181WithRetainEscapeCharsFalse() {
     CsvParser p = new CsvParserBuilder().separator(';').retainEscapeChars(false).build();
-    String[] toks = p.parseLine("field1;\\=field2;\"\"\"field3\"\"\""); // field1;\=field2;"""field3"""
+    String[] toks = p.parse("field1;\\=field2;\"\"\"field3\"\"\""); // field1;\=field2;"""field3"""
 
     assertEquals(3, toks.length);
     assertEquals("field1", toks[0]);
@@ -880,7 +880,7 @@ public class CsvParserTest {
   @Test
   public void testEscapesBeforeNewLinesEscapeCharsFalse() {
     CsvParser p = new CsvParserBuilder().retainEscapeChars(false).build();
-    String[] toks = p.parseLine("\"a\\nb\",b,\"\\nd\",e\n");
+    String[] toks = p.parse("\"a\\nb\",b,\"\\nd\",e\n");
     
     assertEquals(4, toks.length);
     assertEquals("a\nb", toks[0]);
@@ -896,10 +896,10 @@ public class CsvParserTest {
   /* ---------------------------------- */  
   
   @Test
-  public void testParseLineAlwaysQuoteOutput() {
+  public void testparseAlwaysQuoteOutput() {
     CsvParser p = new CsvParserBuilder().alwaysQuoteOutput(true).build();
     
-    String toks[] = p.parseLine("This, is, a, test.");
+    String toks[] = p.parse("This, is, a, test.");
     assertEquals(4, toks.length);
     assertEquals("\"This\"", toks[0]);
     assertEquals("\" is\"", toks[1]);
@@ -908,13 +908,13 @@ public class CsvParserTest {
   }
   
   @Test
-  public void testParseLineAlwaysQuoteOutputWithTrimSpaces() {
+  public void testparseAlwaysQuoteOutputWithTrimSpaces() {
     CsvParser p = new CsvParserBuilder().
         alwaysQuoteOutput(true).
         trimWhitespace(true).
         build();
     
-    String toks[] = p.parseLine("This, is, a, test.");
+    String toks[] = p.parse("This, is, a, test.");
     assertEquals(4, toks.length);
     assertEquals("\"This\"", toks[0]);
     assertEquals("\"is\"", toks[1]);
@@ -926,7 +926,7 @@ public class CsvParserTest {
   public void parseQuotedStringWithCommasAlwaysQuoteOutput() {
     CsvParser p = new CsvParserBuilder().alwaysQuoteOutput(true).build();
 
-    String[] toks = p.parseLine("a,\"b,b,b\",c,, ,");
+    String[] toks = p.parse("a,\"b,b,b\",c,, ,");
     assertEquals(6, toks.length);
     assertEquals("\"a\"", toks[0]);
     assertEquals("\"b,b,b\"", toks[1]);
@@ -940,7 +940,7 @@ public class CsvParserTest {
   public void parseQuotedStringWithCommasAndWhitespaceAlwaysQuoteOutput() {
     CsvParser p = new CsvParserBuilder().alwaysQuoteOutput(true).build();
 
-    String[] toks = p.parseLine(" a ,   \"b,b,b\",c ,, ,");
+    String[] toks = p.parse(" a ,   \"b,b,b\",c ,, ,");
     assertEquals(6, toks.length);
     assertEquals("\" a \"", toks[0]);
     assertEquals("   \"b,b,b\"", toks[1]);
@@ -957,7 +957,7 @@ public class CsvParserTest {
         trimWhitespace(true).
         build();
 
-    String[] toks = p.parseLine(" a ,   \"b,b,b\",c ,, ,");
+    String[] toks = p.parse(" a ,   \"b,b,b\",c ,, ,");
     assertEquals(6, toks.length);
     assertEquals("\"a\"", toks[0]);
     assertEquals("\"b,b,b\"", toks[1]);
@@ -971,7 +971,7 @@ public class CsvParserTest {
   public void testEscapedDoubleQuoteAsDataElementAlwaysQuoteOutput() {
     CsvParser p = new CsvParserBuilder().alwaysQuoteOutput(true).build();
     //                                        "test","this,test,is,good","\"test\",\"quote\""
-    String[] toks = p.parseLine("\"test\",\"this,test,is,good\",\"\\\"test\\\"\",\"\\\"quote\\\"\""); 
+    String[] toks = p.parse("\"test\",\"this,test,is,good\",\"\\\"test\\\"\",\"\\\"quote\\\"\""); 
 
     assertEquals(4, toks.length);
     assertEquals("\"test\"", toks[0]);
@@ -987,7 +987,7 @@ public class CsvParserTest {
         trimWhitespace(true).
         build();
     //                                        "test","this,test,is,good","\"test\",\"quote\""
-    String[] toks = p.parseLine("\"test\",\"this,test,is,good\",\"\\\"test\\\"\",\"\\\"quote\\\"\""); 
+    String[] toks = p.parse("\"test\",\"this,test,is,good\",\"\\\"test\\\"\",\"\\\"quote\\\"\""); 
 
     assertEquals(4, toks.length);
     assertEquals("\"test\"", toks[0]);
@@ -1004,7 +1004,7 @@ public class CsvParserTest {
         retainOuterQuotes(true).
         build();
     //                                        "test","this,test,is,good","\"test\",\"quote\""
-    String[] toks = p.parseLine("\"test\",\"this,test,is,good\",\"\\\"test\\\"\",\"\\\"quote\\\"\""); 
+    String[] toks = p.parse("\"test\",\"this,test,is,good\",\"\\\"test\\\"\",\"\\\"quote\\\"\""); 
 
     assertEquals(4, toks.length);
     assertEquals("\"test\"", toks[0]);
@@ -1020,7 +1020,7 @@ public class CsvParserTest {
         retainEscapeChars(false).
         build();
     //                                        "test","this,test,is,good","\"test\",\"quote\""
-    String[] toks = p.parseLine("\"test\",\"this,test,is,good\",\"\\\"test\\\"\",\"\\\"quote\\\"\""); 
+    String[] toks = p.parse("\"test\",\"this,test,is,good\",\"\\\"test\\\"\",\"\\\"quote\\\"\""); 
 
     assertEquals(4, toks.length);
     assertEquals("\"test\"", toks[0]);
@@ -1037,7 +1037,7 @@ public class CsvParserTest {
         strictQuotes(true).
         build();
     //                                        "test","this,test,is,good","\"test\",\"quote\""
-    String[] toks = p.parseLine("\"test\",\"this,test,is,good\",\"\\\"test\\\"\",\"\\\"quote\\\"\""); 
+    String[] toks = p.parse("\"test\",\"this,test,is,good\",\"\\\"test\\\"\",\"\\\"quote\\\"\""); 
 
     assertEquals(4, toks.length);
     assertEquals("\"test\"", toks[0]);
@@ -1054,7 +1054,7 @@ public class CsvParserTest {
         alwaysQuoteOutput(true).
         build();
 
-    String[] toks = p.parseLine("field1;\\=field2;\"\"\"field3\"\"\""); // field1;\=field2;"""field3"""
+    String[] toks = p.parse("field1;\\=field2;\"\"\"field3\"\"\""); // field1;\=field2;"""field3"""
 
     assertEquals(3, toks.length);
     assertEquals("\"field1\"", toks[0]);
@@ -1071,7 +1071,7 @@ public class CsvParserTest {
         strictQuotes(true).
         build();
 
-    String[] toks = p.parseLine("field1;\\=field2;\"\"\"field3\"\"\""); // field1;\=field2;"""field3"""
+    String[] toks = p.parse("field1;\\=field2;\"\"\"field3\"\"\""); // field1;\=field2;"""field3"""
 
     assertEquals(3, toks.length);
     assertEquals("", toks[0]);
@@ -1083,14 +1083,14 @@ public class CsvParserTest {
   @Test
   public void testIssueThorny1dAlwaysQuoteOutput() {
     CsvParser p = new CsvParserBuilder().alwaysQuoteOutput(true).build();
-    String[] toks = p.parseLine("a,\" \"hello\" \",c");
+    String[] toks = p.parse("a,\" \"hello\" \",c");
     assertEquals(3, toks.length);
     assertEquals("\"a\"", toks[0]);
     assertEquals("\" \"hello\" \"", toks[1]);
     assertEquals("\"c\"", toks[2]);
     
     p = new CsvParserBuilder().quoteChar('\'').alwaysQuoteOutput(true).build();
-    toks = p.parseLine("a,' 'hello' ',c");
+    toks = p.parse("a,' 'hello' ',c");
     assertEquals(3, toks.length);
     assertEquals("'a'", toks[0]);
     assertEquals("' 'hello' '", toks[1]);
@@ -1101,7 +1101,7 @@ public class CsvParserTest {
         trimWhitespace(true).
         alwaysQuoteOutput(true).
         build();
-    toks = p.parseLine("a,' 'hello' ',c");
+    toks = p.parse("a,' 'hello' ',c");
     assertEquals(3, toks.length);
     assertEquals("'a'", toks[0]);
     assertEquals("' 'hello' '", toks[1]);
@@ -1113,7 +1113,7 @@ public class CsvParserTest {
   public void testADoubleQuoteAsDataElementAlwaysQuoteOutput() {
     CsvParser p = new CsvParserBuilder().alwaysQuoteOutput(true).build();
     
-    String[] toks = p.parseLine("a,\"\"\"\",c");  // a,"""",c
+    String[] toks = p.parse("a,\"\"\"\",c");  // a,"""",c
 
     assertEquals(3, toks.length);
     assertEquals("\"a\"", toks[0]);
@@ -1129,7 +1129,7 @@ public class CsvParserTest {
         build();
 
     String text = "865,0,'AmeriKKKa\\'s_Most_Wanted','',294,0,0,0.734338696798625,'20081002052147',242429208,18448";
-    String[] toks = p.parseLine(text);
+    String[] toks = p.parse(text);
 
     assertEquals(11, toks.length);
     assertEquals("'865'", toks[0]);
@@ -1145,7 +1145,7 @@ public class CsvParserTest {
         alwaysQuoteOutput(true).
         build();
 
-    String[] toks = p.parseLine("\"804503689\",\"London\",\"\"London\"shop\",\"address\",\"116.453182\",\"39.918884\"");
+    String[] toks = p.parse("\"804503689\",\"London\",\"\"London\"shop\",\"address\",\"116.453182\",\"39.918884\"");
 
     assertEquals(6, toks.length);
     assertEquals("\"804503689\"", toks[0]);
@@ -1161,12 +1161,12 @@ public class CsvParserTest {
   public void testIssueSfBugs93AlwaysQuoteOutput() {
     CsvParser p = new CsvParserBuilder().separator(';').alwaysQuoteOutput(true).build();
 
-    String[] toks = p.parseLine("\"\";1");
+    String[] toks = p.parse("\"\";1");
     assertEquals(2, toks.length);
     assertEquals("\"\"", toks[0]);
     assertEquals("\"1\"", toks[1]);
 
-    toks = p.parseLine("\"\";2");
+    toks = p.parse("\"\";2");
     assertEquals(2, toks.length);
     assertEquals("\"\"", toks[0]);
     assertEquals("\"2\"", toks[1]);
@@ -1178,7 +1178,7 @@ public class CsvParserTest {
 
     String testString = " \t      \"a\",\"b\"      \t       ,   \"c\"   ";
 
-    String[] toks = p.parseLine(testString);
+    String[] toks = p.parse(testString);
     assertEquals(3, toks.length);
     assertEquals(" \t      \"a\"", toks[0]);
     assertEquals("\"b\"      \t       ", toks[1]);
@@ -1194,7 +1194,7 @@ public class CsvParserTest {
 
     String testString = " \t      \"a\",\"b\"      \t       ,   \"c\"   ";
 
-    String[] toks = p.parseLine(testString);
+    String[] toks = p.parse(testString);
     assertEquals(3, toks.length);
     assertEquals("\"a\"", toks[0]);
     assertEquals("\"b\"", toks[1]);
@@ -1207,7 +1207,7 @@ public class CsvParserTest {
         retainOuterQuotes(true).
         build();
 
-    toks = p.parseLine(testString);
+    toks = p.parse(testString);
     assertEquals(3, toks.length);
     assertEquals("\"a\"", toks[0]);
     assertEquals("\"b\"", toks[1]);
@@ -1224,7 +1224,7 @@ public class CsvParserTest {
 
     String testString = " \t      \"a\",\"b\"      \t       ,   \"c\"   ";
 
-    String[] toks = p.parseLine(testString);
+    String[] toks = p.parse(testString);
     assertEquals(3, toks.length);
     assertEquals(" \t      \"a\"", toks[0]);
     assertEquals("\"b\"      \t       ", toks[1]);
@@ -1237,7 +1237,7 @@ public class CsvParserTest {
 
     String testString = " \t      \"a\",\"b\"      \t       ,   \"c\"   ";
 
-    String[] toks = p.parseLine(testString);
+    String[] toks = p.parse(testString);
     assertEquals(3, toks.length);
     assertEquals("\"a\"", toks[0]);
     assertEquals("\"b\"", toks[1]);
@@ -1257,7 +1257,7 @@ public class CsvParserTest {
 
     String testString = " \t      \"a\":\"b\"      \\\t       :   \"c\"   ";
 
-    String[] toks = p.parseLine(testString);
+    String[] toks = p.parse(testString);
     assertEquals(3, toks.length);
     assertEquals("\"a\"", toks[0]);
     assertEquals("\"b\"", toks[1]);
@@ -1268,7 +1268,7 @@ public class CsvParserTest {
   public void testLongTokensAlwaysQuoteOutput() {
     CsvParser p = new CsvParserBuilder().alwaysQuoteOutput(true).build();
 
-    String[] toks = p.parseLine(longLine);
+    String[] toks = p.parse(longLine);
     assertEquals(3, toks.length);
     assertEquals("\"" + longEntry1 + "\"", toks[0]);
     assertEquals("", toks[1]);
@@ -1286,7 +1286,7 @@ public class CsvParserTest {
         trimWhitespace(true).
         build();
 
-    String[] toks = p.parseLine("a\n,\r\nb\n,c\r");
+    String[] toks = p.parse("a\n,\r\nb\n,c\r");
     assertEquals(3, toks.length);
     assertEquals("a", toks[0]);
     assertEquals("b", toks[1]);
@@ -1300,7 +1300,7 @@ public class CsvParserTest {
         alwaysQuoteOutput(true).
         build();
 
-    String[] toks = p.parseLine("a\n,\r\nb\n,c\r");
+    String[] toks = p.parse("a\n,\r\nb\n,c\r");
     assertEquals(3, toks.length);
     assertEquals("\"a\"", toks[0]);
     assertEquals("\"b\"", toks[1]);
@@ -1315,7 +1315,7 @@ public class CsvParserTest {
         retainEscapeChars(false).
         build();
 
-    String[] toks = p.parseLine("field1;\\=field2;\"\"\"field3\"\"\""); // field1;\=field2;"""field3"""
+    String[] toks = p.parse("field1;\\=field2;\"\"\"field3\"\"\""); // field1;\=field2;"""field3"""
 
     assertEquals(3, toks.length);
     assertEquals("field1", toks[0]);
@@ -1327,7 +1327,7 @@ public class CsvParserTest {
   public void testEscapedDoubleQuoteAsDataElementWithRetainQuotesAndRetainEscapeCharsFalse() {
     CsvParser p = new CsvParserBuilder().retainOuterQuotes(true).retainEscapeChars(false).build();
 
-    String[] toks = p.parseLine("\"test\",\"this,test,is,good\",\"\\\"test\\\"\",\"\\\"quote\\\"\""); // "test","this,test,is,good","\"test\",\"quote\""
+    String[] toks = p.parse("\"test\",\"this,test,is,good\",\"\\\"test\\\"\",\"\\\"quote\\\"\""); // "test","this,test,is,good","\"test\",\"quote\""
 
     assertEquals(4, toks.length);
     assertEquals("\"test\"", toks[0]);
@@ -1343,7 +1343,7 @@ public class CsvParserTest {
         retainOuterQuotes(true).
         build();
 
-    String[] toks = p.parseLine(" \"a\" , \"b\" , \"c\" ");
+    String[] toks = p.parse(" \"a\" , \"b\" , \"c\" ");
     assertEquals(3, toks.length);
     assertEquals("\"a\"", toks[0]);
     assertEquals("\"b\"", toks[1]);
@@ -1359,7 +1359,7 @@ public class CsvParserTest {
         retainOuterQuotes(true).
         build();
 
-    String[] toks = p.parseLine(" \"a\" | \"b\" | \"c\" ");
+    String[] toks = p.parse(" \"a\" | \"b\" | \"c\" ");
     assertEquals(3, toks.length);
     assertEquals("\"a\"", toks[0]);
     assertEquals("\"b\"", toks[1]);
@@ -1369,7 +1369,7 @@ public class CsvParserTest {
   @Test
   public void testParsedLineWithInternalQuotaWithRetainQuotes() {
     CsvParser p = new CsvParserBuilder().retainOuterQuotes(true).build();
-    String[] toks = p.parseLine("a,123\"4\"567,c");
+    String[] toks = p.parse("a,123\"4\"567,c");
 
     assertEquals(3, toks.length);
     assertEquals("123\"4\"567", toks[1]);
@@ -1382,7 +1382,7 @@ public class CsvParserTest {
   @Test  
   public void testTrailingSpace() {
     // trailing space
-    String[] toks = parser.parseLine("\"1\" ,\"2\"");
+    String[] toks = parser.parse("\"1\" ,\"2\"");
     assertEquals(2, toks.length);
     assertEquals("1 ", toks[0]);
     assertEquals("2", toks[1]);
@@ -1390,7 +1390,7 @@ public class CsvParserTest {
     CsvParser p = new CsvParserBuilder().
         trimWhitespace(true).
         build();
-    toks = p.parseLine("\"1\" ,\"2\"");
+    toks = p.parse("\"1\" ,\"2\"");
     assertEquals(2, toks.length);
     assertEquals("1", toks[0]);
     assertEquals("2", toks[1]);
@@ -1399,7 +1399,7 @@ public class CsvParserTest {
         retainOuterQuotes(true).
         trimWhitespace(true).
         build();
-    toks = p.parseLine("\"1\" ,\"2\"");
+    toks = p.parse("\"1\" ,\"2\"");
     assertEquals(2, toks.length);
     assertEquals("\"1\"", toks[0]);
     assertEquals("\"2\"", toks[1]);
@@ -1412,7 +1412,7 @@ public class CsvParserTest {
         strictQuotes(true).
         retainOuterQuotes(true).
         build();
-    String[] toks = p.parseLine("\"Line with\", \"spaces at end\"  ");
+    String[] toks = p.parse("\"Line with\", \"spaces at end\"  ");
     assertEquals(2, toks.length);
     assertEquals("\"Line with\"", toks[0]);
     assertEquals("\"spaces at end\"", toks[1]);
@@ -1423,7 +1423,7 @@ public class CsvParserTest {
     CsvParser p = new CsvParserBuilder().strictQuotes(true).retainEscapeChars(false).build();
     String testString = "abc',!@#\",\\\"\"   xyz,";
 
-    String[] toks = p.parseLine(testString);
+    String[] toks = p.parse(testString);
     assertEquals(3, toks.length);
     assertEquals("", toks[0]);
     assertEquals(",\"", toks[1]);
@@ -1439,7 +1439,7 @@ public class CsvParserTest {
         build();
     String testString = "abc',!@#\",\\\"\"   xyz,";
 
-    String[] toks = p.parseLine(testString);
+    String[] toks = p.parse(testString);
     assertEquals(3, toks.length);
     assertEquals("", toks[0]);
     assertEquals("\",\"\"", toks[1]);
@@ -1451,7 +1451,7 @@ public class CsvParserTest {
     CsvParser p = new CsvParserBuilder().alwaysQuoteOutput(true).retainEscapeChars(false).build();
     String testString = "abc',!@#\",\\\"\"   xyz,";
 
-    String[] toks = p.parseLine(testString);
+    String[] toks = p.parse(testString);
     assertEquals(3, toks.length);
     assertEquals("\"abc'\"", toks[0]);
     assertEquals("\"!@#\",\"\"   xyz\"", toks[1]);
@@ -1465,7 +1465,7 @@ public class CsvParserTest {
         retainEscapeChars(false).
         build();
 
-    String[] toks = p.parseLine("\"this\", \"is\",\"a test\""); //"this", "is","a test"
+    String[] toks = p.parse("\"this\", \"is\",\"a test\""); //"this", "is","a test"
     assertEquals("this", toks[0]);
     assertEquals(" is", toks[1]);
     assertEquals("a test", toks[2]);
@@ -1485,32 +1485,32 @@ public class CsvParserTest {
     CsvParser p5 = new CsvParserBuilder().alwaysQuoteOutput(true).build();
     
     // default mode
-    toks = parser.parseLine(text);  // [abc"d"efg, 1, 2,  w"x"y""z ]  // CORRECT
+    toks = parser.parse(text);  // [abc"d"efg, 1, 2,  w"x"y""z ]  // CORRECT
     String asList = Arrays.asList(toks).toString();
     String exp = "[abc\"d\"efg, 1, 2,  w\"x\"y\"\"z ]";
     assertEquals(exp, asList);
     
-    toks = p1.parseLine(text);      // [abc"d"efg, 1, 2,  w"x"y""z ]  // WRONG=>[abcefg, , 2, x]
+    toks = p1.parse(text);      // [abc"d"efg, 1, 2,  w"x"y""z ]  // WRONG=>[abcefg, , 2, x]
     asList = Arrays.asList(toks).toString();
     exp = "[abcefg, , 2, x]";
     assertEquals(exp, asList);
     
-    toks = p2.parseLine(text);      // ["abc"d"efg", 1, "2",  w"x"y""z ]
+    toks = p2.parse(text);      // ["abc"d"efg", 1, "2",  w"x"y""z ]
     asList = Arrays.asList(toks).toString();
     exp = "[\"abc\"d\"efg\", 1, \"2\",  w\"x\"y\"\"z ]";
     assertEquals(exp, asList);
 
-    toks = p3.parseLine(text);      // [abcdefg, 1, 2,  wxyz ]  // WRONG
+    toks = p3.parse(text);      // [abcdefg, 1, 2,  wxyz ]  // WRONG
     asList = Arrays.asList(toks).toString();
     exp = "[abc\"d\"efg, 1, 2,  w\"x\"y\"\"z ]";
     assertEquals(exp, asList);
     
-    toks = p4.parseLine(text);      // ["abc"d"efg", 1, "2",  w"x"y""z ]
+    toks = p4.parse(text);      // ["abc"d"efg", 1, "2",  w"x"y""z ]
     asList = Arrays.asList(toks).toString();
     exp = "[\"abcefg\", , \"2\", \"x\"]";
     assertEquals(exp, asList);
     
-    toks = p5.parseLine(text);      // ["abc"d"efg", 1, "2",  w"x"y""z ]
+    toks = p5.parse(text);      // ["abc"d"efg", 1, "2",  w"x"y""z ]
     asList = Arrays.asList(toks).toString();
     exp = "[\"abc\"d\"efg\", \"1\", \"2\", \" w\"x\"y\"\"z \"]";
     assertEquals(exp, asList);
@@ -1529,37 +1529,37 @@ public class CsvParserTest {
     CsvParser p6 = new CsvParserBuilder().strictQuotes(true).alwaysQuoteOutput(true).build();
         
     // default mode
-    toks = parser.parseLine(text);
+    toks = parser.parse(text);
     String asList = Arrays.asList(toks).toString();
     String exp = "[1, abc\\\"d\\\"efg]";
     assertEquals(exp, asList);
     
-    toks = p1.parseLine(text);
+    toks = p1.parse(text);
     asList = Arrays.asList(toks).toString();
     exp = "[, abc\\\"d\\\"efg]";
     assertEquals(exp, asList);
 
-    toks = p2.parseLine(text);
+    toks = p2.parse(text);
     asList = Arrays.asList(toks).toString();
     exp = "[1, \"abc\\\"d\\\"efg\"]";
     assertEquals(exp, asList);
 
-    toks = p3.parseLine(text);
+    toks = p3.parse(text);
     asList = Arrays.asList(toks).toString();
     exp = "[1, abc\\\"d\\\"efg]";
     assertEquals(exp, asList);
 
-    toks = p4.parseLine(text);
+    toks = p4.parse(text);
     asList = Arrays.asList(toks).toString();
     exp = "[, \"abc\\\"d\\\"efg\"]";
     assertEquals(exp, asList);
     
-    toks = p5.parseLine(text);
+    toks = p5.parse(text);
     asList = Arrays.asList(toks).toString();
     exp = "[\"1\", \"abc\\\"d\\\"efg\"]";
     assertEquals(exp, asList);
     
-    toks = p6.parseLine(text);
+    toks = p6.parse(text);
     asList = Arrays.asList(toks).toString();
     exp = "[, \"abc\\\"d\\\"efg\"]";
     assertEquals(exp, asList);
@@ -1596,7 +1596,7 @@ public class CsvParserTest {
     // default mode
     boolean parseError = false;
     try {
-      parser.parseLine(text);
+      parser.parse(text);
     } catch (IllegalArgumentException e) {
       parseError = true;
     } finally {
@@ -1605,7 +1605,7 @@ public class CsvParserTest {
     }
     
     try {
-      p1.parseLine(text);
+      p1.parse(text);
     } catch (IllegalArgumentException e) {
       parseError = true;
     } finally {
@@ -1614,7 +1614,7 @@ public class CsvParserTest {
     }
 
     try {
-      p2.parseLine(text);
+      p2.parse(text);
     } catch (IllegalArgumentException e) {
       parseError = true;
     } finally {
@@ -1622,32 +1622,32 @@ public class CsvParserTest {
       parseError = false;
     }
     
-    toks = p3.parseLine(text);
+    toks = p3.parse(text);
     String asList = Arrays.asList(toks).toString();
     String exp = "[1,  abc\"def]";
     assertEquals(exp, asList);
 
-    toks = p4.parseLine(text);
+    toks = p4.parse(text);
     asList = Arrays.asList(toks).toString();
     exp = "[1,  \"abc\"def\"]";
     assertEquals(exp, asList);
 
-    toks = p5.parseLine(text);
+    toks = p5.parse(text);
     asList = Arrays.asList(toks).toString();
     exp = "[, \"abc\"]";
     assertEquals(exp, asList);
     
-    toks = p6.parseLine(text);
+    toks = p6.parse(text);
     asList = Arrays.asList(toks).toString();
     exp = "[, \"abc\"]";
     assertEquals(exp, asList);
     
-    toks = p7.parseLine(text);
+    toks = p7.parse(text);
     asList = Arrays.asList(toks).toString();
     exp = "[\"1\",  \"abc\"def\"]";
     assertEquals(exp, asList);
 
-    toks = p8.parseLine(text);
+    toks = p8.parse(text);
     asList = Arrays.asList(toks).toString();
     exp = "[\"1\", \"abc\"def\"]";
     assertEquals(exp, asList);
@@ -1668,32 +1668,32 @@ public class CsvParserTest {
         build();
     
     // default mode
-    toks = parser.parseLine(text);
+    toks = parser.parse(text);
     String asList = Arrays.asList(toks).toString();
     String exp = "[1, abc\\\"def]";
     assertEquals(exp, asList);
     
-    toks = p1.parseLine(text);
+    toks = p1.parse(text);
     asList = Arrays.asList(toks).toString();
     exp = "[, abc\\\"def]";
     assertEquals(exp, asList);
 
-    toks = p2.parseLine(text);
+    toks = p2.parse(text);
     asList = Arrays.asList(toks).toString();
     exp = "[1, \"abc\\\"def\"]";
     assertEquals(exp, asList);
     
-    toks = p3.parseLine(text);
+    toks = p3.parse(text);
     asList = Arrays.asList(toks).toString();
     exp = "[1, abc\\\"def]";
     assertEquals(exp, asList);
 
-    toks = p4.parseLine(text);
+    toks = p4.parse(text);
     asList = Arrays.asList(toks).toString();
     exp = "[1, \"abc\\\"def\"]";
     assertEquals(exp, asList);
 
-    toks = p5.parseLine(text);
+    toks = p5.parse(text);
     asList = Arrays.asList(toks).toString();
     exp = "[, \"abc\\\"def\"]";
     assertEquals(exp, asList);

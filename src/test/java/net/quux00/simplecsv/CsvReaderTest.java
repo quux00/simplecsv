@@ -39,7 +39,7 @@ public class CsvReaderTest {
    */
   @Before
   public void setUp() throws Exception {
-    StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
+    StringBuilder sb = new StringBuilder(SimpleCsvParser.INITIAL_READ_SIZE);
     sb.append("a,b,c").append("\n");   // standard case
     sb.append("a,\"b,b,b\",c").append("\n");  // quoted elements
     sb.append(",,").append("\n"); // empty elements
@@ -478,7 +478,7 @@ public class CsvReaderTest {
   @Test
   public void testParseLineStrictQuote() throws IOException {
 
-    StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
+    StringBuilder sb = new StringBuilder(SimpleCsvParser.INITIAL_READ_SIZE);
     sb.append("a,b,c").append("\n");   // standard case
     sb.append("a,\"b,b,b\",c").append("\n");  // quoted elements
     sb.append(",,").append("\n"); // empty elements
@@ -548,7 +548,7 @@ public class CsvReaderTest {
   @Test
   public void testOptionalConstructors() throws IOException {
 
-    StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
+    StringBuilder sb = new StringBuilder(SimpleCsvParser.INITIAL_READ_SIZE);
     sb.append("a\tb\tc").append("\n");   // tab separated case
     sb.append("a\t'b\tb\tb'\tc").append("\n");  // single quoted elements
     
@@ -565,7 +565,7 @@ public class CsvReaderTest {
 
   @Test
   public void parseQuotedStringWithDefinedSeperator() throws IOException {
-    StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
+    StringBuilder sb = new StringBuilder(SimpleCsvParser.INITIAL_READ_SIZE);
     sb.append("a\tb\tc").append("\n");   // tab separated case
 
     CsvParser parser = new CsvParserBuilder().separator('\t').build();
@@ -579,7 +579,7 @@ public class CsvReaderTest {
 
   @Test
   public void parsePipeDelimitedString() throws IOException {
-    StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
+    StringBuilder sb = new StringBuilder(SimpleCsvParser.INITIAL_READ_SIZE);
     sb.append("[bar]|[baz]").append("\n");
 
     CsvParser parser = new CsvParserBuilder().separator('|').build();
@@ -601,7 +601,7 @@ public class CsvReaderTest {
   @Test
   public void testSkippingLines() throws IOException {
 
-    StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
+    StringBuilder sb = new StringBuilder(SimpleCsvParser.INITIAL_READ_SIZE);
     sb.append("Skip this line\t with tab").append("\n");   // should skip this
     sb.append("And this line too").append("\n");   // and this
     sb.append("a\t'b\tb\tb'\tc").append("\n");  // single quoted elements
@@ -627,7 +627,7 @@ public class CsvReaderTest {
    */
   @Test
   public void testSkippingLinesWithDifferentEscape() throws IOException {
-    StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
+    StringBuilder sb = new StringBuilder(SimpleCsvParser.INITIAL_READ_SIZE);
     sb.append("Skip this line?t with tab").append("\n");   // should skip this
     sb.append("And this line too").append("\n");   // and this
     sb.append("a\t'b\tb\tb'\t'c'").append("\n");  // single quoted elements
@@ -653,10 +653,10 @@ public class CsvReaderTest {
    */
   @Test
   public void testNormalParsedLine() throws IOException {
-    StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
+    StringBuilder sb = new StringBuilder(SimpleCsvParser.INITIAL_READ_SIZE);
     sb.append("a,1234567,c").append("\n");// a,1234,c
 
-    CsvParser parser = new CsvParser();
+    CsvParser parser = new SimpleCsvParser();
     CsvReader cr = new CsvReader(new StringReader(sb.toString()), parser);
 
     String[] nextLine = cr.readNext();
@@ -677,7 +677,7 @@ public class CsvReaderTest {
    */
   @Test
   public void testASingleQuoteAsDataElement() throws IOException {
-    StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
+    StringBuilder sb = new StringBuilder(SimpleCsvParser.INITIAL_READ_SIZE);
 
     sb.append("a,'''',c").append("\n");// a,'',c
 
@@ -701,7 +701,7 @@ public class CsvReaderTest {
   @Test
   public void testASingleQuoteAsDataElementWithEmptyField() throws IOException {
 
-    StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
+    StringBuilder sb = new StringBuilder(SimpleCsvParser.INITIAL_READ_SIZE);
 
     sb.append("a,'',c").append("\n");// a,,c
 
@@ -719,7 +719,7 @@ public class CsvReaderTest {
 
   @Test
   public void testSpacesAtEndOfString() throws IOException {
-    StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
+    StringBuilder sb = new StringBuilder(SimpleCsvParser.INITIAL_READ_SIZE);
     sb.append("\"a\",\"b\",\"c\"   ");
 
     CsvParser parser = new CsvParserBuilder().strictQuotes(true).build();
@@ -771,7 +771,7 @@ public class CsvReaderTest {
    */
   @Test
   public void testSingleQuoteWhenDoubleQuoteIsQuoteChar() throws IOException {
-    StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
+    StringBuilder sb = new StringBuilder(SimpleCsvParser.INITIAL_READ_SIZE);
     sb.append("a,'',c").append("\n");// a,'',c
 
     CsvReader cr = new CsvReader(new StringReader(sb.toString()));
@@ -792,7 +792,7 @@ public class CsvReaderTest {
    */
   @Test
   public void testQuotedParsedLine() throws IOException {
-    StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
+    StringBuilder sb = new StringBuilder(SimpleCsvParser.INITIAL_READ_SIZE);
     sb.append("\"a\",\"1234567\",\"c\"").append("\n"); // "a","1234567","c"
 
     CsvParser parser = new CsvParserBuilder().strictQuotes(true).build();
@@ -811,7 +811,7 @@ public class CsvReaderTest {
 
   @Test
   public void testIssue2992134OutOfPlaceQuotes() throws IOException {
-    StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
+    StringBuilder sb = new StringBuilder(SimpleCsvParser.INITIAL_READ_SIZE);
     sb.append("a,b,c,ddd\\\"eee\nf,g,h,\"iii,jjj\"");
 
     CsvReader cr = new CsvReader(new StringReader(sb.toString()));
@@ -833,7 +833,7 @@ public class CsvReaderTest {
 
   @Test
   public void testIssue2992134OutOfPlaceQuotesAlwaysQuoteOutput() throws IOException {
-    StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
+    StringBuilder sb = new StringBuilder(SimpleCsvParser.INITIAL_READ_SIZE);
     sb.append("a,b,c,ddd\\\"eee\nf,g,h,\"iii,jjj\"");
 
     CsvParser p = new CsvParserBuilder().alwaysQuoteOutput(true).build();
@@ -856,7 +856,7 @@ public class CsvReaderTest {
   
   @Test
   public void testASingleQuoteAsDataElementWithEmptyField2() throws IOException {
-    StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
+    StringBuilder sb = new StringBuilder(SimpleCsvParser.INITIAL_READ_SIZE);
     sb.append("\"\";1").append("\n");// ;1
     sb.append("\"\";2").append("\n");// ;2
 
@@ -882,12 +882,12 @@ public class CsvReaderTest {
 
   @Test(expected = UnsupportedOperationException.class)
   public void quoteAndEscapeMustBeDifferent() throws IOException {
-    StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
+    StringBuilder sb = new StringBuilder(SimpleCsvParser.INITIAL_READ_SIZE);
     sb.append("a,b,c,ddd\\\"eee\nf,g,h,\"iii,jjj\"");
 
     CsvParser parser = new CsvParserBuilder().
-        quoteChar(CsvParser.DEFAULT_QUOTE_CHAR).
-        escapeChar(CsvParser.DEFAULT_QUOTE_CHAR).
+        quoteChar(SimpleCsvParser.DEFAULT_QUOTE_CHAR).
+        escapeChar(SimpleCsvParser.DEFAULT_QUOTE_CHAR).
         build();
     CsvReader cr = null;
     try {

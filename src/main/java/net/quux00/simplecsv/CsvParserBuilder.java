@@ -1,15 +1,15 @@
 package net.quux00.simplecsv;
 
 public class CsvParserBuilder {
-  char separator = CsvParser.DEFAULT_SEPARATOR;
-  char quoteChar = CsvParser.DEFAULT_QUOTE_CHAR;
-  char escapeChar = CsvParser.DEFAULT_ESCAPE_CHAR;
-  boolean strictQuotes = CsvParser.DEFAULT_STRICT_QUOTES;
-  boolean trimWhitespace = CsvParser.DEFAULT_TRIM_WS;
-  boolean allowUnbalancedQuotes = CsvParser.DEFAULT_ALLOW_UNBALANCED_QUOTES;
-  boolean retainOuterQuotes = CsvParser.DEFAULT_RETAIN_OUTER_QUOTES;
-  boolean retainEscapeChars = CsvParser.DEFAULT_RETAIN_ESCAPE_CHARS;
-  boolean alwaysQuoteOutput = CsvParser.DEFAULT_ALWAYS_QUOTE_OUTPUT;
+  char separator = SimpleCsvParser.DEFAULT_SEPARATOR;
+  char quoteChar = SimpleCsvParser.DEFAULT_QUOTE_CHAR;
+  char escapeChar = SimpleCsvParser.DEFAULT_ESCAPE_CHAR;
+  boolean strictQuotes = SimpleCsvParser.DEFAULT_STRICT_QUOTES;
+  boolean trimWhitespace = SimpleCsvParser.DEFAULT_TRIM_WS;
+  boolean allowUnbalancedQuotes = SimpleCsvParser.DEFAULT_ALLOW_UNBALANCED_QUOTES;
+  boolean retainOuterQuotes = SimpleCsvParser.DEFAULT_RETAIN_OUTER_QUOTES;
+  boolean retainEscapeChars = SimpleCsvParser.DEFAULT_RETAIN_ESCAPE_CHARS;
+  boolean alwaysQuoteOutput = SimpleCsvParser.DEFAULT_ALWAYS_QUOTE_OUTPUT;
   
   public CsvParserBuilder separator(final char separator) {
     this.separator = separator;
@@ -60,7 +60,7 @@ public class CsvParserBuilder {
    * Constructs Parser
    */
   public CsvParser build() {
-    return new CsvParser(
+    return new SimpleCsvParser(
         separator,
         quoteChar,
         escapeChar,
