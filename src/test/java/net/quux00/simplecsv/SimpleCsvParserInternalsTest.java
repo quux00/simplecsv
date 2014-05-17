@@ -288,23 +288,23 @@ public class SimpleCsvParserInternalsTest {
     StringBuilder sb = new StringBuilder("\t \" mail\" ");
     
     int exp = 2;
-    int act = parser.readLeftWhiteSpace(sb, 0, sb.length()-1);
+    int act = ParserUtil.readLeftWhiteSpace(sb, 0, sb.length()-1);
     assertEquals(exp, act);
   
     exp = 8;
-    act = parser.readRightWhiteSpace(sb, 0, sb.length()-1);
+    act = ParserUtil.readRightWhiteSpace(sb, 0, sb.length()-1);
     assertEquals(exp, act);
   
     exp = 2;
-    act = parser.readLeftWhiteSpace(sb, 2, sb.length()-1);
+    act = ParserUtil.readLeftWhiteSpace(sb, 2, sb.length()-1);
     assertEquals(exp, act);
 
     exp = 8;
-    act = parser.readRightWhiteSpace(sb, 2, 8);
+    act = ParserUtil.readRightWhiteSpace(sb, 2, 8);
     assertEquals(exp, act);
   
     exp = 4;
-    act = parser.readLeftWhiteSpace(sb, 3, 8);
+    act = ParserUtil.readLeftWhiteSpace(sb, 3, 8);
     assertEquals(exp, act);    
   }
 
@@ -316,15 +316,15 @@ public class SimpleCsvParserInternalsTest {
     StringBuilder sb = new StringBuilder("  \" mail\t\" ");
     
     int exp = 9;
-    int act = parser.readRightWhiteSpace(sb, 0, sb.length()-1);
+    int act = ParserUtil.readRightWhiteSpace(sb, 0, sb.length()-1);
     assertEquals(exp, act);
   
     exp = 9;
-    act = parser.readRightWhiteSpace(sb, 2, 9);
+    act = ParserUtil.readRightWhiteSpace(sb, 2, 9);
     assertEquals(exp, act);
   
     exp = 7;
-    act = parser.readRightWhiteSpace(sb, 3, 8);
+    act = ParserUtil.readRightWhiteSpace(sb, 3, 8);
     assertEquals(exp, act);    
   }
 
@@ -337,41 +337,41 @@ public class SimpleCsvParserInternalsTest {
 
     // sb1: empty string
     try {
-      parser.readLeftWhiteSpace(sb1, 0, 0);
+      ParserUtil.readLeftWhiteSpace(sb1, 0, 0);
       fail("Should not get here");
     } catch (StringIndexOutOfBoundsException e) {}
     
     try {
-      parser.readRightWhiteSpace(sb1, 0, 0);
+      ParserUtil.readRightWhiteSpace(sb1, 0, 0);
       fail("Should not get here");
     } catch (StringIndexOutOfBoundsException e) {}
 
 
     // sb2: string with internal spaces only
     int exp = 0;
-    int act = parser.readLeftWhiteSpace(sb2, 0, sb2.length()-1);
+    int act = ParserUtil.readLeftWhiteSpace(sb2, 0, sb2.length()-1);
     assertEquals(exp, act);
 
     exp = sb2.length()-1;
-    act = parser.readRightWhiteSpace(sb2, 0, sb2.length()-1);
+    act = ParserUtil.readRightWhiteSpace(sb2, 0, sb2.length()-1);
     assertEquals(exp, act);
 
     // sb3: string of size 1 (not a space)
     exp = 0;
-    act = parser.readLeftWhiteSpace(sb3, 0, sb3.length()-1);
+    act = ParserUtil.readLeftWhiteSpace(sb3, 0, sb3.length()-1);
     assertEquals(exp, act);
 
     exp = sb3.length()-1;
-    act = parser.readRightWhiteSpace(sb3, 0, sb3.length()-1);
+    act = ParserUtil.readRightWhiteSpace(sb3, 0, sb3.length()-1);
     assertEquals(exp, act);
     
     // sb4: string of size 1, which is a space char
     exp = 0;
-    act = parser.readLeftWhiteSpace(sb4, 0, sb4.length()-1);
+    act = ParserUtil.readLeftWhiteSpace(sb4, 0, sb4.length()-1);
     assertEquals(exp, act);
 
     exp = sb4.length()-1;
-    act = parser.readRightWhiteSpace(sb4, 0, sb4.length()-1);
+    act = ParserUtil.readRightWhiteSpace(sb4, 0, sb4.length()-1);
     assertEquals(exp, act);
   }
   
@@ -380,7 +380,7 @@ public class SimpleCsvParserInternalsTest {
     StringBuilder sb = new StringBuilder("  \" mail\t\" ");
     
     int lenBefore = sb.length();
-    parser.pluckOuterQuotes(sb, 0, sb.length() - 1);
+    ParserUtil.pluckOuterQuotes(sb, 0, sb.length() - 1);
     assertTrue("length should have been shortened", lenBefore > sb.length());
     assertEquals("   mail\t ", sb.toString());
   }
@@ -389,7 +389,7 @@ public class SimpleCsvParserInternalsTest {
   public void testPluckOuterQuotesSpacesOnLeftSide() {
     StringBuilder sb = new StringBuilder("\t\"hi there\"");
     int lenBefore = sb.length();
-    parser.pluckOuterQuotes(sb, 0, sb.length() - 1);
+    ParserUtil.pluckOuterQuotes(sb, 0, sb.length() - 1);
     assertTrue("length should have been shortened", lenBefore > sb.length());
     assertEquals("\thi there", sb.toString());
   }
@@ -398,7 +398,7 @@ public class SimpleCsvParserInternalsTest {
   public void testPluckOuterQuotesSpacesOnRightSide() {
     StringBuilder sb = new StringBuilder("\"hi there\" ");
     int lenBefore = sb.length();
-    parser.pluckOuterQuotes(sb, 0, sb.length() - 1);
+    ParserUtil.pluckOuterQuotes(sb, 0, sb.length() - 1);
     assertTrue("length should have been shortened", lenBefore > sb.length());
     assertEquals("hi there ", sb.toString());
   }
@@ -407,7 +407,7 @@ public class SimpleCsvParserInternalsTest {
   public void testPluckOuterQuotesSpacesOnNeitherSide() {
     StringBuilder sb = new StringBuilder("\"hi\"");
     int lenBefore = sb.length();
-    parser.pluckOuterQuotes(sb, 0, sb.length() - 1);
+    ParserUtil.pluckOuterQuotes(sb, 0, sb.length() - 1);
     assertTrue("length should have been shortened", lenBefore > sb.length());
     assertEquals("hi", sb.toString());
   }
@@ -416,7 +416,7 @@ public class SimpleCsvParserInternalsTest {
   public void testPluckOuterQuotesNoQuotes() {
     StringBuilder sb = new StringBuilder(" 1-2-3 ");
     int lenBefore = sb.length();
-    parser.pluckOuterQuotes(sb, 0, sb.length() - 1);
+    ParserUtil.pluckOuterQuotes(sb, 0, sb.length() - 1);
     assertTrue("length should NOT have been shortened", lenBefore == sb.length());
     assertEquals(" 1-2-3 ", sb.toString());
   }
@@ -425,7 +425,7 @@ public class SimpleCsvParserInternalsTest {
   public void testPluckOuterQuotesUnbalancedQuotesShouldNotBePlucked() {
     StringBuilder sb = new StringBuilder(" 1-2-3\"");
     int lenBefore = sb.length();
-    parser.pluckOuterQuotes(sb, 0, sb.length() - 1);
+    ParserUtil.pluckOuterQuotes(sb, 0, sb.length() - 1);
     assertTrue("length should NOT have been shortened", lenBefore == sb.length());
     assertEquals(" 1-2-3\"", sb.toString());
   }

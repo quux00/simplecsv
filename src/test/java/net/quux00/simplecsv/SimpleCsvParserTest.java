@@ -1,8 +1,8 @@
 package net.quux00.simplecsv;
 
-import static net.quux00.simplecsv.SimpleCsvParser.DEFAULT_QUOTE_CHAR;
-import static net.quux00.simplecsv.SimpleCsvParser.DEFAULT_SEPARATOR;
-import static net.quux00.simplecsv.SimpleCsvParser.NULL_CHARACTER;
+import static net.quux00.simplecsv.ParserUtil.DEFAULT_QUOTE_CHAR;
+import static net.quux00.simplecsv.ParserUtil.DEFAULT_SEPARATOR;
+import static net.quux00.simplecsv.ParserUtil.NULL_CHARACTER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -60,7 +60,7 @@ public class SimpleCsvParserTest {
   
   @Test(expected = UnsupportedOperationException.class)
   public void nullQuoteCharAndAlwaysQuoteOutputAreIncompatible() {
-    new CsvParserBuilder().quoteChar(SimpleCsvParser.NULL_CHARACTER).alwaysQuoteOutput(true).build();
+    new CsvParserBuilder().quoteChar(ParserUtil.NULL_CHARACTER).alwaysQuoteOutput(true).build();
   }
 
   /* -------------------------------------------- */  
@@ -410,7 +410,7 @@ public class SimpleCsvParserTest {
     // difference from OpenCSV: cleaner soln is to set quotechar to NULL_CHAR
     CsvParser p = new CsvParserBuilder().
         separator(';').
-        quoteChar(SimpleCsvParser.NULL_CHARACTER).
+        quoteChar(ParserUtil.NULL_CHARACTER).
         allowUnbalancedQuotes(true).
         build();
     String testString = "RPO;2012;P; ; ; ;SDX;ACCESSORY WHEEL, 16\", ALUMINUM, DESIGN 1";
@@ -429,7 +429,7 @@ public class SimpleCsvParserTest {
     // you don't need "allowUnbalancedQuotes" if you set quotechar to be the NULL_CHAR
     p = new CsvParserBuilder().
         separator(';').
-        quoteChar(SimpleCsvParser.NULL_CHARACTER).
+        quoteChar(ParserUtil.NULL_CHARACTER).
         build();
     testString = "RPO;2012;P; ; ; ;SDX;ACCESSORY WHEEL, 16\", ALUMINUM, DESIGN 1";
 
@@ -449,7 +449,7 @@ public class SimpleCsvParserTest {
     // NPEs or otherwise freak out
     p = new CsvParserBuilder().
         separator(';').
-        quoteChar(SimpleCsvParser.NULL_CHARACTER).
+        quoteChar(ParserUtil.NULL_CHARACTER).
         retainOuterQuotes(true).
         build();
     testString = "RPO;2012;P; ; ; ;SDX;ACCESSORY WHEEL, 16\", ALUMINUM, DESIGN 1";

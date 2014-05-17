@@ -886,8 +886,8 @@ public class CsvReaderTest {
     sb.append("a,b,c,ddd\\\"eee\nf,g,h,\"iii,jjj\"");
 
     CsvParser parser = new CsvParserBuilder().
-        quoteChar(SimpleCsvParser.DEFAULT_QUOTE_CHAR).
-        escapeChar(SimpleCsvParser.DEFAULT_QUOTE_CHAR).
+        quoteChar(ParserUtil.DEFAULT_QUOTE_CHAR).
+        escapeChar(ParserUtil.DEFAULT_QUOTE_CHAR).
         build();
     CsvReader cr = null;
     try {

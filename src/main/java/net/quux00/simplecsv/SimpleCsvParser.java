@@ -14,8 +14,8 @@ import java.util.List;
  * 
  * Options / configurations:
  *   - change the separator/delimiter char
- *   - change the quote char, including specifying no quote char by setting it to NULL_CHARACTER
- *   - change the escape char, including specifying no escape by setting it to NULL_CHARACTER
+ *   - change the quote char, including specifying no quote char by setting it to ParserUtil.NULL_CHARACTER
+ *   - change the escape char, including specifying no escape by setting it to ParserUtil.NULL_CHARACTER
  *   - turn on strictQuotes mode
  *   - turn on trimWhitespace mode
  *   - turn on allowUnbalancedQuotes mode
@@ -25,18 +25,6 @@ import java.util.List;
  * @NotThreadSafe - only use one CsvParser per thread
  */
 public class SimpleCsvParser implements CsvParser {
-  public static final char DEFAULT_SEPARATOR = ',';
-  public static final char DEFAULT_QUOTE_CHAR = '"';
-  public static final char DEFAULT_ESCAPE_CHAR = '\\';
-  public static final boolean DEFAULT_STRICT_QUOTES = false;
-  public static final boolean DEFAULT_TRIM_WS = false;
-  public static final boolean DEFAULT_RETAIN_OUTER_QUOTES = false;
-  public static final boolean DEFAULT_ALLOW_UNBALANCED_QUOTES = false;
-  public static final boolean DEFAULT_RETAIN_ESCAPE_CHARS = true;
-  public static final boolean DEFAULT_ALWAYS_QUOTE_OUTPUT = false;
-  
-  // This is the "null" character - if a value is set to this then it is ignored.
-  static final char NULL_CHARACTER = '\0';
   static final int INITIAL_READ_SIZE = 128;
 
   final char separator;
@@ -54,15 +42,15 @@ public class SimpleCsvParser implements CsvParser {
   final StringBuilder sb = new StringBuilder(INITIAL_READ_SIZE);
     
   public SimpleCsvParser() {
-    separator = DEFAULT_SEPARATOR;
-    quotechar = DEFAULT_QUOTE_CHAR;
-    escapechar = DEFAULT_ESCAPE_CHAR;
-    strictQuotes = DEFAULT_STRICT_QUOTES;
-    trimWhiteSpace = DEFAULT_TRIM_WS;
-    allowedUnbalancedQuotes = DEFAULT_ALLOW_UNBALANCED_QUOTES;
-    retainOuterQuotes = DEFAULT_RETAIN_OUTER_QUOTES;
-    retainEscapeChars = DEFAULT_RETAIN_ESCAPE_CHARS;
-    alwaysQuoteOutput = DEFAULT_ALWAYS_QUOTE_OUTPUT;
+    separator = ParserUtil.DEFAULT_SEPARATOR;
+    quotechar = ParserUtil.DEFAULT_QUOTE_CHAR;
+    escapechar = ParserUtil.DEFAULT_ESCAPE_CHAR;
+    strictQuotes = ParserUtil.DEFAULT_STRICT_QUOTES;
+    trimWhiteSpace = ParserUtil.DEFAULT_TRIM_WS;
+    allowedUnbalancedQuotes = ParserUtil.DEFAULT_ALLOW_UNBALANCED_QUOTES;
+    retainOuterQuotes = ParserUtil.DEFAULT_RETAIN_OUTER_QUOTES;
+    retainEscapeChars = ParserUtil.DEFAULT_RETAIN_ESCAPE_CHARS;
+    alwaysQuoteOutput = ParserUtil.DEFAULT_ALWAYS_QUOTE_OUTPUT;
   }
 
   /**
@@ -97,10 +85,10 @@ public class SimpleCsvParser implements CsvParser {
     if (anyCharactersAreTheSame(separator, quotechar, escapechar)) {
       throw new UnsupportedOperationException("The separator, quote, and escape characters must be different!");
     }
-    if (separator == NULL_CHARACTER) {
+    if (separator == ParserUtil.NULL_CHARACTER) {
       throw new UnsupportedOperationException("The separator character must be defined!");
     }
-    if (quotechar == NULL_CHARACTER && alwaysQuoteOutput) {
+    if (quotechar == ParserUtil.NULL_CHARACTER && alwaysQuoteOutput) {
       throw new UnsupportedOperationException("The quote character must be defined to set alwaysQuoteOutput=true!");      
     }
   }
@@ -110,7 +98,7 @@ public class SimpleCsvParser implements CsvParser {
   }
 
   private boolean isSameCharacter(char c1, char c2) {
-    return c1 != NULL_CHARACTER && c1 == c2;
+    return c1 != ParserUtil.NULL_CHARACTER && c1 == c2;
   }
   
   
@@ -137,7 +125,7 @@ public class SimpleCsvParser implements CsvParser {
       inQuotes = inEscape = false;
     }
   }
-  
+
   /**
    * Parses a single line of text (as defined by the presence of LF or CRLF chars)
    * according to the parser parameters you've set up and returns each parsed token
@@ -147,6 +135,7 @@ public class SimpleCsvParser implements CsvParser {
    * @return parsed tokens as List<String>
    */
   //public List<String> parse(String ln) {
+  @Override
   public String[] parse(String ln) {
     if (ln == null) { 
       return null; 
@@ -186,10 +175,10 @@ public class SimpleCsvParser implements CsvParser {
   /**
    * Parses a single line of text (as defined by the presence of LF or CRLF chars)
    * according to the parser parameters you've set up and returns each parsed token
-   * as an array of String.  Delegates to the parse method for the actual work.
+   * as an List of String.
    * 
-   * @param ln Single line of text
-   * @return parsed tokens as String[]
+   * @param ln Single line of text to parse
+   * @return parsed tokens as List<String>
    */
   public String[] parseLine(String ln) {
     return parse(ln);
@@ -207,15 +196,15 @@ public class SimpleCsvParser implements CsvParser {
   /* --------------------------------- */
   
   boolean isEscapeChar(char c) {
-    // if the escapechar is set to the NULL_CHAR then it shouldn't
+    // if the escapechar is set to the ParserUtil.NULL_CHAR then it shouldn't
     // match anything => nothing is the escapechar
-    return c == escapechar && escapechar != NULL_CHARACTER;
+    return c == escapechar && escapechar != ParserUtil.NULL_CHARACTER;
   }
   
   boolean isQuoteChar(char c) {
-    // if the quotechar is set to the NULL_CHAR then it shouldn't
+    // if the quotechar is set to the ParserUtil.NULL_CHAR then it shouldn't
     // match anything => nothing is the quotechar
-    return c == quotechar && quotechar != NULL_CHARACTER;
+    return c == quotechar && quotechar != ParserUtil.NULL_CHARACTER;
   }
   
   String handleEndOfToken(StringBuilder sb) {
@@ -330,9 +319,10 @@ public class SimpleCsvParser implements CsvParser {
 
           indexes = idxTrimSpaces(sb, left, right);
           left = indexes[0];
-          right = indexes[1];      
+          right = indexes[1];
+          
         } else {
-          pluckOuterQuotes(sb, left, right);
+          ParserUtil.pluckOuterQuotes(sb, left, right, quotechar);
           left = 0;
           right = sb.length() - 1;
         }
@@ -351,8 +341,8 @@ public class SimpleCsvParser implements CsvParser {
       return "";  // do not quote empty string
     }
     
-    int newLeft  = readLeftWhiteSpace(sb, left, right);
-    int newRight = readRightWhiteSpace(sb, left, right);
+    int newLeft  = ParserUtil.readLeftWhiteSpace(sb, left, right);
+    int newRight = ParserUtil.readRightWhiteSpace(sb, left, right);
     
     // if there are already edge quotes (ignoring spaces) then just return the 
     // string marked by the left and right indices
@@ -422,8 +412,8 @@ public class SimpleCsvParser implements CsvParser {
       return new int[]{left, right};
     }
     
-    int newLeft  = readLeftWhiteSpace(sb, left, right);
-    int newRight = readRightWhiteSpace(sb, left, right);
+    int newLeft  = ParserUtil.readLeftWhiteSpace(sb, left, right);
+    int newRight = ParserUtil.readRightWhiteSpace(sb, left, right);
 
     if (newLeft > newRight) {
       newLeft = left;
@@ -437,58 +427,5 @@ public class SimpleCsvParser implements CsvParser {
   }
   
   
-  void pluckOuterQuotes(StringBuilder sb, int left, int right) {
-    if (sb.length() < 2) {
-      return;
-    }
 
-    int newLeft  = readLeftWhiteSpace(sb, left, right);
-    int newRight = readRightWhiteSpace(sb, left, right);
-    
-    if (sb.charAt(newLeft) == quotechar && sb.charAt(newRight) == quotechar) {
-      sb.deleteCharAt(newRight);
-      sb.deleteCharAt(newLeft);
-    }
-  }
-  
-  /**
-   * Starting from the left side of the string reads to the first
-   * non-white space char (or end of string)
-   * For speed reasons, this code assumes your left and right boundary
-   * conditions are correct and that the StringBuilder is of size >= 1,
-   * so make sure to do checks before calling this method.
-   * 
-   * @param sb StringBuilder with at least one char (should not be null or size 0)
-   * @param left left boundary index of the current StringBuilder
-   * @param right right boundary index of the current StringBuilder
-   * @return idx one beyond the last white space char
-   */
-  int readLeftWhiteSpace(StringBuilder sb, int left, int right) {
-    for (int i = left; i <= right; i++) {
-      if (!Character.isWhitespace(sb.charAt(i))) {
-        return i;
-      }
-    }
-    return left;
-  }
-
-  /**
-   * Starting from the right side of the string reads to the first
-   * non-white space char (or start of string)
-   * For speed reasons, this code assumes your left and right boundary
-   * conditions are correct and that the StringBuilder is of size >= 1,
-   * so make sure to do checks before calling this method.
-   * @param sb     StringBuilder with at least one char (should not be null or size 0)
-   * @param left   left boundary index of the current StringBuilder 
-   * @param right  right boundary index of the current StringBuilder 
-   * @return idx one before the last white space char (reading from the right)
-   */
-  int readRightWhiteSpace(StringBuilder sb, int left, int right) {
-    for (int i = right; i >= left; i--) {
-      if (!Character.isWhitespace(sb.charAt(i))) {
-        return i;
-      }
-    }
-    return right;
-  }
 }
