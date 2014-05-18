@@ -132,6 +132,9 @@ public class MultiLineCsvParser implements CsvParser {
 
   @Override
   public String[] parse(String s) {
+    if (s == null) {
+      return null;
+    }
     List<String> toks;
     try {
       toks = parseNext(new StringReader(s));
@@ -216,7 +219,7 @@ public class MultiLineCsvParser implements CsvParser {
 
     // done parsing the line
     if (state.inQuotes && !allowedUnbalancedQuotes) {
-      throw new IllegalStateException("Un-terminated quoted field at end of CSV record");
+      throw new IllegalArgumentException("Un-terminated quoted field at end of CSV record");
 //      throw new CsvRecordException("Un-terminated quoted field at end of CSV record");
     }
 
