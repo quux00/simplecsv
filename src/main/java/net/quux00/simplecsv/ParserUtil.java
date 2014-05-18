@@ -11,6 +11,8 @@ public class ParserUtil {
   public static final boolean DEFAULT_ALLOW_UNBALANCED_QUOTES = false;
   public static final boolean DEFAULT_RETAIN_ESCAPE_CHARS = true;
   public static final boolean DEFAULT_ALWAYS_QUOTE_OUTPUT = false;
+  public static final boolean DEFAULT_ALLOW_DOUBLED_ESCAPED_QUOTES = false; // if true, allows quotes to exist within a quoted field as long as they are doubled.
+
   // This is the "null" character - if a value is set to this then it is ignored.
   public static final char NULL_CHARACTER = '\0';
 
@@ -71,5 +73,15 @@ public class ParserUtil {
       }
     }
     return right;
+  }
+  
+  public static boolean anyCharactersAreTheSame(char separator, char quotechar, char escape) {
+    return isSameCharacter(separator, quotechar) || 
+        isSameCharacter(separator, escape) || 
+        isSameCharacter(quotechar, escape);
+  }
+
+  public static boolean isSameCharacter(char c1, char c2) {
+    return c1 != ParserUtil.NULL_CHARACTER && c1 == c2;
   }
 }

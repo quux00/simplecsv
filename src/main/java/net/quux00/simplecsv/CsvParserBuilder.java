@@ -10,6 +10,8 @@ public class CsvParserBuilder {
   boolean retainOuterQuotes = ParserUtil.DEFAULT_RETAIN_OUTER_QUOTES;
   boolean retainEscapeChars = ParserUtil.DEFAULT_RETAIN_ESCAPE_CHARS;
   boolean alwaysQuoteOutput = ParserUtil.DEFAULT_ALWAYS_QUOTE_OUTPUT;
+  boolean supportsMultiLine = false;
+  boolean allowDoubleEscapedQuotes = false;
   
   public CsvParserBuilder separator(final char separator) {
     this.separator = separator;
@@ -56,10 +58,35 @@ public class CsvParserBuilder {
     return this;
   }
 
+  public CsvParserBuilder multiLine(boolean multi) {
+    supportsMultiLine = multi;
+    return this;
+  }
+  
+  public CsvParserBuilder allowDoubleEscapedQuotes(boolean rfc4180) {
+    allowDoubleEscapedQuotes = rfc4180;
+    return this;
+  }
+  
+  
   /**
    * Constructs Parser
    */
   public CsvParser build() {
+    if (supportsMultiLine || allowDoubleEscapedQuotes) {
+      return new MultiLineCsvParser(
+          separator,
+          quoteChar,
+          escapeChar,
+          strictQuotes,
+          trimWhitespace,
+          allowUnbalancedQuotes,
+          retainOuterQuotes,
+          retainEscapeChars,
+          alwaysQuoteOutput,
+          allowDoubleEscapedQuotes);
+    }
+    
     return new SimpleCsvParser(
         separator,
         quoteChar,

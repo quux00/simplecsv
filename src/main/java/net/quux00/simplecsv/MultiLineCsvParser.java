@@ -17,8 +17,8 @@ import java.util.List;
  *
  * Options / configurations:
  * - change the separator/delimiter char
- * - change the quote char, including specifying no quote char by setting it to NULL_CHARACTER
- * - change the escape char, including specifying no escape by setting it to NULL_CHARACTER
+ * - change the quote char, including specifying no quote char by setting it to ParserUtil.NULL_CHARACTER
+ * - change the escape char, including specifying no escape by setting it to ParserUtil.NULL_CHARACTER
  * - turn on strictQuotes mode
  * - turn on trimWhitespace mode
  * - turn on allowUnbalancedQuotes mode
@@ -28,7 +28,7 @@ import java.util.List;
  *
  * @ThreadSafe - Use came CsvParser in as many threads as you want.
  */
-public class MultiLineCsvParser {
+public class MultiLineCsvParser implements CsvParser {
 
   final char separator;
   final char quotechar;
@@ -41,35 +41,21 @@ public class MultiLineCsvParser {
   final boolean alwaysQuoteOutput;        // if true, put quote around around all outgoing tokens
   final boolean allowsDoubledEscapedQuotes; // if true, allows quotes to exist within a quoted field as long as they are doubled.
 
-  public static final char DEFAULT_SEPARATOR = ',';
-  public static final char DEFAULT_QUOTE_CHAR = '"';
-  public static final char DEFAULT_ESCAPE_CHAR = '\\';
-  public static final boolean DEFAULT_STRICT_QUOTES = false;
-  public static final boolean DEFAULT_TRIM_WS = false;
-  public static final boolean DEFAULT_RETAIN_OUTER_QUOTES = false;
-  public static final boolean DEFAULT_ALLOW_UNBALANCED_QUOTES = false;
-  public static final boolean DEFAULT_RETAIN_ESCAPE_CHARS = true;
-  public static final boolean DEFAULT_ALWAYS_QUOTE_OUTPUT = false;
-  public static final boolean DEFAULT_ALLOW_DOUBLED_ESCAPED_QUOTES = false; // if true, allows quotes to exist within a quoted field as long as they are doubled.
-
   static final int INITIAL_READ_SIZE = 128;
-
-  // This is the "null" character - if a value is set to this then it is ignored.
-  static final char NULL_CHARACTER = '\0';
 
   private static final boolean debug = false;
 
   public MultiLineCsvParser() {
-    separator = DEFAULT_SEPARATOR;
-    quotechar = DEFAULT_QUOTE_CHAR;
-    escapechar = DEFAULT_ESCAPE_CHAR;
-    strictQuotes = DEFAULT_STRICT_QUOTES;
-    trimWhiteSpace = DEFAULT_TRIM_WS;
-    allowedUnbalancedQuotes = DEFAULT_ALLOW_UNBALANCED_QUOTES;
-    retainOuterQuotes = DEFAULT_RETAIN_OUTER_QUOTES;
-    retainEscapeChars = DEFAULT_RETAIN_ESCAPE_CHARS;
-    alwaysQuoteOutput = DEFAULT_ALWAYS_QUOTE_OUTPUT;
-    allowsDoubledEscapedQuotes = DEFAULT_ALLOW_DOUBLED_ESCAPED_QUOTES;
+    separator = ParserUtil.DEFAULT_SEPARATOR;
+    quotechar = ParserUtil.DEFAULT_QUOTE_CHAR;
+    escapechar = ParserUtil.DEFAULT_ESCAPE_CHAR;
+    strictQuotes = ParserUtil.DEFAULT_STRICT_QUOTES;
+    trimWhiteSpace = ParserUtil.DEFAULT_TRIM_WS;
+    allowedUnbalancedQuotes = ParserUtil.DEFAULT_ALLOW_UNBALANCED_QUOTES;
+    retainOuterQuotes = ParserUtil.DEFAULT_RETAIN_OUTER_QUOTES;
+    retainEscapeChars = ParserUtil.DEFAULT_RETAIN_ESCAPE_CHARS;
+    alwaysQuoteOutput = ParserUtil.DEFAULT_ALWAYS_QUOTE_OUTPUT;
+    allowsDoubledEscapedQuotes = ParserUtil.DEFAULT_ALLOW_DOUBLED_ESCAPED_QUOTES;
   }
 
   /**
@@ -108,23 +94,15 @@ public class MultiLineCsvParser {
   }
 
   private void checkInvariants() {
-    if (anyCharactersAreTheSame(separator, quotechar, escapechar)) {
+    if (ParserUtil.anyCharactersAreTheSame(separator, quotechar, escapechar)) {
       throw new UnsupportedOperationException("The separator, quote, and escape characters must be different!");
     }
-    if (separator == NULL_CHARACTER) {
+    if (separator == ParserUtil.NULL_CHARACTER) {
       throw new UnsupportedOperationException("The separator character must be defined!");
     }
-    if (quotechar == NULL_CHARACTER && alwaysQuoteOutput) {
+    if (quotechar == ParserUtil.NULL_CHARACTER && alwaysQuoteOutput) {
       throw new UnsupportedOperationException("The quote character must be defined to set alwaysQuoteOutput=true!");
     }
-  }
-
-  private boolean anyCharactersAreTheSame(char separator, char quotechar, char escape) {
-    return isSameCharacter(separator, quotechar) || isSameCharacter(separator, escape) || isSameCharacter(quotechar, escape);
-  }
-
-  private boolean isSameCharacter(char c1, char c2) {
-    return c1 != NULL_CHARACTER && c1 == c2;
   }
 
   // keep track of mutable States for FSM of parsing
@@ -152,13 +130,22 @@ public class MultiLineCsvParser {
     }
   }
 
+  @Override
+  public String[] parse(String s) {
+    List<String> toks;
+    try {
+      toks = parseNext(new StringReader(s));
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
+    return toks.toArray(new String[toks.size()]);
+  }
+  
   /**
    * Parses a record (a single row of fields) as defined by the presence of LF
    * or CRLF. If a CR or CRLF is detected inside a quoted value then the value
    * returned will contain them and the parser will continue to look for the
-   * real record ending. This uses a PushBackReader because I hate tracking
-   * state and this is the easiest way to look ahead.
-   *
+   * real record ending. 
    *
    * @param reader the Reader get our data from
    * @return parsed tokens as List of Strings
@@ -278,15 +265,15 @@ public class MultiLineCsvParser {
   /* ---[ internal helper methods ]--- */
   /* --------------------------------- */
   boolean isEscapeChar(int c) {
-    // if the escapechar is set to the NULL_CHAR then it shouldn't
+    // if the escapechar is set to the ParserUtil.NULL_CHAR then it shouldn't
     // match anything => nothing is the escapechar
-    return c == escapechar && escapechar != NULL_CHARACTER;
+    return c == escapechar && escapechar != ParserUtil.NULL_CHARACTER;
   }
 
   boolean isQuoteChar(int c) {
-    // if the quotechar is set to the NULL_CHAR then it shouldn't
+    // if the quotechar is set to the ParserUtil.NULL_CHAR then it shouldn't
     // match anything => nothing is the quotechar
-    return c == quotechar && quotechar != NULL_CHARACTER;
+    return c == quotechar && quotechar != ParserUtil.NULL_CHARACTER;
   }
 
   String handleEndOfToken(State state, StringBuilder sb) {
