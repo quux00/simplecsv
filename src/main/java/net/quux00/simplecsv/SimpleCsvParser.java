@@ -130,6 +130,19 @@ public class SimpleCsvParser implements CsvParser {
   }
 
   
+  /**
+   * Retrieves a single line of text (as defined by the presence of LF or CRLF chars)
+   * and parses it into tokens, returning it as an List of String.
+   * 
+   * If you are using the CsvParser directly (not through a CsvReader) then it is better
+   * to use the {@link #parse(String)} method instead.
+   * 
+   * This method is used by the CsvReader. If the Reader passed in is not a BufferedReader
+   * a BufferedReader is constructed to wrap the reader.
+   * 
+   * @param ln Single line of text to parse
+   * @return parsed tokens as List<String>
+   */
   public List<String> parseNext(Reader reader) throws IOException {
     String line = null;
     BufferedReader br = null;
@@ -143,6 +156,25 @@ public class SimpleCsvParser implements CsvParser {
     }
     return parse0(line);
   }
+
+  /**
+   * Parses a single line of text (as defined by the presence of LF or CRLF chars)
+   * according to the parser parameters you've set up and returns each parsed token
+   * as an List of String.
+   * 
+   * @param ln Single line of text to parse
+   * @return parsed tokens as List<String>
+   */
+  //public List<String> parse(String ln) {
+  @Override
+  public String[] parse(String ln) {
+    if (ln == null) {
+      return null;
+    }
+    List<String> toks = parse0(ln);
+    return toks.toArray(new String[toks.size()]);
+  }
+
   
   private List<String> parse0(String ln) {
     if (ln == null) { 
@@ -176,43 +208,7 @@ public class SimpleCsvParser implements CsvParser {
     }
     toks.add( handleEndOfToken(sb) );
     return toks;
-  }
-  
-  /**
-   * Parses a single line of text (as defined by the presence of LF or CRLF chars)
-   * according to the parser parameters you've set up and returns each parsed token
-   * as an List of String.
-   * 
-   * @param ln Single line of text to parse
-   * @return parsed tokens as List<String>
-   */
-  //public List<String> parse(String ln) {
-  @Override
-  public String[] parse(String ln) {
-    if (ln == null) {
-      return null;
-    }
-    List<String> toks = parse0(ln);
-    return toks.toArray(new String[toks.size()]);
-  }
-  
-  /**
-   * Parses a single line of text (as defined by the presence of LF or CRLF chars)
-   * according to the parser parameters you've set up and returns each parsed token
-   * as an List of String.
-   * 
-   * @param ln Single line of text to parse
-   * @return parsed tokens as List<String>
-   */
-  public String[] parseLine(String ln) {
-    return parse(ln);
-//    List<String> toks = parse(ln);
-//    if (toks == null) {
-//      return null;
-//    } else {
-//      return toks.toArray(new String[toks.size()]);
-//    }
-  }
+  }  
 
   
   /* --------------------------------- */
