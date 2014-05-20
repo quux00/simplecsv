@@ -47,7 +47,7 @@ public class SimpleCsvParserInternalsTest {
     StringBuilder sb = new StringBuilder(32);
     sb.append("123456");
     
-    String rt = parser.ensureQuoted(sb, 0, sb.length()-1);
+    String rt = ParserUtil.ensureQuoted(sb, 0, sb.length()-1, '"');
     assertEquals("\"123456\"", rt);
   }
   
@@ -55,7 +55,7 @@ public class SimpleCsvParserInternalsTest {
   public void testEnsureQuotedEmptyStringShouldNotBeQuoted() {
     StringBuilder sb = new StringBuilder(32);
     
-    String rt = parser.ensureQuoted(sb, 0, sb.length()-1);
+    String rt = ParserUtil.ensureQuoted(sb, 0, sb.length()-1, '"');
     assertEquals("", rt);
   }
 
@@ -64,7 +64,7 @@ public class SimpleCsvParserInternalsTest {
     StringBuilder sb = new StringBuilder(32);
     sb.append("\t123456   ");
     
-    String rt = parser.ensureQuoted(sb, 0, sb.length()-1);
+    String rt = ParserUtil.ensureQuoted(sb, 0, sb.length()-1, '"');
     assertEquals("\"\t123456   \"", rt);
   }
 
@@ -73,7 +73,7 @@ public class SimpleCsvParserInternalsTest {
     StringBuilder sb = new StringBuilder(32);
     sb.append("\t123456   ");
     
-    String rt = parser.ensureQuoted(sb, 1, 6);
+    String rt = ParserUtil.ensureQuoted(sb, 1, 6, '"');
     assertEquals("\"123456\"", rt);
   }
 
@@ -83,7 +83,7 @@ public class SimpleCsvParserInternalsTest {
     //          0 12345678 901
     sb.append("\t\"123456 \"  ");
     
-    String rt = parser.ensureQuoted(sb, 0, sb.length()-1);
+    String rt = ParserUtil.ensureQuoted(sb, 0, sb.length()-1, '"');
     assertEquals("\t\"123456 \"  ", rt);
   }
 
@@ -93,7 +93,7 @@ public class SimpleCsvParserInternalsTest {
     //          0 12345678 901
     sb.append("\t\"123456 \"  ");
     
-    String rt = parser.ensureQuoted(sb, 1, sb.length()-1);
+    String rt = ParserUtil.ensureQuoted(sb, 1, sb.length()-1, '"');
     assertEquals("\"123456 \"  ", rt);
   }
   
@@ -103,7 +103,7 @@ public class SimpleCsvParserInternalsTest {
     //          0 12345678 901
     sb.append("\t\"123456 \"  ");
     
-    String rt = parser.ensureQuoted(sb, 0, 9);
+    String rt = ParserUtil.ensureQuoted(sb, 0, 9, '"');
     assertEquals("\t\"123456 \"", rt);
   }
 
@@ -437,7 +437,7 @@ public class SimpleCsvParserInternalsTest {
   public void testIdxTrimSpacesSingleSpaceOnLeft() {
     //idxTrimSpaces
     StringBuilder sb = new StringBuilder(" 1-2-3\"");
-    int[] indexes = parser.idxTrimSpaces(sb, 0, sb.length()-1);
+    int[] indexes = ParserUtil.idxTrimSpaces(sb, 0, sb.length()-1);
     assertEquals(2, indexes.length);
     assertEquals(1, indexes[0]);
     assertEquals(sb.length()-1, indexes[1]);
@@ -447,17 +447,17 @@ public class SimpleCsvParserInternalsTest {
   public void testIdxTrimSpacesMultipleSpacesBothSides() {
     //                                    0 1234567890
     StringBuilder sb = new StringBuilder(" \tone two 3   ");
-    int[] indexes = parser.idxTrimSpaces(sb, 0, sb.length()-1);
+    int[] indexes = ParserUtil.idxTrimSpaces(sb, 0, sb.length()-1);
     assertEquals(2, indexes.length);
     assertEquals(2, indexes[0]);
     assertEquals(10, indexes[1]);
     assertEquals("one two 3", sb.subSequence(indexes[0], indexes[1]+1));
 
-    indexes = parser.idxTrimSpaces(sb, 2, 10);
+    indexes = ParserUtil.idxTrimSpaces(sb, 2, 10);
     assertEquals(2, indexes[0]);
     assertEquals(10, indexes[1]);
 
-    indexes = parser.idxTrimSpaces(sb, 3, 9);
+    indexes = ParserUtil.idxTrimSpaces(sb, 3, 9);
     assertEquals(3, indexes[0]);
     assertEquals(8, indexes[1]);
     assertEquals("ne two", sb.subSequence(indexes[0], indexes[1]+1));    
@@ -467,7 +467,7 @@ public class SimpleCsvParserInternalsTest {
   public void testIdxTrimSpacesNoSpaces() {
     //                                    0123456
     StringBuilder sb = new StringBuilder("one two");
-    int[] indexes = parser.idxTrimSpaces(sb, 0, sb.length()-1);
+    int[] indexes = ParserUtil.idxTrimSpaces(sb, 0, sb.length()-1);
     assertEquals(2, indexes.length);
     assertEquals(0, indexes[0]);
     assertEquals(6, indexes[1]);
@@ -477,13 +477,13 @@ public class SimpleCsvParserInternalsTest {
   @Test
   public void testIdxTrimSpacesEdgeCases() {
     StringBuilder sb = new StringBuilder("");
-    int[] indexes = parser.idxTrimSpaces(sb, 0, 0);
+    int[] indexes = ParserUtil.idxTrimSpaces(sb, 0, 0);
     assertEquals(2, indexes.length);
     assertEquals(0, indexes[0]);
     assertEquals(0, indexes[1]);
 
     sb.append(" ");
-    indexes = parser.idxTrimSpaces(sb, 0, 0);
+    indexes = ParserUtil.idxTrimSpaces(sb, 0, 0);
     assertEquals(0, indexes[0]);
     assertEquals(0, indexes[1]);    
   }
@@ -495,7 +495,7 @@ public class SimpleCsvParserInternalsTest {
   public void testIdxTrimEdgeQuotes() {
     //                                     012345678 9
     StringBuilder sb = new StringBuilder("\"standard\"");
-    int[] indexes = parser.idxTrimEdgeQuotes(sb, 0, 9);
+    int[] indexes = ParserUtil.idxTrimEdgeQuotes(sb, 0, 9, '"');
     assertEquals(2, indexes.length);
     assertEquals(1, indexes[0]);
     assertEquals(8, indexes[1]);
@@ -505,31 +505,31 @@ public class SimpleCsvParserInternalsTest {
   @Test
   public void testIdxTrimEdgeQuotesOnlyOneEdgeQuote() {
     StringBuilder sb = new StringBuilder("\"standard\" ");
-    int[] indexes = parser.idxTrimEdgeQuotes(sb, 0, sb.length()-1);
+    int[] indexes = ParserUtil.idxTrimEdgeQuotes(sb, 0, sb.length()-1, '"');
     assertEquals("\"standard\" ", sb.substring(indexes[0], indexes[1]+1));
   }
 
   @Test
   public void testIdxTrimEdgeQuotesZeroEdgeQuote() {
     StringBuilder sb = new StringBuilder("standard\"");
-    int[] indexes = parser.idxTrimEdgeQuotes(sb, 0, sb.length()-1);
+    int[] indexes = ParserUtil.idxTrimEdgeQuotes(sb, 0, sb.length()-1, '"');
     assertEquals("standard\"", sb.substring(indexes[0], indexes[1]+1));
   }
 
   @Test
   public void testIdxTrimEdgeQuotesEdgeCases() {
     StringBuilder sb = new StringBuilder("");
-    int[] indexes = parser.idxTrimEdgeQuotes(sb, 0, 0);
+    int[] indexes = ParserUtil.idxTrimEdgeQuotes(sb, 0, 0, '"');
     assertEquals(0, indexes[0]);
     assertEquals(0, indexes[1]);
 
     sb.append("\"");
-    indexes = parser.idxTrimEdgeQuotes(sb, 0, 1);
+    indexes = ParserUtil.idxTrimEdgeQuotes(sb, 0, 1, '"');
     assertEquals(0, indexes[0]);
     assertEquals(1, indexes[1]);
 
     sb.append("\"");
-    indexes = parser.idxTrimEdgeQuotes(sb, 0, 1);
+    indexes = ParserUtil.idxTrimEdgeQuotes(sb, 0, 1, '"');
     assertEquals(1, indexes[0]);
     assertEquals(0, indexes[1]);
     assertEquals("", sb.substring(indexes[0], indexes[1]+1));

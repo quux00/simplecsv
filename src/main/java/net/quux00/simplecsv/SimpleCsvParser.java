@@ -320,24 +320,24 @@ public class SimpleCsvParser implements CsvParser {
     
     if (alwaysQuoteOutput) {
       if (trimWhiteSpace) {
-        int[] indexes = idxTrimSpaces(sb, left, right);
+        int[] indexes = ParserUtil.idxTrimSpaces(sb, left, right);
         left = indexes[0];
         right = indexes[1];
       } 
-      return ensureQuoted(sb, left, right);
+      return ParserUtil.ensureQuoted(sb, left, right, quotechar);
       
     } else { 
       if (!retainOuterQuotes) {
         if (trimWhiteSpace) {
-          int[] indexes = idxTrimSpaces(sb, left, right);
+          int[] indexes = ParserUtil.idxTrimSpaces(sb, left, right);
           left = indexes[0];
           right = indexes[1];
 
-          indexes = idxTrimEdgeQuotes(sb, left, right);
+          indexes = ParserUtil.idxTrimEdgeQuotes(sb, left, right, quotechar);
           left = indexes[0];
           right = indexes[1];
 
-          indexes = idxTrimSpaces(sb, left, right);
+          indexes = ParserUtil.idxTrimSpaces(sb, left, right);
           left = indexes[0];
           right = indexes[1];
           
@@ -348,104 +348,11 @@ public class SimpleCsvParser implements CsvParser {
         }
 
       } else if (trimWhiteSpace) {
-        int[] indexes = idxTrimSpaces(sb, left, right);
+        int[] indexes = ParserUtil.idxTrimSpaces(sb, left, right);
         left = indexes[0];
         right = indexes[1];      
       }
       return sb.substring(left, right+1);
     }
   }
-
-  String ensureQuoted(StringBuilder sb, int left, int right) {
-    if (left > right) {
-      return "";  // do not quote empty string
-    }
-    
-    int newLeft  = ParserUtil.readLeftWhiteSpace(sb, left, right);
-    int newRight = ParserUtil.readRightWhiteSpace(sb, left, right);
-    
-    // if there are already edge quotes (ignoring spaces) then just return the 
-    // string marked by the left and right indices
-    if (sb.charAt(newLeft) == quotechar && sb.charAt(newRight) == quotechar) {
-      return sb.substring(left, right + 1);
-    
-    } else {
-      if (right == sb.length() - 1) {
-        sb.append(quotechar);
-      } else {
-        sb.setCharAt(right + 1, quotechar);
-      }
-      
-      if (left == 0) {
-        return String.valueOf(quotechar) + sb.substring(left, right + 2);
-
-      } else {
-        sb.setCharAt(left - 1, quotechar);
-        return sb.substring(left - 1, right + 2);
-      }
-    }
-  }
-
-  /**
-   * Only adjusts the left and right index if both the first and last char
-   * in the buffer are quotechars.
-   * The left and right indexes returned should be used to create a string
-   * without edge quotes with: sb.substring(left, right+1)
-   * 
-   * Note: if the string of empty quotes (not empty string), meaning "\"\""
-   * is passed in, it will return left = 1, right = 0, which gives you empty
-   * string when you do: sb.substring(left, right+1)
-   * @param sb
-   * @param left index to look for left quote at
-   * @param right index to look for right quote at
-   * @return int[2]:  int[0]=> adjusted left index, which will be left or left + 1
-   *                  int[1]=> adjusted left index, which will be right or right - 1
-   */
-  int[] idxTrimEdgeQuotes(StringBuilder sb, int left, int right) {
-    if (sb.length() < 2) {
-      return new int[]{left, right};
-    
-    } else if (sb.charAt(left) == quotechar && sb.charAt(right) == quotechar) {
-      return new int[]{left+1, right-1};      
-    
-    } else {
-      return new int[]{left, right};
-    }
-  }
-  
-  /**
-   * Searches the StringBuilder passed in for white space on the left and
-   * right sides, starting at the left and right indices provided and returns
-   * a tuple (as int[2]) of the revised left and right indices after adjusting
-   * for spaces on the "edges" (starting from initial left and right indices).
-   * Does NOT mutate any state.
-   * 
-   * @param sb StringBuilder to parse
-   * @param left
-   * @param right
-   * @return array of int, actual a two-entry tuple. [0] is the left index
-   * and [1] is the right index into the StringBuilder after "trimming" for
-   * spaces.
-   */
-  int[] idxTrimSpaces(final StringBuilder sb, int left, int right) {
-    if (sb.length() < 2) {
-      return new int[]{left, right};
-    }
-    
-    int newLeft  = ParserUtil.readLeftWhiteSpace(sb, left, right);
-    int newRight = ParserUtil.readRightWhiteSpace(sb, left, right);
-
-    if (newLeft > newRight) {
-      newLeft = left;
-      newRight = right;
-    } 
-
-    int[] ary = new int[2];
-    ary[0] = newLeft;
-    ary[1] = newRight;
-    return ary;
-  }
-  
-  
-
 }
