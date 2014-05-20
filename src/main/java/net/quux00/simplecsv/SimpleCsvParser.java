@@ -1,5 +1,8 @@
 package net.quux00.simplecsv;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -126,17 +129,22 @@ public class SimpleCsvParser implements CsvParser {
     }
   }
 
-  /**
-   * Parses a single line of text (as defined by the presence of LF or CRLF chars)
-   * according to the parser parameters you've set up and returns each parsed token
-   * as an List of String.
-   * 
-   * @param ln Single line of text to parse
-   * @return parsed tokens as List<String>
-   */
-  //public List<String> parse(String ln) {
-  @Override
-  public String[] parse(String ln) {
+  
+  public List<String> parseNext(Reader reader) throws IOException {
+    String line = null;
+    BufferedReader br = null;
+    if (reader instanceof BufferedReader) {
+      br = (BufferedReader) reader;
+      line = br.readLine();
+    } else {
+      br = new BufferedReader(reader);
+      line = br.readLine();
+      br.close();
+    }
+    return parse0(line);
+  }
+  
+  private List<String> parse0(String ln) {
     if (ln == null) { 
       return null; 
     }
@@ -167,9 +175,25 @@ public class SimpleCsvParser implements CsvParser {
       throw new IllegalArgumentException("Un-terminated quoted field at end of CSV line");
     }
     toks.add( handleEndOfToken(sb) );
-
+    return toks;
+  }
+  
+  /**
+   * Parses a single line of text (as defined by the presence of LF or CRLF chars)
+   * according to the parser parameters you've set up and returns each parsed token
+   * as an List of String.
+   * 
+   * @param ln Single line of text to parse
+   * @return parsed tokens as List<String>
+   */
+  //public List<String> parse(String ln) {
+  @Override
+  public String[] parse(String ln) {
+    if (ln == null) {
+      return null;
+    }
+    List<String> toks = parse0(ln);
     return toks.toArray(new String[toks.size()]);
-    //return toks;
   }
   
   /**

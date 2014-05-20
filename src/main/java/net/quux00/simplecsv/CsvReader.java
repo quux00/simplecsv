@@ -1,21 +1,5 @@
 package net.quux00.simplecsv;
 
-/**
- Copyright 2005 Bytecode Pty Ltd.
-
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
-
- http://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
- */
-
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.IOException;
@@ -32,8 +16,7 @@ import java.util.List;
 public class CsvReader implements Closeable, Iterable<String[]> {
 
   private BufferedReader br;
-  private boolean hasNext = true;
-  private boolean linesSkiped;
+  private int recordNumber = 1;
 
   CsvParser parser;
   int skipLines;
@@ -99,11 +82,12 @@ public class CsvReader implements Closeable, Iterable<String[]> {
   public List<String[]> readAll() throws IOException {
 
     List<String[]> allElements = new ArrayList<String[]>();
-    while (hasNext) {
+    while (true) {
       String[] nextLineAsTokens = readNext();
-      if (nextLineAsTokens != null) {
-        allElements.add(nextLineAsTokens);
+      if (nextLineAsTokens == null) {
+        break;
       }
+      allElements.add(nextLineAsTokens);      
     }
     return allElements;
   }
@@ -115,30 +99,33 @@ public class CsvReader implements Closeable, Iterable<String[]> {
    * @throws IOException if bad things happen during the read
    */
   public String[] readNext() throws IOException {
-    String ln = getNextLine();
-    return parser.parse(ln);
+    try {
+      while (skipLines > 0) {
+        if (parser.parseNext(br) == null) {
+          // if we reacher EOF, then consider all lines skipped
+          skipLines = 0;
+        } else {
+          recordNumber++;
+          skipLines--;
+        }
+      }
+
+      List<String> next = parser.parseNext(br);
+      if (next == null) {
+        return null;
+      }
+      recordNumber++;
+      return next.toArray(new String[next.size()]);
+      
+    } catch (IllegalArgumentException re) {
+      // we append the record number that caused the exception
+      IllegalArgumentException nre = new IllegalArgumentException(re.getMessage() + ": " + recordNumber + ".");
+      nre.setStackTrace(re.getStackTrace());
+      throw nre;
+    }
   }
 
-  /**
-   * Reads the next line from the file.
-   *
-   * @return the next line from the file without trailing newline
-   * @throws IOException if bad things happen during the read
-   */
-  // TODO: not sure I want all this nonsense about hasNext ...
-  private String getNextLine() throws IOException {
-    if (!this.linesSkiped) {
-      for (int i = 0; i < skipLines; i++) {
-        br.readLine();
-      }
-      this.linesSkiped = true;
-    }
-    String nextLine = br.readLine();
-    if (nextLine == null) {
-      hasNext = false;
-    }
-    return hasNext ? nextLine : null;
-  }
+
 
   /**
    * Closes the underlying reader.

@@ -34,6 +34,8 @@ public class CsvReaderTest {
   CsvReader csvr;
   String lines;
   
+  public static final int INITIAL_READ_SIZE = 128;
+  
   /**
    * Setup the test.
    */
@@ -477,8 +479,7 @@ public class CsvReaderTest {
 
   @Test
   public void testParseLineStrictQuote() throws IOException {
-
-    StringBuilder sb = new StringBuilder(SimpleCsvParser.INITIAL_READ_SIZE);
+    StringBuilder sb = new StringBuilder(INITIAL_READ_SIZE);
     sb.append("a,b,c").append("\n");   // standard case
     sb.append("a,\"b,b,b\",c").append("\n");  // quoted elements
     sb.append(",,").append("\n"); // empty elements
@@ -897,7 +898,6 @@ public class CsvReaderTest {
     }
   }
   
-  
 
   /* ---[ Test OpenCSV bug 97 ]--- */
   // https://sourceforge.net/p/opencsv/bugs/97/
@@ -964,7 +964,5 @@ public class CsvReaderTest {
         file.delete();
       }
   }
-
   /* ---[ END Test OpenCSV bug 97 ]--- */
-
 }

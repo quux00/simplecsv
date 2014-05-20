@@ -220,7 +220,6 @@ public class MultiLineCsvParser implements CsvParser {
     // done parsing the line
     if (state.inQuotes && !allowedUnbalancedQuotes) {
       throw new IllegalArgumentException("Un-terminated quoted field at end of CSV record");
-//      throw new CsvRecordException("Un-terminated quoted field at end of CSV record");
     }
 
     toks.add(handleEndOfToken(state, sb));
