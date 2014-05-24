@@ -15,6 +15,7 @@ public class ParserUtil {
 
   // This is the "null" character - if a value is set to this then it is ignored.
   public static final char NULL_CHARACTER = '\0';
+
   
   /**
    * Only adjusts the left and right index if both the first and last char in
@@ -108,7 +109,15 @@ public class ParserUtil {
     }
   }
 
-  
+  /**
+   * Convenience method to use when quotechar is the standard double quote.
+   * 
+   * Calls pluckOuterQuotes(StringBuilder sb, int left, int right, char quotechar)
+   * with the quotechar set to '"'. 
+   * @param sb StringBuilder with the String being built
+   * @param left
+   * @param right
+   */
   public static void pluckOuterQuotes(StringBuilder sb, int left, int right) {
     pluckOuterQuotes(sb, left, right, '"');
   }

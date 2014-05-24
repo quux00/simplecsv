@@ -31,10 +31,13 @@ import org.mockito.Matchers;
 
 public class CsvReaderTest {
 
+  public static final int INITIAL_READ_SIZE = 128;
+  static final String CR = "\r";
+  static final String LF = "\n";
+  static final String CRLF = CR + LF;
+
   CsvReader csvr;
   String lines;
-  
-  public static final int INITIAL_READ_SIZE = 128;
   
   /**
    * Setup the test.
@@ -965,4 +968,68 @@ public class CsvReaderTest {
       }
   }
   /* ---[ END Test OpenCSV bug 97 ]--- */
+  
+  
+  
+  // CsvReader tests using MultiLine parser
+  // TODO: this should be moved to the CsvReader unit test => why is this here?
+  public void testCrLfAndAlwaysQuoteOutput() throws IOException {
+    CsvParser p = new CsvParserBuilder().
+        trimWhitespace(true).
+        alwaysQuoteOutput(true).
+        multiLine(true).
+        build();
+
+    // all quoted of course
+    CsvReader r = new CsvReader(new StringReader(
+        "a" + LF
+        + "," + CRLF
+        + "b" + LF
+        + ",c" + CR), p);
+
+    // LINE 1 = 'a' + LF
+    String[] result = r.readNext();
+    assertArrayEquals(new String[]{"\"a\""}, result);
+
+    // LINE 2 =  , + CRLF == _,_ (line starting with a comma and then a CR or CRLF is actually two emtpy fields
+    result = r.readNext();
+    assertArrayEquals(new String[]{"", ""}, result);
+
+    // LINE 3 = 'b' + LF
+    result = r.readNext();
+    assertArrayEquals(new String[]{"\"b\""}, result);
+
+    // LINE 4 =  , + 'c' + CR + EOF = empty + c
+    result = r.readNext();
+    assertArrayEquals(new String[]{"", "\"c\""}, result);
+    
+    r.close();
+  }
+
+  @Test
+  public void rfc4180PlusChangeEscapeCharToDoubleQuote() throws IOException {
+    CsvParser rfc4180 = new CsvParserBuilder().
+        multiLine(true).
+        allowDoubleEscapedQuotes(true).
+        escapeChar('"').
+        quoteChar('\'').
+        build();
+
+    // all quoted of course
+    CsvReader r = new CsvReader(new StringReader("'a\r\nb',b\\\b,'\\nd',e\n"), rfc4180);
+
+    String[] toks = r.readNext();
+    assertEquals(4, toks.length);
+    assertEquals("a\r\nb", toks[0]);
+    assertEquals("b\\\b", toks[1]); 
+    assertEquals("\\nd", toks[2]);
+    assertEquals("e", toks[3]);
+
+    r = new CsvReader(new StringReader("'Stan \"\"The Man\"\"'"), rfc4180);
+    toks = r.readNext();
+    assertEquals(1, toks.length);
+    assertEquals("Stan \"\"The Man\"\"", toks[0]);
+    
+    r.close();
+  }
 }

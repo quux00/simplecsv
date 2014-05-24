@@ -85,7 +85,7 @@ public class SimpleCsvParser implements CsvParser {
   }
   
   private void checkInvariants() {
-    if (anyCharactersAreTheSame(separator, quotechar, escapechar)) {
+    if (ParserUtil.anyCharactersAreTheSame(separator, quotechar, escapechar)) {
       throw new UnsupportedOperationException("The separator, quote, and escape characters must be different!");
     }
     if (separator == ParserUtil.NULL_CHARACTER) {
@@ -95,15 +95,6 @@ public class SimpleCsvParser implements CsvParser {
       throw new UnsupportedOperationException("The quote character must be defined to set alwaysQuoteOutput=true!");      
     }
   }
-  
-  private boolean anyCharactersAreTheSame(char separator, char quotechar, char escape) {
-    return isSameCharacter(separator, quotechar) || isSameCharacter(separator, escape) || isSameCharacter(quotechar, escape);
-  }
-
-  private boolean isSameCharacter(char c1, char c2) {
-    return c1 != ParserUtil.NULL_CHARACTER && c1 == c2;
-  }
-  
   
   // keep track of mutable States for FSM of parsing
   static class State {

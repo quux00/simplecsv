@@ -10,7 +10,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.Arrays;
 
 import org.junit.Before;
@@ -74,38 +73,6 @@ public class MultiLineCsvParserTest {
       build();
   }
 
-  @Test
-  public void rfc4180() {
-    MultiLineCsvParser rfc4180 = (MultiLineCsvParser) new CsvParserBuilder().
-        allowDoubleEscapedQuotes(true).
-        multiLine(true).
-        build();
-    MultiLineCsvParser regular = (MultiLineCsvParser) new CsvParserBuilder().
-        allowDoubleEscapedQuotes(false).
-        multiLine(true).
-        build();
-  
-    String[] toks = null;
-
-    String s = "Stan \"\"The Man\"\"";
-    toks = rfc4180.parse(s);
-    assertEquals(1, toks.length);
-    assertEquals("Stan \"\"The Man\"\"", toks[0]);  // passes
-
-    toks = regular.parse(s);
-    assertEquals(1, toks.length);
-    assertEquals("Stan \"\"The Man\"\"", toks[0]);  // passes
-
-    
-    String t = "\"Stan \"\"The Man\"\"\"";
-    toks = rfc4180.parse(t);
-    assertEquals(1, toks.length);
-    assertEquals("Stan \"The Man\"", toks[0]);  // passes
-
-    toks = regular.parse(t);
-    assertEquals(1, toks.length);
-    assertEquals("Stan \"\"The Man\"\"", toks[0]);  // passes
-  }
   
   /* -------------------------------------------- */
   /* ---[ Tests with Default Parser Settings ]--- */
@@ -1367,40 +1334,6 @@ public class MultiLineCsvParserTest {
     assertArrayEquals(new String[]{"", "c"}, p.parseNthRecord(data, 4));
   }
 
-  // TODO: this should be moved to the CsvReader unit test => why is this here?
-  @Test
-  public void testCrLfAndAlwaysQuoteOutput() throws IOException {
-    CsvParser p = new CsvParserBuilder().
-        trimWhitespace(true).
-        alwaysQuoteOutput(true).
-        multiLine(true).
-        build();
-
-    // all quoted of course
-    CsvReader r = new CsvReader(new StringReader(
-        "a" + LF
-        + "," + CRLF
-        + "b" + LF
-        + ",c" + CR), p);
-
-    // LINE 1 = 'a' + LF
-    String[] result = r.readNext();
-    assertArrayEquals(new String[]{"\"a\""}, result);
-
-    // LINE 2 =  , + CRLF == _,_ (line starting with a comma and then a CR or CRLF is actually two emtpy fields
-    result = r.readNext();
-    assertArrayEquals(new String[]{"", ""}, result);
-
-    // LINE 3 = 'b' + LF
-    result = r.readNext();
-    assertArrayEquals(new String[]{"\"b\""}, result);
-
-    // LINE 4 =  , + 'c' + CR + EOF = empty + c
-    result = r.readNext();
-    assertArrayEquals(new String[]{"", "\"c\""}, result);
-    
-    r.close();
-  }
 
   @Test
   public void testIssue2859181WithRetainQuotesAndRetainEscapeCharsFalse() {
@@ -1815,5 +1748,198 @@ public class MultiLineCsvParserTest {
     asList = Arrays.asList(toks).toString();
     exp = "[, \"abc\\\"def\"]";
     assertEquals(exp, asList);
+  }
+
+  
+  /* --------------------------------------------------------- */
+  /* ---[ Rfc4180 allowDoubleEscapedQuotes settings tests ]--- */
+  /* --------------------------------------------------------- */
+  // Note "rfc4180" below means that allowDoubleEscapedQuotes = true
+  
+  @Test
+  public void rfc4180PlusRetainEscapeCharsEqualsFalsePlusTrimWhitespace() {
+    CsvParser rfc4180 = new CsvParserBuilder().
+        multiLine(true).
+        allowDoubleEscapedQuotes(true).
+        retainEscapeChars(false).
+        trimWhitespace(true).
+        build();
+
+    String[] toks = rfc4180.parse("\"a\\nb\",b\\\b,\"\\nd\",e\n");
+
+    assertEquals(4, toks.length);
+    assertEquals("a\nb", toks[0]);
+    assertEquals("b\b", toks[1]);  // 
+    assertEquals("d", toks[2]);    // whitespace trimmed since was first char
+    assertEquals("e", toks[3]);
+
+    toks = rfc4180.parse("\"a\\\n\r\nb\",\"Stan \"\"The Man\"\"\"");
+
+    assertEquals(2, toks.length);
+    assertEquals("a\n\r\nb", toks[0]);
+    assertEquals("Stan \"The Man\"", toks[1]);
+  }
+
+  
+  @Test
+  public void rfc4180PlusAllowUnbalancedQuotesPlusTrimWhitespace() {
+    CsvParser rfc4180 = new CsvParserBuilder().
+        multiLine(true).
+        allowDoubleEscapedQuotes(true).
+        allowUnbalancedQuotes(true).
+        trimWhitespace(true).
+        build();
+    
+    String s = "Stan \"\"The Man\"\", \"Stan \"\"The Man\"\"\", \"abcdefg\"\"hijk\", abcdefg\"\"hijk  ";
+    String[] toks = rfc4180.parse(s);
+    assertEquals(4, toks.length);
+    assertEquals("Stan \"\"The Man\"\"", toks[0]);
+    assertEquals("Stan \"The Man\"", toks[1]);
+    assertEquals("abcdefg\"hijk", toks[2]);
+    assertEquals("abcdefg\"\"hijk", toks[3]);
+  }
+
+  
+  @Test
+  public void rfc4180PlusTimeWhitespacePlusAlwaysQuoteOutput() {
+    MultiLineCsvParser rfc4180 = (MultiLineCsvParser) new CsvParserBuilder().
+        multiLine(true).
+        allowDoubleEscapedQuotes(true).
+        alwaysQuoteOutput(true).
+        trimWhitespace(true).
+        build();
+    
+    String s = "Stan \"\"The Man\"\", \"Stan \"\"The Man\"\"\", 42, 2 \"lala\"";
+    String[] toks = rfc4180.parse(s);
+    assertEquals(4, toks.length);
+    assertEquals("\"Stan \"\"The Man\"\"\"", toks[0]);
+    assertEquals("\"Stan \"The Man\"\"", toks[1]);
+    assertEquals("\"42\"", toks[2]);
+    assertEquals("\"2 \"lala\"\"", toks[3]);
+  }
+
+
+  @Test
+  public void rfc4180PlusAlwaysQuoteOutput() {
+    MultiLineCsvParser rfc4180 = (MultiLineCsvParser) new CsvParserBuilder().
+        multiLine(true).
+        allowDoubleEscapedQuotes(true).
+        alwaysQuoteOutput(true).
+        build();
+    
+    String s = "Stan \"\"The Man\"\", \"Stan \"\"The Man\"\"\", 42, 2 \"lala\"";
+    String[] toks = rfc4180.parse(s);
+    assertEquals(4, toks.length);
+    assertEquals("\"Stan \"\"The Man\"\"\"", toks[0]);
+    assertEquals(" \"Stan \"The Man\"\"", toks[1]);
+    assertEquals("\" 42\"", toks[2]);
+    assertEquals("\" 2 \"lala\"\"", toks[3]);
+  }
+
+  
+  @Test
+  public void rfc4180PlusStrictQuotes() {
+    MultiLineCsvParser rfc4180 = (MultiLineCsvParser) new CsvParserBuilder().
+        multiLine(true).
+        allowDoubleEscapedQuotes(true).
+        strictQuotes(true).
+        build();
+    
+    String s = "Stan \"\"The Man\"\", \"Stan \"\"The Man\"\"\", 42, 2 \"lala\"";
+    String[] toks = rfc4180.parse(s);
+    assertEquals(4, toks.length);
+    assertEquals("", toks[0]);
+    assertEquals("Stan \"The Man\"", toks[1]);
+    assertEquals("", toks[2]);
+    assertEquals("lala", toks[3]);
+  }
+  
+  @Test
+  public void rfc4180() {
+    MultiLineCsvParser rfc4180 = (MultiLineCsvParser) new CsvParserBuilder().
+        allowDoubleEscapedQuotes(true).
+        multiLine(true).
+        build();
+    MultiLineCsvParser regular = (MultiLineCsvParser) new CsvParserBuilder().
+        allowDoubleEscapedQuotes(false).
+        multiLine(true).
+        build();
+  
+    String[] toks = null;
+
+    String s = "Stan \"\"The Man\"\"";
+    toks = rfc4180.parse(s);
+    assertEquals(1, toks.length);
+    assertEquals("Stan \"\"The Man\"\"", toks[0]);
+
+    toks = regular.parse(s);
+    assertEquals(1, toks.length);
+    assertEquals("Stan \"\"The Man\"\"", toks[0]);
+
+    
+    String t = "\"Stan \"\"The Man\"\"\"";
+    toks = rfc4180.parse(t);
+    assertEquals(1, toks.length);
+    assertEquals("Stan \"The Man\"", toks[0]);
+
+    toks = regular.parse(t);
+    assertEquals(1, toks.length);
+    assertEquals("Stan \"\"The Man\"\"", toks[0]);
+  }
+
+  
+  @Test
+  public void rfc4180PlusRetainEscapeCharsEqualsFalsePlusChangeEscapeCharToDoubleQuote() {
+    CsvParser rfc4180 = new CsvParserBuilder().
+        multiLine(true).
+        allowDoubleEscapedQuotes(true).
+        escapeChar('"').
+        quoteChar('\'').
+        retainEscapeChars(false).
+        build();
+
+    String[] toks = rfc4180.parse("'a\\nb',b\\\b,'\\nd',e\n");
+
+    assertEquals(4, toks.length);
+    assertEquals("a\\nb", toks[0]);
+    assertEquals("b\\\b", toks[1]); 
+    assertEquals("\\nd", toks[2]);
+    assertEquals("e", toks[3]);
+
+    toks = rfc4180.parse("'a\\\n\r\nb','Stan ''The Man'''");
+    assertEquals(2, toks.length);
+    assertEquals("a\\\n\r\nb", toks[0]);
+    assertEquals("Stan 'The Man'", toks[1]);
+    
+    toks = rfc4180.parse("'Stan \"\"The Man\"\"'");
+    assertEquals(1, toks.length);
+    assertEquals("Stan The Man", toks[0]);  // double quotes gone, since they are now (unretained) escape chars
+  }
+
+  @Test
+  public void rfc4180PlusChangeEscapeCharToDoubleQuote() {
+    CsvParser rfc4180 = new CsvParserBuilder().
+        multiLine(true).
+        allowDoubleEscapedQuotes(true).
+        escapeChar('"').
+        quoteChar('\'').
+        build();
+
+    String[] toks = rfc4180.parse("'a\\nb',b\\\b,'\\nd',e\n");
+
+    assertEquals(4, toks.length);
+    assertEquals("a\\nb", toks[0]);
+    assertEquals("b\\\b", toks[1]); 
+    assertEquals("\\nd", toks[2]);
+    assertEquals("e", toks[3]);
+
+    toks = rfc4180.parse("'a\\\n\r\nb','Stan ''The Man'''");
+    assertEquals(2, toks.length);
+    assertEquals("a\\\n\r\nb", toks[0]);
+    assertEquals("Stan 'The Man'", toks[1]);
+    
+    toks = rfc4180.parse("'Stan \"\"The Man\"\"'");
+    assertEquals(1, toks.length);
+    assertEquals("Stan \"\"The Man\"\"", toks[0]);
   }
 }
