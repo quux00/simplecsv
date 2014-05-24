@@ -1,0 +1,34 @@
+Benchmark Conditions:
+System: 64-bit Linux laptop, 8 cpu, 16 GB RAM
+Date: Sat May 24, 2014
+Git revision: 8ad9ec03275d29e1dbdacd904785547c76d85ef0, 'v2.0bench' branch
+
+Benchmark                                                            Mode   Samples         Mean   Mean error    Units  Comparison
+-- File based Benchmarks --
+n.q.s.b.Benchmark.benchLargeCsvFromFileCsvReaderXMultiLine           avgt        30     1896.081       13.204    ms/op  
+n.q.s.b.Benchmark.benchLargeCsvFromFileCsvReaderSimple               avgt        30     1467.456        6.564    ms/op  1896 / 1467 = 1.29
+
+n.q.s.b.Benchmark.benchLargeCsvFromFileMultiLine                     avgt        30     1848.153       16.322    ms/op  
+n.q.s.b.Benchmark.benchLargeCsvFromFileSimple                        avgt        30     1438.170       12.011    ms/op  1848 / 1438 = 1.29
+
+n.q.s.b.Benchmark.benchLargeCsvFromFileMultiLineStrictQuotesTrim     avgt        30     2038.730       46.057    ms/op  
+n.q.s.b.Benchmark.benchLargeCsvFromFileSimpleStrictQuotesTrim        avgt        30     1557.465       17.896    ms/op  2039 / 1557 = 1.31
+
+n.q.s.b.Benchmark.benchSmallCsvFromFileMultiLine                     avgt        30      692.025       23.737    us/op
+n.q.s.b.Benchmark.benchSmallCsvFromFileSimple                        avgt        30      570.339       27.518    us/op  692 / 570   = 1.21
+
+n.q.s.b.Benchmark.benchSmallCsvFromFileMultiLineStrictQuotesTrim     avgt        30      765.099       41.746    us/op  
+n.q.s.b.Benchmark.benchSmallCsvFromFileSimpleStrictQuotesTrim        avgt        30      604.994       24.254    us/op  765 / 605   = 1.26
+
+
+-- In memory string based Benchmarks --
+
+n.q.s.b.Benchmark.benchLongInMemoryStringMultiLine                   avgt        30       11.119        0.421    us/op
+n.q.s.b.Benchmark.benchLongInMemoryStringSimple                      avgt        30        7.409        0.744    us/op  11.1 / 7.4  = 1.5
+
+n.q.s.b.Benchmark.benchRetainQuotesTrimWhitespaceMultiLine           avgt        30      704.882       32.498    ns/op
+n.q.s.b.Benchmark.benchRetainQuotesTrimWhitespaceSimple              avgt        30      522.102       15.755    ns/op  705 / 522   = 1.35
+
+n.q.s.b.Benchmark.benchStrictQuotesTrimWhitespaceMultiLine           avgt        30      770.679       34.138    ns/op
+n.q.s.b.Benchmark.benchStrictQuotesTrimWhitespaceSimple              avgt        30      519.076       22.409    ns/op  771 / 519   = 1.49
+
