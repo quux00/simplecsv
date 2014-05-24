@@ -74,6 +74,39 @@ public class MultiLineCsvParserTest {
       build();
   }
 
+  @Test
+  public void rfc4180() {
+    MultiLineCsvParser rfc4180 = (MultiLineCsvParser) new CsvParserBuilder().
+        allowDoubleEscapedQuotes(true).
+        multiLine(true).
+        build();
+    MultiLineCsvParser regular = (MultiLineCsvParser) new CsvParserBuilder().
+        allowDoubleEscapedQuotes(false).
+        multiLine(true).
+        build();
+  
+    String[] toks = null;
+
+    String s = "Stan \"\"The Man\"\"";
+    toks = rfc4180.parse(s);
+    assertEquals(1, toks.length);
+    assertEquals("Stan \"\"The Man\"\"", toks[0]);  // passes
+
+    toks = regular.parse(s);
+    assertEquals(1, toks.length);
+    assertEquals("Stan \"\"The Man\"\"", toks[0]);  // passes
+
+    
+    String t = "\"Stan \"\"The Man\"\"\"";
+    toks = rfc4180.parse(t);
+    assertEquals(1, toks.length);
+    assertEquals("Stan \"The Man\"", toks[0]);  // passes
+
+    toks = regular.parse(t);
+    assertEquals(1, toks.length);
+    assertEquals("Stan \"\"The Man\"\"", toks[0]);  // passes
+  }
+  
   /* -------------------------------------------- */
   /* ---[ Tests with Default Parser Settings ]--- */
   /* -------------------------------------------- */
