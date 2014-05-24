@@ -26,7 +26,7 @@ import java.util.List;
  * - turn on alwaysQuoteOutput mode
  * - turn on alwaysAllowDoubleEscapedQuotes
  *
- * @ThreadSafe - Use came CsvParser in as many threads as you want.
+ * This parser is ThreadSafe - Use the same CsvParser in as many threads as you want.
  */
 public class MultiLineCsvParser implements CsvParser {
 
@@ -65,8 +65,7 @@ public class MultiLineCsvParser implements CsvParser {
    * @param separator single char that separates values in the list
    * @param quotechar single char that is used to quote values
    * @param escapechar single char that is used to escape values
-   * @param strictQuotes setting to only accept values if they are between
-   * quote characters
+   * @param strictQuotes only accept values if they are between quote characters
    * @param trimWhiteSpace trims leading and trailing whitespace of each token
    * before it is returned
    * @param allowedUnbalancedQuotes
@@ -131,17 +130,15 @@ public class MultiLineCsvParser implements CsvParser {
   }
 
   @Override
-  public String[] parse(String s) {
+  public List<String> parse(String s) {
     if (s == null) {
       return null;
     }
-    List<String> toks;
     try {
-      toks = parseNext(new StringReader(s));
+      return parseNext(new StringReader(s));
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }
-    return toks.toArray(new String[toks.size()]);
   }
   
   /**
@@ -164,10 +161,6 @@ public class MultiLineCsvParser implements CsvParser {
 
     final StringBuilder sb = new StringBuilder(INITIAL_READ_SIZE);
     final List<String> toks = new ArrayList<String>();
-
-    // We used to have state as an instance variable? But why not just make 
-    // one fresh each call?? After all, StriungBuilde and ArrayList are far
-    // more heavyweight than State is.
     final State state = new State();
 
     decide:
