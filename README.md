@@ -30,6 +30,8 @@ I toyed with keeping the name "OpenCSV" or even calling the library "ReOpenCSV",
 <a name="status"></a>
 ## Release Status
 
+A 1.1 tag was applied in May 2014 and is now available in maven central: [http://search.maven.org/#search|ga|1|simplecsv](http://search.maven.org/#search|ga|1|simplecsv).  This address [issue #7](https://github.com/quux00/simplecsv/issues/7).
+
 A 1.0 tag was applied in March 2014 and is now available in maven central: [http://search.maven.org/#search|ga|1|simplecsv](http://search.maven.org/#search|ga|1|simplecsv).  Thanks for the nudge from [benburton](https://github.com/benburton).
 
 <br>
