@@ -87,29 +87,29 @@ public class Benchmark {
   
   @GenerateMicroBenchmark
   @OutputTimeUnit(TimeUnit.NANOSECONDS)
-  public String[] benchStrictQuotesTrimWhitespaceSimple(StateSimpleParserStrictQuotesTrimWhitespace state) throws IOException {
+  public List<String> benchStrictQuotesTrimWhitespaceSimple(StateSimpleParserStrictQuotesTrimWhitespace state) throws IOException {
     return benchSmallLine0(state.p);
   }
 
   @GenerateMicroBenchmark
   @OutputTimeUnit(TimeUnit.NANOSECONDS)  
-  public String[] benchStrictQuotesTrimWhitespaceMultiLine(StateMultiLineParserStrictQuotesTrimWhitespace state) throws IOException {
+  public List<String> benchStrictQuotesTrimWhitespaceMultiLine(StateMultiLineParserStrictQuotesTrimWhitespace state) throws IOException {
     return benchSmallLine0(state.p);
   }
   
   @GenerateMicroBenchmark
   @OutputTimeUnit(TimeUnit.NANOSECONDS)
-  public String[] benchRetainQuotesTrimWhitespaceSimple(StateSimpleParserRetainQuotesTrimWhitespace state) throws IOException {
+  public List<String> benchRetainQuotesTrimWhitespaceSimple(StateSimpleParserRetainQuotesTrimWhitespace state) throws IOException {
     return benchSmallLine0(state.p);
   }
 
   @GenerateMicroBenchmark
   @OutputTimeUnit(TimeUnit.NANOSECONDS)  
-  public String[] benchRetainQuotesTrimWhitespaceMultiLine(StateMultiLineParserRetainQuotesTrimWhitespace state) throws IOException {
+  public List<String> benchRetainQuotesTrimWhitespaceMultiLine(StateMultiLineParserRetainQuotesTrimWhitespace state) throws IOException {
     return benchSmallLine0(state.p);
   }
 
-  private String[] benchSmallLine0(CsvParser p) throws IOException {
+  private List<String> benchSmallLine0(CsvParser p) throws IOException {
     return p.parse(smallLine);
   }
 
@@ -118,17 +118,17 @@ public class Benchmark {
   
   @GenerateMicroBenchmark
   @OutputTimeUnit(TimeUnit.MICROSECONDS)  
-  public String[] benchLongInMemoryStringSimple(StateSimpleDefaultParser state) {
+  public List<String> benchLongInMemoryStringSimple(StateSimpleDefaultParser state) {
     return benchLongInMemoryString0(state.p);
   }
   
   @GenerateMicroBenchmark
   @OutputTimeUnit(TimeUnit.MICROSECONDS)  
-  public String[] benchLongInMemoryStringMultiLine(StateMultiLineDefaultParser state) {
+  public List<String> benchLongInMemoryStringMultiLine(StateMultiLineDefaultParser state) {
     return benchLongInMemoryString0(state.p);
   }
 
-  public String[] benchLongInMemoryString0(CsvParser p) {
+  public List<String> benchLongInMemoryString0(CsvParser p) {
     return p.parse(longLine);
   }
   
@@ -251,7 +251,7 @@ public class Benchmark {
     
     CsvReader csvr = new CsvReader(br, p);
     while (true) {
-      String[] toks = csvr.readNext();
+      List<String> toks = csvr.readNext();
       if (toks == null) {
         break;
       }

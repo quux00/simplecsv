@@ -1,3 +1,25 @@
+Benchmark Conditions: => after changing fully from String[] to List<String>
+Benchmark                                                            Mode   Samples         Mean   Mean error    Units
+n.q.s.b.Benchmark.benchLargeCsvFromFileCsvReaderXMultiLine           avgt        30     1845.998       12.271    ms/op
+n.q.s.b.Benchmark.benchLargeCsvFromFileCsvReaderSimple               avgt        30     1443.287       22.330    ms/op
+n.q.s.b.Benchmark.benchLargeCsvFromFileMultiLine                     avgt        30     1825.219       14.068    ms/op
+n.q.s.b.Benchmark.benchLargeCsvFromFileMultiLineStrictQuotesTrim     avgt        30     1950.154        9.943    ms/op
+n.q.s.b.Benchmark.benchLargeCsvFromFileSimple                        avgt        30     1423.681       14.643    ms/op
+n.q.s.b.Benchmark.benchLargeCsvFromFileSimpleStrictQuotesTrim        avgt        30     1550.182       18.858    ms/op
+n.q.s.b.Benchmark.benchLongInMemoryStringMultiLine                   avgt        30       11.110        0.413    us/op
+n.q.s.b.Benchmark.benchLongInMemoryStringSimple                      avgt        30        6.924        0.205    us/op
+n.q.s.b.Benchmark.benchRetainQuotesTrimWhitespaceMultiLine           avgt        30      662.461       21.257    ns/op
+n.q.s.b.Benchmark.benchRetainQuotesTrimWhitespaceSimple              avgt        30      499.929       14.794    ns/op
+n.q.s.b.Benchmark.benchSmallCsvFromFileMultiLine                     avgt        30      679.266       29.377    us/op
+n.q.s.b.Benchmark.benchSmallCsvFromFileMultiLineStrictQuotesTrim     avgt        30      735.115       23.952    us/op
+n.q.s.b.Benchmark.benchSmallCsvFromFileSimple                        avgt        30      551.006       17.880    us/op
+n.q.s.b.Benchmark.benchSmallCsvFromFileSimpleStrictQuotesTrim        avgt        30      586.032       28.576    us/op
+n.q.s.b.Benchmark.benchStrictQuotesTrimWhitespaceMultiLine           avgt        30      707.684       17.570    ns/op
+n.q.s.b.Benchmark.benchStrictQuotesTrimWhitespaceSimple              avgt        30      481.765       14.652    ns/op
+
+Conclusion using List<String> rather than String[] is between 1.5 to 7.5% faster
+
+
 Benchmark Conditions:
 System: 64-bit Linux laptop, 8 cpu, 16 GB RAM
 Date: Sat May 24, 2014
