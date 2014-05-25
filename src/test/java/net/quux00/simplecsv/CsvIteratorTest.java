@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import net.quux00.simplecsv.CsvIterator;
 import net.quux00.simplecsv.CsvReader;
@@ -30,7 +31,7 @@ public class CsvIteratorTest {
   @Before
   public void setUp() throws IOException {
     mockReader = mock(CsvReader.class);
-    when(mockReader.readNext()).thenReturn(STRINGS);
+    when(mockReader.readNext()).thenReturn(Arrays.asList(STRINGS));
     iterator = new CsvIterator(mockReader);
   }
 
@@ -47,7 +48,7 @@ public class CsvIteratorTest {
 
   @Test
   public void initialReadReturnsStrings() {
-    assertArrayEquals(STRINGS, iterator.next());
+    assertArrayEquals(STRINGS, iterator.next().toArray());
   }
 
   @Test
