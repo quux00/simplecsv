@@ -1,6 +1,51 @@
+Benchmark Conditions: => reuse the toks ArrayList, creating and passing out a new one to the caller
+                         Only changed/ran SimpleCsv
+
+Benchmark Run1                                                    Mode   Samples         Mean   Mean error    Units
+-- File based Benchmarks --
+n.q.s.b.Benchmark.benchLargeCsvFromFileCsvReaderSimple            avgt        30     1438.602        8.881    ms/op
+
+n.q.s.b.Benchmark.benchLargeCsvFromFileSimple                     avgt        30     1430.042       11.608    ms/op
+
+n.q.s.b.Benchmark.benchLargeCsvFromFileSimpleStrictQuotesTrim     avgt        30     1568.380       10.654    ms/op
+
+n.q.s.b.Benchmark.benchSmallCsvFromFileSimple                     avgt        30      568.456       31.537    us/op
+
+n.q.s.b.Benchmark.benchSmallCsvFromFileSimpleStrictQuotesTrim     avgt        30      578.078       15.340    us/op
+
+-- In memory string based Benchmarks --
+n.q.s.b.Benchmark.benchLongInMemoryStringSimple                   avgt        30        7.750        0.265    us/op
+
+n.q.s.b.Benchmark.benchRetainQuotesTrimWhitespaceSimple           avgt        30      540.446       26.613    ns/op
+
+n.q.s.b.Benchmark.benchStrictQuotesTrimWhitespaceSimple           avgt        30      566.051       14.687    ns/op
+
+
+Benchmark Run2                                                    Mode   Samples         Mean   Mean error    Units
+-- File based Benchmarks --
+n.q.s.b.Benchmark.benchLargeCsvFromFileCsvReaderSimple            avgt        30     1413.462       23.551    ms/op
+n.q.s.b.Benchmark.benchLargeCsvFromFileSimple                     avgt        30     1405.154        8.638    ms/op
+n.q.s.b.Benchmark.benchLargeCsvFromFileSimpleStrictQuotesTrim     avgt        30     1547.430        9.486    ms/op
+n.q.s.b.Benchmark.benchSmallCsvFromFileSimple                     avgt        30      556.690       16.985    us/op
+n.q.s.b.Benchmark.benchSmallCsvFromFileSimpleStrictQuotesTrim     avgt        30      570.551       24.179    us/op
+-- In memory string based Benchmarks --
+n.q.s.b.Benchmark.benchLongInMemoryStringSimple                   avgt        30        7.921        0.418    us/op
+n.q.s.b.Benchmark.benchRetainQuotesTrimWhitespaceSimple           avgt        30      546.049       20.934    ns/op
+n.q.s.b.Benchmark.benchStrictQuotesTrimWhitespaceSimple           avgt        30      574.470       17.394    ns/op
+
+
+Conclusion: These look slightly faster (up to 1480 / 1413 = 1.047 faster, in the best case) than the previous run,
+but not much better than (and in some cases worse) than the original List<String> benchmarks.  I'll run the originals
+one more time to see if this seems significant or not.
+
+=====================================================================================
+
+
 Benchmark Conditions: => Both parsers non thread-safe, have sb and state as instance vars, but only sb passed to handle methods
                          (SimpleCsv should be back to what it was in the orig List<String> benchmarks)
-
+Git revision: 53858f4e3d5f16e6cb5f4714d56228e4991ab3ab
+Java 7, Linux
+                         
 Benchmark                                                            Mode   Samples         Mean   Mean error    Units
 -- File based Benchmarks --
 n.q.s.b.Benchmark.benchLargeCsvFromFileCsvReaderXMultiLine           avgt        30     1881.731       14.234    ms/op
@@ -40,6 +85,9 @@ difference outside the error range (~2% difference from orig List<String> benchm
 Benchmark Conditions: => Both parsers changed to be non thread-safe, but only State is an instance variable so it does
                          have to be passed into the various "handle" methods during parsing
 
+Git revision: cabf2bf0229ac3dc74992b9ee16f7b4f7a4f5547
+Java 7, Linux
+                         
 Benchmark                                                            Mode   Samples         Mean   Mean error    Units
 -- File based Benchmarks --
 n.q.s.b.Benchmark.benchLargeCsvFromFileCsvReaderXMultiLine           avgt        30     1926.080       15.403    ms/op
@@ -77,6 +125,8 @@ SimpleCsv parser not as good as the original thread safe version that has sb and
 
 
 Benchmark Conditions: => Simple changed to be fully thread-safe; MultiLine changed to not be (sb and state instance vars)
+Git revision: b7572683b7d4c9d4b8144fc6ab5eb6c06938247f
+Java 7, Linux
 
 Benchmark                                                            Mode   Samples         Mean   Mean error    Units
 -- File based Benchmarks --
@@ -136,6 +186,9 @@ Thread safety vs. non-thread safety was a wash for MultiLine parser
 
 Benchmark Conditions: => after changing MultLine parsing logic to match revised code from footloose
                          MultiLine = threadsafe; Simple = not threadsafe
+Git revision: 4dcce0b074c6c32b0bcc6741b676838c9370b40c
+Java 7, Linux
+                         
 Benchmark                                                            Mode   Samples         Mean   Mean error    Units
 -- File based Benchmarks --
 n.q.s.b.Benchmark.benchLargeCsvFromFileCsvReaderXMultiLine           avgt        30     1940.717       13.465    ms/op
@@ -175,6 +228,9 @@ so it looks to be about 5% slower and difference is outside the mean error bars
 
 
 Benchmark Conditions: => after changing fully from String[] to List<String>
+Linux, Java 7
+Git revision: 15f5e45d9db8d4a05063375c7ead30bef60e5d24, 'v2.0bench' branch
+
 Benchmark                                                            Mode   Samples         Mean   Mean error    Units
 -- File based Benchmarks --
 n.q.s.b.Benchmark.benchLargeCsvFromFileCsvReaderXMultiLine           avgt        30     1845.998       12.271    ms/op
@@ -210,6 +266,7 @@ Conclusion: using List<String> rather than String[] is between 1.5 to 7.5% faste
 Benchmark Conditions:
 System: 64-bit Linux laptop, 8 cpu, 16 GB RAM
 Date: Sat May 24, 2014
+Java 7 (1.7.0_25)
 Git revision: 8ad9ec03275d29e1dbdacd904785547c76d85ef0, 'v2.0bench' branch
 
 Benchmark                                                            Mode   Samples         Mean   Mean error    Units  Comparison

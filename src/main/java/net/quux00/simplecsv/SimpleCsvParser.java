@@ -43,6 +43,7 @@ public class SimpleCsvParser implements CsvParser {
   // used in parse()
   final State state = new State();
   final StringBuilder sb = new StringBuilder(INITIAL_READ_SIZE);
+  final List<String> toks = new ArrayList<String>();
     
   public SimpleCsvParser() {
     separator = ParserUtil.DEFAULT_SEPARATOR;
@@ -173,9 +174,10 @@ public class SimpleCsvParser implements CsvParser {
     
     state.reset();
     sb.setLength(0);
+    toks.clear();
 //    State state = new State();
 //    StringBuilder sb = new StringBuilder(INITIAL_READ_SIZE);
-    List<String> toks = new ArrayList<String>();  // returned to caller, so created afresh each time
+//   List<String> toks = new ArrayList<String>();  // returned to caller, so created afresh each time
     
     for (int i = 0; i < ln.length(); i++) {
       char c = ln.charAt(i);
@@ -199,7 +201,10 @@ public class SimpleCsvParser implements CsvParser {
       throw new IllegalArgumentException("Un-terminated quoted field at end of CSV line");
     }
     toks.add( handleEndOfToken(sb) );
-    return toks;
+    List<String> returnList = new ArrayList<String>(toks.size());
+    returnList.addAll(toks);
+    return returnList;
+//    return toks;
   }  
 
   
