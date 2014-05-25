@@ -97,7 +97,7 @@ public class SimpleCsvParser implements CsvParser {
   }
   
   // keep track of mutable States for FSM of parsing
-  static class State {
+  static final class State {
     boolean inQuotes = false;
     boolean inEscape = false;
     
