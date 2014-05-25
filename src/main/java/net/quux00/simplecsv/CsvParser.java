@@ -22,7 +22,7 @@ import java.util.List;
  *   - turn off retainEscapeChars mode
  *   - turn on alwaysQuoteOutput mode
  * 
- * @NotThreadSafe - only use one CsvParser per thread
+ * NotThreadSafe - only use one CsvParser per thread
  */
 public class CsvParser {
   final char separator;
