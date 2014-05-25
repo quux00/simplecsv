@@ -13,7 +13,7 @@ import java.util.List;
  * CsvParser interface.  Note that CsvReader does NOT implement the Reader interface,
  * but instead must have a Reader supplied when it is constructed.
  */
-public class CsvReader implements Closeable, Iterable<String[]> {
+public class CsvReader implements Closeable, Iterable<List<String>> {
 
   private BufferedReader br;
   private int recordNumber = 1;
@@ -79,11 +79,11 @@ public class CsvReader implements Closeable, Iterable<String[]> {
    *         a line of the file.
    * @throws IOException if bad things happen during the read
    */
-  public List<String[]> readAll() throws IOException {
+  public List<List<String>> readAll() throws IOException {
 
-    List<String[]> allElements = new ArrayList<String[]>();
+    List<List<String>> allElements = new ArrayList<List<String>>();
     while (true) {
-      String[] nextLineAsTokens = readNext();
+      List<String> nextLineAsTokens = readNext();
       if (nextLineAsTokens == null) {
         break;
       }
@@ -98,7 +98,7 @@ public class CsvReader implements Closeable, Iterable<String[]> {
    * @return a string array with each comma-separated element as a separate entry.
    * @throws IOException if bad things happen during the read
    */
-  public String[] readNext() throws IOException {
+  public List<String> readNext() throws IOException {
     try {
       while (skipLines > 0) {
         if (parser.parseNext(br) == null) {
@@ -111,11 +111,10 @@ public class CsvReader implements Closeable, Iterable<String[]> {
       }
 
       List<String> next = parser.parseNext(br);
-      if (next == null) {
-        return null;
+      if (next != null) {
+        recordNumber++;
       }
-      recordNumber++;
-      return next.toArray(new String[next.size()]);
+      return next;
       
     } catch (IllegalArgumentException re) {
       // we append the record number that caused the exception
@@ -124,7 +123,6 @@ public class CsvReader implements Closeable, Iterable<String[]> {
       throw nre;
     }
   }
-
 
 
   /**
@@ -136,7 +134,7 @@ public class CsvReader implements Closeable, Iterable<String[]> {
     br.close();
   }
 
-  public Iterator<String[]> iterator() {
+  public Iterator<List<String>> iterator() {
     try {
       return new CsvIterator(this);
     } catch (IOException e) {

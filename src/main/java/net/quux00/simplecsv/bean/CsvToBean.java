@@ -42,7 +42,7 @@ public class CsvToBean<T> {
   public List<T> parse(MappingStrategy<T> mapper, CsvReader csv) {
     try {
       mapper.captureHeader(csv);
-      String[] line;
+      List<String> line;
       List<T> list = new ArrayList<T>();
       while (null != (line = csv.readNext())) {
         T obj = processLine(mapper, line);
@@ -54,12 +54,12 @@ public class CsvToBean<T> {
     }
   }
 
-  protected T processLine(MappingStrategy<T> mapper, String[] line) throws IllegalAccessException, InvocationTargetException, InstantiationException, IntrospectionException {
+  protected T processLine(MappingStrategy<T> mapper, List<String> line) throws IllegalAccessException, InvocationTargetException, InstantiationException, IntrospectionException {
     T bean = mapper.createBean();
-    for (int col = 0; col < line.length; col++) {
+    for (int col = 0; col < line.size(); col++) {
       PropertyDescriptor prop = mapper.findDescriptor(col);
       if (null != prop) {
-        String value = checkForTrim(line[col], prop);
+        String value = checkForTrim(line.get(col), prop);
         Object obj = convertValue(value, prop);
         prop.getWriteMethod().invoke(bean, obj);
       }

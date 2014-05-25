@@ -39,36 +39,32 @@ public class ResultSetHelperService implements ResultSetHelper {
   static final String DEFAULT_DATE_FORMAT = "dd-MMM-yyyy";
   static final String DEFAULT_TIMESTAMP_FORMAT = "dd-MMM-yyyy HH:mm:ss";
 
-  public String[] getColumnNames(ResultSet rs) throws SQLException {
+  public List<String> getColumnNames(ResultSet rs) throws SQLException {
     List<String> names = new ArrayList<String>();
     ResultSetMetaData metadata = rs.getMetaData();
 
     for (int i = 0; i < metadata.getColumnCount(); i++) {
       names.add(metadata.getColumnName(i + 1));
     }
-
-    String[] nameArray = new String[names.size()];
-    return names.toArray(nameArray);
+    return names;
   }
 
-  public String[] getColumnValues(ResultSet rs) throws SQLException, IOException {
+  public List<String> getColumnValues(ResultSet rs) throws SQLException, IOException {
     return this.getColumnValues(rs, false, DEFAULT_DATE_FORMAT, DEFAULT_TIMESTAMP_FORMAT);
   }
 
-  public String[] getColumnValues(ResultSet rs, boolean trim) throws SQLException, IOException {
+  public List<String> getColumnValues(ResultSet rs, boolean trim) throws SQLException, IOException {
     return this.getColumnValues(rs, trim, DEFAULT_DATE_FORMAT, DEFAULT_TIMESTAMP_FORMAT);
   }
 
-  public String[] getColumnValues(ResultSet rs, boolean trim, String dateFormatString, String timeFormatString) throws SQLException, IOException {
+  public List<String> getColumnValues(ResultSet rs, boolean trim, String dateFormatString, String timeFormatString) throws SQLException, IOException {
     List<String> values = new ArrayList<String>();
     ResultSetMetaData metadata = rs.getMetaData();
 
     for (int i = 0; i < metadata.getColumnCount(); i++) {
       values.add(getColumnValue(rs, metadata.getColumnType(i + 1), i + 1, trim, dateFormatString, timeFormatString));
     }
-
-    String[] valueArray = new String[values.size()];
-    return values.toArray(valueArray);
+    return values;
   }
 
   private String handleObject(Object obj) {

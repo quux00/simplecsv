@@ -6,6 +6,7 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import net.quux00.simplecsv.CsvReader;
@@ -27,7 +28,7 @@ import net.quux00.simplecsv.CsvReader;
  */
 
 public class HeaderColumnNameMappingStrategy<T> implements MappingStrategy<T> {
-    protected String[] header;
+    protected List<String> header;
     protected Map<String, PropertyDescriptor> descriptorMap = null;
     protected Class<T> type;
 
@@ -52,7 +53,7 @@ public class HeaderColumnNameMappingStrategy<T> implements MappingStrategy<T> {
     }
 
     protected String getColumnName(int col) {
-        return (null != header && col < header.length) ? header[col] : null;
+        return (null != header && col < header.size()) ? header.get(col) : null;
     }
 
     protected PropertyDescriptor findDescriptor(String name) throws IntrospectionException {

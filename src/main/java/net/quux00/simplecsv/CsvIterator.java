@@ -2,10 +2,11 @@ package net.quux00.simplecsv;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
 
-public class CsvIterator implements Iterator<String[]> {
+public class CsvIterator implements Iterator<List<String>> {
   private CsvReader reader;
-  private String[] nextLine;
+  private List<String> nextLine;
 
   public CsvIterator(CsvReader reader) throws IOException {
     this.reader = reader;
@@ -16,8 +17,8 @@ public class CsvIterator implements Iterator<String[]> {
     return nextLine != null;
   }
 
-  public String[] next() {
-    String[] temp = nextLine;
+  public List<String> next() {
+    List<String> temp = nextLine;
     try {
       nextLine = reader.readNext();
     } catch (IOException e) {
