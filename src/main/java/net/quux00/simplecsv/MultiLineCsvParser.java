@@ -45,7 +45,7 @@ public class MultiLineCsvParser implements CsvParser {
 
   private static final boolean debug = false;
 
-  final StringBuilder sb = new StringBuilder(INITIAL_READ_SIZE);
+//  final StringBuilder sb = new StringBuilder(INITIAL_READ_SIZE);
   final State state = new State();
   
   public MultiLineCsvParser() {
@@ -162,9 +162,8 @@ public class MultiLineCsvParser implements CsvParser {
       return null;
     }
 
-    sb.setLength(0);
     state.reset();
-//    final StringBuilder sb = new StringBuilder(INITIAL_READ_SIZE);
+    final StringBuilder sb = new StringBuilder(INITIAL_READ_SIZE);
 //    final State state = new State();
     final List<String> toks = new ArrayList<String>();
 
@@ -185,34 +184,38 @@ public class MultiLineCsvParser implements CsvParser {
             } else {
               // HANDLE QUOTE AND (a) BREAK IF EOF
               // OR (b) START AT TOP WITH OBTAINED NEXT CHAR
-              handleQuote(state, sb);
+              handleQuote(sb);
               continue decide;
             }
           } else {
-            handleQuote(state, sb);
+            handleQuote(sb);
           }
         } else if (isEscapeChar(r)) {
-          handleEscape(state, sb);
+          handleEscape(sb);
 
         } else if (!state.inQuotes) {
+          
           if(r == separator) {
-            toks.add(handleEndOfToken(state, sb));
+            toks.add(handleEndOfToken(sb));
+          
           } else if (r == '\n') {
             // END OF RECORD
             break decide;
+          
           } else if (r == '\r') {
             if ((r = reader.read()) == '\n') {
               // END OF RECORD
               break decide;
             } else {
-              handleRegular(state, sb, '\r');
+              handleRegular(sb, '\r');
               continue decide;
             }
+          
           } else {
-            handleRegular(state, sb, (char) r);
+            handleRegular(sb, (char) r);
           }
         } else {
-          handleRegular(state, sb, (char) r);
+          handleRegular(sb, (char) r);
         }
 
         r = reader.read();
@@ -223,7 +226,7 @@ public class MultiLineCsvParser implements CsvParser {
       throw new IllegalArgumentException("Un-terminated quoted field at end of CSV record");
     }
 
-    toks.add(handleEndOfToken(state, sb));
+    toks.add(handleEndOfToken(sb));
     return toks;
   }
 
@@ -279,7 +282,7 @@ public class MultiLineCsvParser implements CsvParser {
     return c == quotechar && quotechar != ParserUtil.NULL_CHARACTER;
   }
 
-  String handleEndOfToken(State state, StringBuilder sb) {
+  String handleEndOfToken(StringBuilder sb) {
     // in strictQuotes mode you don't know when to add the last seen
     // quote until the token is done; if the buffer has any characters
     // then you know a first quote was seen, so add the closing quote
@@ -292,7 +295,7 @@ public class MultiLineCsvParser implements CsvParser {
     return tok;
   }
 
-  void appendRegularChar(State state, StringBuilder sb, char c) {
+  void appendRegularChar(StringBuilder sb, char c) {
     if (state.inEscape && !retainEscapeChars) {
       switch (c) {
         case 'n':
@@ -320,17 +323,17 @@ public class MultiLineCsvParser implements CsvParser {
     state.escapeFound(false);
   }
 
-  void handleRegular(State state, StringBuilder sb, char c) {
+  void handleRegular(StringBuilder sb, char c) {
     if (strictQuotes) {
       if (state.inQuotes) {
-        appendRegularChar(state, sb, c);
+        appendRegularChar(sb, c);
       }
     } else {
-      appendRegularChar(state, sb, c);
+      appendRegularChar(sb, c);
     }
   }
 
-  void handleEscape(State state, StringBuilder sb) {
+  void handleEscape(StringBuilder sb) {
     state.escapeFound(true);
     if (retainEscapeChars) {
       if (strictQuotes) {
@@ -343,7 +346,7 @@ public class MultiLineCsvParser implements CsvParser {
     }
   }
 
-  void handleQuote(State state, StringBuilder sb) {
+  void handleQuote(StringBuilder sb) {
     // always retain outer quotes while parsing and then remove them at the end if appropriate
     if (strictQuotes) {
       if (state.inQuotes) {

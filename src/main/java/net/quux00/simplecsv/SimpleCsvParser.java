@@ -41,7 +41,7 @@ public class SimpleCsvParser implements CsvParser {
   final boolean alwaysQuoteOutput;        // if true, put quote around around all outgoing tokens
   
   // used in parse()
-//  final State state = new State();
+  final State state = new State();
 //  final StringBuilder sb = new StringBuilder(INITIAL_READ_SIZE);
     
   public SimpleCsvParser() {
@@ -171,9 +171,9 @@ public class SimpleCsvParser implements CsvParser {
       return null; 
     }
     
-//    state.reset();
+    state.reset();
 //    sb.setLength(0);
-    State state = new State();
+//    State state = new State();
     StringBuilder sb = new StringBuilder(INITIAL_READ_SIZE);
     List<String> toks = new ArrayList<String>();  // returned to caller, so created afresh each time
     
