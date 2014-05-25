@@ -1,24 +1,133 @@
+Benchmark Conditions: => Simple changed to be fully thread-safe; MultiLine changed to not be (sb and state instance vars)
+
+Benchmark                                                            Mode   Samples         Mean   Mean error    Units
+-- File based Benchmarks --
+n.q.s.b.Benchmark.benchLargeCsvFromFileCsvReaderXMultiLine           avgt        30     1926.231       23.345    ms/op
+n.q.s.b.Benchmark.benchLargeCsvFromFileCsvReaderSimple               avgt        30     1613.185       10.605    ms/op
+
+n.q.s.b.Benchmark.benchLargeCsvFromFileMultiLine                     avgt        30     1947.844       16.272    ms/op
+n.q.s.b.Benchmark.benchLargeCsvFromFileSimple                        avgt        30     1625.111       15.473    ms/op
+
+n.q.s.b.Benchmark.benchLargeCsvFromFileMultiLineStrictQuotesTrim     avgt        30     1971.650       33.937    ms/op
+n.q.s.b.Benchmark.benchLargeCsvFromFileSimpleStrictQuotesTrim        avgt        30     1667.774       10.937    ms/op
+
+n.q.s.b.Benchmark.benchSmallCsvFromFileMultiLine                     avgt        30      659.889       15.907    us/op
+n.q.s.b.Benchmark.benchSmallCsvFromFileSimple                        avgt        30      574.073       17.839    us/op
+
+n.q.s.b.Benchmark.benchSmallCsvFromFileMultiLineStrictQuotesTrim     avgt        30      757.394       24.467    us/op
+n.q.s.b.Benchmark.benchSmallCsvFromFileSimpleStrictQuotesTrim        avgt        30      608.013       13.810    us/op
+
+-- In memory string based Benchmarks --
+
+n.q.s.b.Benchmark.benchLongInMemoryStringMultiLine                   avgt        30        9.905        0.354    us/op
+n.q.s.b.Benchmark.benchLongInMemoryStringSimple                      avgt        30        7.389        0.200    us/op
+
+n.q.s.b.Benchmark.benchRetainQuotesTrimWhitespaceMultiLine           avgt        30      696.620       40.441    ns/op
+n.q.s.b.Benchmark.benchRetainQuotesTrimWhitespaceSimple              avgt        30      526.455        8.520    ns/op
+
+n.q.s.b.Benchmark.benchStrictQuotesTrimWhitespaceMultiLine           avgt        30      719.922       31.879    ns/op
+n.q.s.b.Benchmark.benchStrictQuotesTrimWhitespaceSimple              avgt        30      556.734       15.880    ns/op
+
+Analysis: 
+Simple threadsafe vs not:
+1613.185 / 1439.067 = 1.12
+1625.111 / 1439.573 = 1.13
+1667.774 / 1545.539 = 1.08
+574.073 / 560.375 = 1.02
+608.013 / 572.812 = 1.06
+7.389 / 6.943 = 1.06
+526.455 / 486.966 = 1.08
+556.734 / 468.403 = 1.19
+
+MultiLine threadsafe vs not:
+1940.717 / 1926.231 = 1.01
+1926.570 / 1947.844
+1948.615 / 1971.650
+682.492 / 659.889
+744.009 / 757.394
+10.203 / 9.905
+674.836 / 696.620
+696.863 / 719.922
+
+
+Conclusion: Thread safety for SimpleCsv seems to impose about a 8%-10% performance penalty (2% to 18% was the rang)
+Thread safety vs. non-thread safety was a wash for MultiLine parser
+
+=====================================================================================
+
+
+Benchmark Conditions: => after changing MultLine parsing logic to match revised code from footloose
+                         MultiLine = threadsafe; Simple = not threadsafe
+Benchmark                                                            Mode   Samples         Mean   Mean error    Units
+-- File based Benchmarks --
+n.q.s.b.Benchmark.benchLargeCsvFromFileCsvReaderXMultiLine           avgt        30     1940.717       13.465    ms/op
+n.q.s.b.Benchmark.benchLargeCsvFromFileCsvReaderSimple               avgt        30     1439.067       11.336    ms/op
+
+n.q.s.b.Benchmark.benchLargeCsvFromFileMultiLine                     avgt        30     1926.570       15.208    ms/op
+n.q.s.b.Benchmark.benchLargeCsvFromFileSimple                        avgt        30     1439.573       14.208    ms/op
+
+n.q.s.b.Benchmark.benchLargeCsvFromFileMultiLineStrictQuotesTrim     avgt        30     1948.615       18.417    ms/op
+n.q.s.b.Benchmark.benchLargeCsvFromFileSimpleStrictQuotesTrim        avgt        30     1545.539       24.450    ms/op
+
+n.q.s.b.Benchmark.benchSmallCsvFromFileMultiLine                     avgt        30      682.492       24.906    us/op
+n.q.s.b.Benchmark.benchSmallCsvFromFileSimple                        avgt        30      560.375       34.556    us/op
+
+n.q.s.b.Benchmark.benchSmallCsvFromFileMultiLineStrictQuotesTrim     avgt        30      744.009       68.221    us/op
+n.q.s.b.Benchmark.benchSmallCsvFromFileSimpleStrictQuotesTrim        avgt        30      572.812       14.605    us/op
+
+-- In memory string based Benchmarks --
+
+n.q.s.b.Benchmark.benchLongInMemoryStringMultiLine                   avgt        30       10.203        0.411    us/op
+n.q.s.b.Benchmark.benchLongInMemoryStringSimple                      avgt        30        6.943        0.311    us/op
+
+n.q.s.b.Benchmark.benchRetainQuotesTrimWhitespaceMultiLine           avgt        30      674.836       17.258    ns/op
+n.q.s.b.Benchmark.benchRetainQuotesTrimWhitespaceSimple              avgt        30      486.966       10.636    ns/op
+
+n.q.s.b.Benchmark.benchStrictQuotesTrimWhitespaceMultiLine           avgt        30      696.863       23.357    ns/op
+n.q.s.b.Benchmark.benchStrictQuotesTrimWhitespaceSimple              avgt        30      468.403       12.398    ns/op
+
+
+Conclusion: Overall, this change makes the MultiLine parser slighly slower.  In some cases it was a wash (within error tolerance),
+but for the LargeCsvFromFile runs, it showed:
+1941 / 1846 = 1.051
+1927 / 1825 = 1.056
+so it looks to be about 5% slower and difference is outside the mean error bars
+
+=====================================================================================
+
+
 Benchmark Conditions: => after changing fully from String[] to List<String>
 Benchmark                                                            Mode   Samples         Mean   Mean error    Units
+-- File based Benchmarks --
 n.q.s.b.Benchmark.benchLargeCsvFromFileCsvReaderXMultiLine           avgt        30     1845.998       12.271    ms/op
 n.q.s.b.Benchmark.benchLargeCsvFromFileCsvReaderSimple               avgt        30     1443.287       22.330    ms/op
+
 n.q.s.b.Benchmark.benchLargeCsvFromFileMultiLine                     avgt        30     1825.219       14.068    ms/op
-n.q.s.b.Benchmark.benchLargeCsvFromFileMultiLineStrictQuotesTrim     avgt        30     1950.154        9.943    ms/op
 n.q.s.b.Benchmark.benchLargeCsvFromFileSimple                        avgt        30     1423.681       14.643    ms/op
+
+n.q.s.b.Benchmark.benchLargeCsvFromFileMultiLineStrictQuotesTrim     avgt        30     1950.154        9.943    ms/op
 n.q.s.b.Benchmark.benchLargeCsvFromFileSimpleStrictQuotesTrim        avgt        30     1550.182       18.858    ms/op
+
+n.q.s.b.Benchmark.benchSmallCsvFromFileMultiLine                     avgt        30      679.266       29.377    us/op
+n.q.s.b.Benchmark.benchSmallCsvFromFileSimple                        avgt        30      551.006       17.880    us/op
+
+n.q.s.b.Benchmark.benchSmallCsvFromFileMultiLineStrictQuotesTrim     avgt        30      735.115       23.952    us/op
+n.q.s.b.Benchmark.benchSmallCsvFromFileSimpleStrictQuotesTrim        avgt        30      586.032       28.576    us/op
+
+-- In memory string based Benchmarks --
+
 n.q.s.b.Benchmark.benchLongInMemoryStringMultiLine                   avgt        30       11.110        0.413    us/op
 n.q.s.b.Benchmark.benchLongInMemoryStringSimple                      avgt        30        6.924        0.205    us/op
+
 n.q.s.b.Benchmark.benchRetainQuotesTrimWhitespaceMultiLine           avgt        30      662.461       21.257    ns/op
 n.q.s.b.Benchmark.benchRetainQuotesTrimWhitespaceSimple              avgt        30      499.929       14.794    ns/op
-n.q.s.b.Benchmark.benchSmallCsvFromFileMultiLine                     avgt        30      679.266       29.377    us/op
-n.q.s.b.Benchmark.benchSmallCsvFromFileMultiLineStrictQuotesTrim     avgt        30      735.115       23.952    us/op
-n.q.s.b.Benchmark.benchSmallCsvFromFileSimple                        avgt        30      551.006       17.880    us/op
-n.q.s.b.Benchmark.benchSmallCsvFromFileSimpleStrictQuotesTrim        avgt        30      586.032       28.576    us/op
+
 n.q.s.b.Benchmark.benchStrictQuotesTrimWhitespaceMultiLine           avgt        30      707.684       17.570    ns/op
 n.q.s.b.Benchmark.benchStrictQuotesTrimWhitespaceSimple              avgt        30      481.765       14.652    ns/op
 
-Conclusion using List<String> rather than String[] is between 1.5 to 7.5% faster
+Conclusion: using List<String> rather than String[] is between 1.5 to 7.5% faster
 
+=====================================================================================
 
 Benchmark Conditions:
 System: 64-bit Linux laptop, 8 cpu, 16 GB RAM

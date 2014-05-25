@@ -41,8 +41,8 @@ public class SimpleCsvParser implements CsvParser {
   final boolean alwaysQuoteOutput;        // if true, put quote around around all outgoing tokens
   
   // used in parse()
-  final State state = new State();
-  final StringBuilder sb = new StringBuilder(INITIAL_READ_SIZE);
+//  final State state = new State();
+//  final StringBuilder sb = new StringBuilder(INITIAL_READ_SIZE);
     
   public SimpleCsvParser() {
     separator = ParserUtil.DEFAULT_SEPARATOR;
@@ -171,24 +171,26 @@ public class SimpleCsvParser implements CsvParser {
       return null; 
     }
     
-    state.reset();
-    sb.setLength(0);
+//    state.reset();
+//    sb.setLength(0);
+    State state = new State();
+    StringBuilder sb = new StringBuilder(INITIAL_READ_SIZE);
     List<String> toks = new ArrayList<String>();  // returned to caller, so created afresh each time
     
     for (int i = 0; i < ln.length(); i++) {
       char c = ln.charAt(i);
       
       if (isQuoteChar(c)) {
-        handleQuote(sb);
+        handleQuote(sb, state);
       
       } else if (isEscapeChar(c)) {
-        handleEscape(sb);
+        handleEscape(sb, state);
       
       } else if (c == separator && !state.inQuotes) {
-        toks.add( handleEndOfToken(sb) );
+        toks.add( handleEndOfToken(sb, state) );
         
       } else {
-        handleRegular(sb, c);
+        handleRegular(sb, c, state);
       }
     }
     
@@ -196,7 +198,7 @@ public class SimpleCsvParser implements CsvParser {
     if (state.inQuotes && !allowedUnbalancedQuotes) {
       throw new IllegalArgumentException("Un-terminated quoted field at end of CSV line");
     }
-    toks.add( handleEndOfToken(sb) );
+    toks.add( handleEndOfToken(sb, state) );
     return toks;
   }  
 
@@ -217,7 +219,7 @@ public class SimpleCsvParser implements CsvParser {
     return c == quotechar && quotechar != ParserUtil.NULL_CHARACTER;
   }
   
-  String handleEndOfToken(StringBuilder sb) {
+  String handleEndOfToken(StringBuilder sb, State state) {
     // in strictQuotes mode you don't know when to add the last seen
     // quote until the token is done; if the buffer has any characters
     // then you know a first quote was seen, so add the closing quote
@@ -230,7 +232,7 @@ public class SimpleCsvParser implements CsvParser {
     return tok;
   }
 
-  void appendRegularChar(StringBuilder sb, char c) {
+  void appendRegularChar(StringBuilder sb, char c, State state) {
     if (state.inEscape && !retainEscapeChars) {
       switch (c) {
         case 'n': 
@@ -258,17 +260,17 @@ public class SimpleCsvParser implements CsvParser {
     state.escapeFound(false);    
   }
   
-  void handleRegular(StringBuilder sb, char c) {
+  void handleRegular(StringBuilder sb, char c, State state) {
     if (strictQuotes) {
       if (state.inQuotes) {
-        appendRegularChar(sb, c);
+        appendRegularChar(sb, c, state);
       }
     } else {
-      appendRegularChar(sb, c);
+      appendRegularChar(sb, c, state);
     }
   }
   
-  void handleEscape(StringBuilder sb) {
+  void handleEscape(StringBuilder sb, State state) {
     state.escapeFound(true);
     if (retainEscapeChars) {
       if (strictQuotes) {
@@ -281,7 +283,7 @@ public class SimpleCsvParser implements CsvParser {
     }
   }
   
-  void handleQuote(StringBuilder sb) {
+  void handleQuote(StringBuilder sb, State state) {
     // always retain outer quotes while parsing and then remove them at the end if appropriate
     if (strictQuotes) {
       if (state.inQuotes) {

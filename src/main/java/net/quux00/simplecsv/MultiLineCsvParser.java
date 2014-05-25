@@ -45,6 +45,9 @@ public class MultiLineCsvParser implements CsvParser {
 
   private static final boolean debug = false;
 
+  final StringBuilder sb = new StringBuilder(INITIAL_READ_SIZE);
+  final State state = new State();
+  
   public MultiLineCsvParser() {
     separator = ParserUtil.DEFAULT_SEPARATOR;
     quotechar = ParserUtil.DEFAULT_QUOTE_CHAR;
@@ -159,9 +162,11 @@ public class MultiLineCsvParser implements CsvParser {
       return null;
     }
 
-    final StringBuilder sb = new StringBuilder(INITIAL_READ_SIZE);
+    sb.setLength(0);
+    state.reset();
+//    final StringBuilder sb = new StringBuilder(INITIAL_READ_SIZE);
+//    final State state = new State();
     final List<String> toks = new ArrayList<String>();
-    final State state = new State();
 
     decide:
       while (r != -1) {
@@ -206,9 +211,9 @@ public class MultiLineCsvParser implements CsvParser {
           } else {
             handleRegular(state, sb, (char) r);
           }
-      } else {
-        handleRegular(state, sb, (char) r);
-      }
+        } else {
+          handleRegular(state, sb, (char) r);
+        }
 
         r = reader.read();
       }
