@@ -45,7 +45,7 @@ public class MultiLineCsvParser implements CsvParser {
 
   private static final boolean debug = false;
 
-//  final StringBuilder sb = new StringBuilder(INITIAL_READ_SIZE);
+  final StringBuilder sb = new StringBuilder(INITIAL_READ_SIZE);
   final State state = new State();
   
   public MultiLineCsvParser() {
@@ -163,7 +163,8 @@ public class MultiLineCsvParser implements CsvParser {
     }
 
     state.reset();
-    final StringBuilder sb = new StringBuilder(INITIAL_READ_SIZE);
+    sb.setLength(0);
+//    final StringBuilder sb = new StringBuilder(INITIAL_READ_SIZE);
 //    final State state = new State();
     final List<String> toks = new ArrayList<String>();
 

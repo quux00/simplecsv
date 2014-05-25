@@ -42,7 +42,7 @@ public class SimpleCsvParser implements CsvParser {
   
   // used in parse()
   final State state = new State();
-//  final StringBuilder sb = new StringBuilder(INITIAL_READ_SIZE);
+  final StringBuilder sb = new StringBuilder(INITIAL_READ_SIZE);
     
   public SimpleCsvParser() {
     separator = ParserUtil.DEFAULT_SEPARATOR;
@@ -172,25 +172,25 @@ public class SimpleCsvParser implements CsvParser {
     }
     
     state.reset();
-//    sb.setLength(0);
+    sb.setLength(0);
 //    State state = new State();
-    StringBuilder sb = new StringBuilder(INITIAL_READ_SIZE);
+//    StringBuilder sb = new StringBuilder(INITIAL_READ_SIZE);
     List<String> toks = new ArrayList<String>();  // returned to caller, so created afresh each time
     
     for (int i = 0; i < ln.length(); i++) {
       char c = ln.charAt(i);
       
       if (isQuoteChar(c)) {
-        handleQuote(sb, state);
+        handleQuote(sb);
       
       } else if (isEscapeChar(c)) {
-        handleEscape(sb, state);
+        handleEscape(sb);
       
       } else if (c == separator && !state.inQuotes) {
-        toks.add( handleEndOfToken(sb, state) );
+        toks.add( handleEndOfToken(sb) );
         
       } else {
-        handleRegular(sb, c, state);
+        handleRegular(sb, c);
       }
     }
     
@@ -198,7 +198,7 @@ public class SimpleCsvParser implements CsvParser {
     if (state.inQuotes && !allowedUnbalancedQuotes) {
       throw new IllegalArgumentException("Un-terminated quoted field at end of CSV line");
     }
-    toks.add( handleEndOfToken(sb, state) );
+    toks.add( handleEndOfToken(sb) );
     return toks;
   }  
 
@@ -219,7 +219,7 @@ public class SimpleCsvParser implements CsvParser {
     return c == quotechar && quotechar != ParserUtil.NULL_CHARACTER;
   }
   
-  String handleEndOfToken(StringBuilder sb, State state) {
+  String handleEndOfToken(StringBuilder sb) {
     // in strictQuotes mode you don't know when to add the last seen
     // quote until the token is done; if the buffer has any characters
     // then you know a first quote was seen, so add the closing quote
@@ -232,7 +232,7 @@ public class SimpleCsvParser implements CsvParser {
     return tok;
   }
 
-  void appendRegularChar(StringBuilder sb, char c, State state) {
+  void appendRegularChar(StringBuilder sb, char c) {
     if (state.inEscape && !retainEscapeChars) {
       switch (c) {
         case 'n': 
@@ -257,20 +257,20 @@ public class SimpleCsvParser implements CsvParser {
     } else {
       sb.append(c);
     }
-    state.escapeFound(false);    
+    state.escapeFound(false);
   }
   
-  void handleRegular(StringBuilder sb, char c, State state) {
+  void handleRegular(StringBuilder sb, char c) {
     if (strictQuotes) {
       if (state.inQuotes) {
-        appendRegularChar(sb, c, state);
+        appendRegularChar(sb, c);
       }
     } else {
-      appendRegularChar(sb, c, state);
+      appendRegularChar(sb, c);
     }
   }
   
-  void handleEscape(StringBuilder sb, State state) {
+  void handleEscape(StringBuilder sb) {
     state.escapeFound(true);
     if (retainEscapeChars) {
       if (strictQuotes) {
@@ -283,7 +283,7 @@ public class SimpleCsvParser implements CsvParser {
     }
   }
   
-  void handleQuote(StringBuilder sb, State state) {
+  void handleQuote(StringBuilder sb) {
     // always retain outer quotes while parsing and then remove them at the end if appropriate
     if (strictQuotes) {
       if (state.inQuotes) {
@@ -303,7 +303,7 @@ public class SimpleCsvParser implements CsvParser {
       sb.append(quotechar);
     }
     state.quoteFound();
-    state.escapeFound(false);       
+    state.escapeFound(false); 
   }
   
   String trim(StringBuilder sb) {
