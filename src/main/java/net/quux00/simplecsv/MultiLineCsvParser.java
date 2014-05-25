@@ -189,23 +189,26 @@ public class MultiLineCsvParser implements CsvParser {
         } else if (isEscapeChar(r)) {
           handleEscape(state, sb);
 
-        } else if (r == separator && !state.inQuotes) {
-          toks.add(handleEndOfToken(state, sb));
-
-        } else if (!state.inQuotes && r == '\n') {
-          // END OF RECORD
-          break decide;
-        } else if (!state.inQuotes && r == '\r') {
-          if ((r = reader.read()) == '\n') {
+        } else if (!state.inQuotes) {
+          if(r == separator) {
+            toks.add(handleEndOfToken(state, sb));
+          } else if (r == '\n') {
             // END OF RECORD
             break decide;
+          } else if (r == '\r') {
+            if ((r = reader.read()) == '\n') {
+              // END OF RECORD
+              break decide;
+            } else {
+              handleRegular(state, sb, '\r');
+              continue decide;
+            }
           } else {
-            handleRegular(state, sb, '\r');
-            continue decide;
+            handleRegular(state, sb, (char) r);
           }
-        } else {
-          handleRegular(state, sb, (char) r);
-        }
+      } else {
+        handleRegular(state, sb, (char) r);
+      }
 
         r = reader.read();
       }
