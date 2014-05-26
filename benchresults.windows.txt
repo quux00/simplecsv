@@ -1,0 +1,107 @@
+600c7adef73a5143dfacac59f437fe4ba85bdf65
+Benchmark                                                            Mode   Samples         Mean   Mean error    Units
+n.q.s.b.Benchmark.benchLargeCsvFromFileCsvReaderXMultiLine           avgt        30     3499.105       21.795    ms/op
+n.q.s.b.Benchmark.benchLargeCsvFromFileCsvReaderSimple               avgt        30     3105.821        9.360    ms/op  3499 / 3105 = 1.13
+
+n.q.s.b.Benchmark.benchLargeCsvFromFileMultiLine                     avgt        30     3517.562       23.274    ms/op
+n.q.s.b.Benchmark.benchLargeCsvFromFileSimple                        avgt        30     3152.774       19.723    ms/op  = 1.12
+
+n.q.s.b.Benchmark.benchLargeCsvFromFileMultiLineStrictQuotesTrim     avgt        30     3392.038       24.194    ms/op
+n.q.s.b.Benchmark.benchLargeCsvFromFileSimpleStrictQuotesTrim        avgt        30     2961.626        8.417    ms/op  = 1.15
+
+n.q.s.b.Benchmark.benchSmallCsvFromFileMultiLine                     avgt        30     1761.167      298.493    us/op
+n.q.s.b.Benchmark.benchSmallCsvFromFileSimple                        avgt        30     1673.374      347.936    us/op
+
+n.q.s.b.Benchmark.benchSmallCsvFromFileMultiLineStrictQuotesTrim     avgt        30     1531.915      229.787    us/op
+n.q.s.b.Benchmark.benchSmallCsvFromFileSimpleStrictQuotesTrim        avgt        30     1613.274      274.285    us/op
+
+n.q.s.b.Benchmark.benchLongInMemoryStringMultiLine                   avgt        30       15.455        0.834    us/op
+n.q.s.b.Benchmark.benchLongInMemoryStringSimple                      avgt        30       12.368        0.942    us/op  = 1.25
+
+n.q.s.b.Benchmark.benchRetainQuotesTrimWhitespaceMultiLine           avgt        30     1218.601       88.806    ns/op
+n.q.s.b.Benchmark.benchRetainQuotesTrimWhitespaceSimple              avgt        30     1151.042      144.009    ns/op
+
+n.q.s.b.Benchmark.benchStrictQuotesTrimWhitespaceMultiLine           avgt        30     1311.430       99.017    ns/op
+n.q.s.b.Benchmark.benchStrictQuotesTrimWhitespaceSimple              avgt        30     1190.112      165.143    ns/op
+
+
+5784f79a48abd502133770a8a80d8ed0dd442424 (String[])
+Benchmark                                                            Mode   Samples         Mean   Mean error    Units
+n.q.s.b.Benchmark.benchLargeCsvFromFileCsvReaderXMultiLine           avgt        30     3647.687       17.458    ms/op
+n.q.s.b.Benchmark.benchLargeCsvFromFileCsvReaderSimple               avgt        30     3204.380        8.182    ms/op
+
+n.q.s.b.Benchmark.benchLargeCsvFromFileMultiLine                     avgt        30     3615.407       69.172    ms/op
+n.q.s.b.Benchmark.benchLargeCsvFromFileSimple                        avgt        30     3159.722       62.058    ms/op
+
+n.q.s.b.Benchmark.benchLargeCsvFromFileMultiLineStrictQuotesTrim     avgt        30     3416.972      100.887    ms/op
+n.q.s.b.Benchmark.benchLargeCsvFromFileSimpleStrictQuotesTrim        avgt        30     2992.283       13.765    ms/op
+
+n.q.s.b.Benchmark.benchLongInMemoryStringMultiLine                   avgt        30       18.401        2.716    us/op
+n.q.s.b.Benchmark.benchLongInMemoryStringSimple                      avgt        30       12.026        0.811    us/op
+
+n.q.s.b.Benchmark.benchSmallCsvFromFileMultiLine                     avgt        30     1804.425      293.693    us/op
+n.q.s.b.Benchmark.benchSmallCsvFromFileSimple                        avgt        30     1686.084      330.787    us/op
+
+n.q.s.b.Benchmark.benchSmallCsvFromFileMultiLineStrictQuotesTrim     avgt        30     1769.360      315.894    us/op
+n.q.s.b.Benchmark.benchSmallCsvFromFileSimpleStrictQuotesTrim        avgt        30     1530.883      275.947    us/op
+
+n.q.s.b.Benchmark.benchRetainQuotesTrimWhitespaceMultiLine           avgt        30     1460.503      122.625    ns/op
+n.q.s.b.Benchmark.benchRetainQuotesTrimWhitespaceSimple              avgt        30     1119.972      147.461    ns/op
+
+n.q.s.b.Benchmark.benchStrictQuotesTrimWhitespaceMultiLine           avgt        30     1447.057      107.228    ns/op
+n.q.s.b.Benchmark.benchStrictQuotesTrimWhitespaceSimple              avgt        30     1142.341       97.669    ns/op
+
+
+15f5e45d9db8d4a05063375c7ead30bef60e5d24 (List<String>)
+Benchmark                                                            Mode   Samples         Mean   Mean error    Units
+n.q.s.b.Benchmark.benchLargeCsvFromFileCsvReaderXMultiLine           avgt        30     3551.206       17.090    ms/op
+n.q.s.b.Benchmark.benchLargeCsvFromFileCsvReaderSimple               avgt        30     3134.487       21.035    ms/op
+
+n.q.s.b.Benchmark.benchLargeCsvFromFileMultiLine                     avgt        30     3553.025       26.180    ms/op
+n.q.s.b.Benchmark.benchLargeCsvFromFileSimple                        avgt        30     3180.384       64.774    ms/op
+
+n.q.s.b.Benchmark.benchLargeCsvFromFileMultiLineStrictQuotesTrim     avgt        30     3337.548       16.600    ms/op
+n.q.s.b.Benchmark.benchLargeCsvFromFileSimpleStrictQuotesTrim        avgt        30     3008.369       17.669    ms/op
+
+n.q.s.b.Benchmark.benchLongInMemoryStringMultiLine                   avgt        30       17.995        1.486    us/op
+n.q.s.b.Benchmark.benchLongInMemoryStringSimple                      avgt        30       11.958        0.801    us/op
+
+n.q.s.b.Benchmark.benchSmallCsvFromFileMultiLine                     avgt        30     1810.400      343.747    us/op
+n.q.s.b.Benchmark.benchSmallCsvFromFileSimple                        avgt        30     1636.180      294.048    us/op
+
+n.q.s.b.Benchmark.benchSmallCsvFromFileMultiLineStrictQuotesTrim     avgt        30     1699.427      292.065    us/op
+n.q.s.b.Benchmark.benchSmallCsvFromFileSimpleStrictQuotesTrim        avgt        30     1564.114      290.923    us/op
+
+n.q.s.b.Benchmark.benchRetainQuotesTrimWhitespaceMultiLine           avgt        30     1435.881      125.399    ns/op
+n.q.s.b.Benchmark.benchRetainQuotesTrimWhitespaceSimple              avgt        30      989.321       76.244    ns/op
+
+n.q.s.b.Benchmark.benchStrictQuotesTrimWhitespaceMultiLine           avgt        30     1388.054      175.114    ns/op
+n.q.s.b.Benchmark.benchStrictQuotesTrimWhitespaceSimple              avgt        30     1060.401       86.586    ns/op
+
+
+
+4dcce0b074c6c32b0bcc6741b676838c9370b40c (footloose revised parsing code)
+Benchmark                                                            Mode   Samples         Mean   Mean error    Units
+n.q.s.b.Benchmark.benchLargeCsvFromFileCsvReaderXMultiLine           avgt        30     3651.036       40.841    ms/op
+n.q.s.b.Benchmark.benchLargeCsvFromFileCsvReaderSimple               avgt        30     3174.591       18.416    ms/op
+
+n.q.s.b.Benchmark.benchLargeCsvFromFileMultiLine                     avgt        30     3581.350       16.099    ms/op
+n.q.s.b.Benchmark.benchLargeCsvFromFileSimple                        avgt        30     3172.849       14.598    ms/op
+
+n.q.s.b.Benchmark.benchLargeCsvFromFileMultiLineStrictQuotesTrim     avgt        30     3373.714       15.838    ms/op
+n.q.s.b.Benchmark.benchLargeCsvFromFileSimpleStrictQuotesTrim        avgt        30     3032.023       15.692    ms/op
+
+n.q.s.b.Benchmark.benchLongInMemoryStringMultiLine                   avgt        30       16.502        1.048    us/op
+n.q.s.b.Benchmark.benchLongInMemoryStringSimple                      avgt        30       11.977        0.767    us/op
+
+n.q.s.b.Benchmark.benchSmallCsvFromFileMultiLine                     avgt        30     1758.452      377.449    us/op
+n.q.s.b.Benchmark.benchSmallCsvFromFileSimple                        avgt        30     1636.232      246.013    us/op
+
+n.q.s.b.Benchmark.benchSmallCsvFromFileMultiLineStrictQuotesTrim     avgt        30     1631.593      261.644    us/op
+n.q.s.b.Benchmark.benchSmallCsvFromFileSimpleStrictQuotesTrim        avgt        30     1607.365      287.933    us/op
+
+n.q.s.b.Benchmark.benchRetainQuotesTrimWhitespaceMultiLine           avgt        30     1369.167      181.414    ns/op
+n.q.s.b.Benchmark.benchRetainQuotesTrimWhitespaceSimple              avgt        30      979.069       88.907    ns/op
+
+n.q.s.b.Benchmark.benchStrictQuotesTrimWhitespaceMultiLine           avgt        30     1306.430      115.922    ns/op
+n.q.s.b.Benchmark.benchStrictQuotesTrimWhitespaceSimple              avgt        30     1017.698       67.465    ns/op
