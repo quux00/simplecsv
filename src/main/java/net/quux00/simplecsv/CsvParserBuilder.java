@@ -10,8 +10,13 @@ public class CsvParserBuilder {
   boolean retainOuterQuotes = ParserUtil.DEFAULT_RETAIN_OUTER_QUOTES;
   boolean retainEscapeChars = ParserUtil.DEFAULT_RETAIN_ESCAPE_CHARS;
   boolean alwaysQuoteOutput = ParserUtil.DEFAULT_ALWAYS_QUOTE_OUTPUT;
-  boolean supportsMultiLine = false;
+  MultiLineStatus supportsMultiLine = MultiLineStatus.DEFAULT;
   boolean allowDoubleEscapedQuotes = false;
+  boolean threadSafe = false;
+  
+  private enum MultiLineStatus {
+    DEFAULT, REQUESTED_TRUE, REQUESTED_FALSE;
+  }
   
   public CsvParserBuilder separator(final char separator) {
     this.separator = separator;
@@ -59,7 +64,11 @@ public class CsvParserBuilder {
   }
 
   public CsvParserBuilder multiLine(boolean multi) {
-    supportsMultiLine = multi;
+    if (multi) {
+      supportsMultiLine = MultiLineStatus.REQUESTED_TRUE;
+    } else {
+      supportsMultiLine = MultiLineStatus.REQUESTED_FALSE;
+    }
     return this;
   }
   
@@ -68,12 +77,23 @@ public class CsvParserBuilder {
     return this;
   }
   
+  public CsvParserBuilder threadSafe(boolean safe) {
+    threadSafe = safe;
+    return this;
+  }
+  
   
   /**
    * Constructs Parser
    */
   public CsvParser build() {
-    if (supportsMultiLine || allowDoubleEscapedQuotes) {
+    if (supportsMultiLine == MultiLineStatus.REQUESTED_FALSE && 
+        (allowDoubleEscapedQuotes || threadSafe)) {
+      throw new IllegalStateException("Request of 'allowDoubleEscapedQuotes' or 'threadSafe' requires MultiLineParser");
+    }
+    
+    if (supportsMultiLine == MultiLineStatus.REQUESTED_TRUE || 
+        allowDoubleEscapedQuotes || threadSafe) {
       return new MultiLineCsvParser(
           separator,
           quoteChar,

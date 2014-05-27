@@ -25,7 +25,7 @@ import java.util.List;
  *   - turn off retainEscapeChars mode
  *   - turn on alwaysQuoteOutput mode
  * 
- * @NotThreadSafe - only use one CsvParser per thread
+ * NotThreadSafe - only use one CsvParser per thread
  */
 public class SimpleCsvParser implements CsvParser {
   static final int INITIAL_READ_SIZE = 128;
@@ -43,6 +43,7 @@ public class SimpleCsvParser implements CsvParser {
   // used in parse()
   final State state = new State();
   final StringBuilder sb = new StringBuilder(INITIAL_READ_SIZE);
+  final List<String> toks = new ArrayList<String>();
     
   public SimpleCsvParser() {
     separator = ParserUtil.DEFAULT_SEPARATOR;
@@ -97,7 +98,7 @@ public class SimpleCsvParser implements CsvParser {
   }
   
   // keep track of mutable States for FSM of parsing
-  static class State {
+  static final class State {
     boolean inQuotes = false;
     boolean inEscape = false;
     
@@ -173,7 +174,7 @@ public class SimpleCsvParser implements CsvParser {
     
     state.reset();
     sb.setLength(0);
-    List<String> toks = new ArrayList<String>();  // returned to caller, so created afresh each time
+    toks.clear();
     
     for (int i = 0; i < ln.length(); i++) {
       char c = ln.charAt(i);
@@ -197,7 +198,10 @@ public class SimpleCsvParser implements CsvParser {
       throw new IllegalArgumentException("Un-terminated quoted field at end of CSV line");
     }
     toks.add( handleEndOfToken(sb) );
-    return toks;
+
+    List<String> returnList = new ArrayList<String>(toks.size());
+    returnList.addAll(toks);
+    return returnList;
   }  
 
   
@@ -255,7 +259,7 @@ public class SimpleCsvParser implements CsvParser {
     } else {
       sb.append(c);
     }
-    state.escapeFound(false);    
+    state.escapeFound(false);
   }
   
   void handleRegular(StringBuilder sb, char c) {
@@ -301,7 +305,7 @@ public class SimpleCsvParser implements CsvParser {
       sb.append(quotechar);
     }
     state.quoteFound();
-    state.escapeFound(false);       
+    state.escapeFound(false); 
   }
   
   String trim(StringBuilder sb) {
