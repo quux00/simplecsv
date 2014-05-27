@@ -41,8 +41,6 @@ public class MultiLineCsvParser implements CsvParser {
   final boolean alwaysQuoteOutput;        // if true, put quote around around all outgoing tokens
   final boolean allowsDoubledEscapedQuotes; // if true, allows quotes to exist within a quoted field as long as they are doubled.
 
-  static final int INITIAL_READ_SIZE = 128;
-
   private static final boolean debug = false;
 
   public MultiLineCsvParser() {
@@ -104,31 +102,6 @@ public class MultiLineCsvParser implements CsvParser {
     }
   }
 
-  // keep track of mutable States for FSM of parsing
-  static final class State {
-
-    boolean inQuotes = false;
-    boolean inEscape = false;
-
-    public void quoteFound() {
-      if (!inEscape) {
-        inQuotes = !inQuotes;
-      }
-    }
-
-    public void escapeFound(boolean escFound) {
-      if (escFound) {
-        inEscape = !inEscape;
-      } else {
-        inEscape = false;
-      }
-    }
-
-    public void reset() {
-      inQuotes = inEscape = false;
-    }
-  }
-
   @Override
   public List<String> parse(String s) {
     if (s == null) {
@@ -159,9 +132,11 @@ public class MultiLineCsvParser implements CsvParser {
       return null;
     }
 
-    final StringBuilder sb = new StringBuilder(INITIAL_READ_SIZE);
+    final StringBuilder sb = new StringBuilder();
     final List<String> toks = new ArrayList<String>();
-    final State state = new State();
+
+    boolean inEscape = false;
+    boolean inQuotes = false;
 
     decide:
       while (r != -1) {
@@ -173,49 +148,61 @@ public class MultiLineCsvParser implements CsvParser {
         }
 
         if (isQuoteChar(r)) {
-          if (allowsDoubledEscapedQuotes && state.inQuotes) {
+          if (allowsDoubledEscapedQuotes && inQuotes) {
             if (isQuoteChar(r = reader.read())) {
               // then consume and follow usual flow
               sb.append((char) r);
             } else {
               // HANDLE QUOTE AND (a) BREAK IF EOF
               // OR (b) START AT TOP WITH OBTAINED NEXT CHAR
-              handleQuote(state, sb);
+              handleQuote(inEscape, true, sb);
+              if (!inEscape) {
+                inQuotes = false;
+              }else{
+                inEscape = false;
+              }
               continue decide;
             }
           } else {
-            handleQuote(state, sb);
+            handleQuote(inEscape, inQuotes, sb);
+            if (!inEscape) {
+                inQuotes = !inQuotes;
+            }else{
+                inEscape = false;
+            }
           }
         } else if (isEscapeChar(r)) {
-          handleEscape(state, sb);
+          handleEscape(inQuotes, sb);
+          inEscape = !inEscape;
+        } else if (r == separator && !inQuotes) {
+          toks.add(handleEndOfToken(sb));
+          inEscape = false;
+          sb.setLength(0);
 
-        } else if (r == separator && !state.inQuotes) {
-          toks.add(handleEndOfToken(state, sb));
-
-        } else if (!state.inQuotes && r == '\n') {
+        } else if (r == '\n' && !inQuotes) {
           // END OF RECORD
           break decide;
-        } else if (!state.inQuotes && r == '\r') {
+        } else if (r == '\r' && !inQuotes) {
           if ((r = reader.read()) == '\n') {
             // END OF RECORD
             break decide;
           } else {
-            handleRegular(state, sb, '\r');
+            inEscape = handleRegular(inEscape, false, sb, '\r');
             continue decide;
           }
         } else {
-          handleRegular(state, sb, (char) r);
+          inEscape = handleRegular(inEscape, inQuotes, sb, (char) r);
         }
 
         r = reader.read();
       }
 
     // done parsing the line
-    if (state.inQuotes && !allowedUnbalancedQuotes) {
+    if (inQuotes && !allowedUnbalancedQuotes) {
       throw new IllegalArgumentException("Un-terminated quoted field at end of CSV record");
     }
 
-    toks.add(handleEndOfToken(state, sb));
+    toks.add(handleEndOfToken(sb));
     return toks;
   }
 
@@ -271,21 +258,18 @@ public class MultiLineCsvParser implements CsvParser {
     return c == quotechar && quotechar != ParserUtil.NULL_CHARACTER;
   }
 
-  String handleEndOfToken(State state, StringBuilder sb) {
+  String handleEndOfToken(StringBuilder sb) {
     // in strictQuotes mode you don't know when to add the last seen
     // quote until the token is done; if the buffer has any characters
     // then you know a first quote was seen, so add the closing quote
     if (strictQuotes && sb.length() > 0) {
       sb.append(quotechar);
     }
-    String tok = trim(sb);
-    state.escapeFound(false);
-    sb.setLength(0);
-    return tok;
+    return trim(sb);
   }
 
-  void appendRegularChar(State state, StringBuilder sb, char c) {
-    if (state.inEscape && !retainEscapeChars) {
+  void appendRegularChar(boolean inEscape, StringBuilder sb, char c) {
+    if (inEscape && !retainEscapeChars) {
       switch (c) {
         case 'n':
           sb.append('\n');
@@ -309,24 +293,33 @@ public class MultiLineCsvParser implements CsvParser {
     } else {
       sb.append(c);
     }
-    state.escapeFound(false);
   }
 
-  void handleRegular(State state, StringBuilder sb, char c) {
+  /**
+   * @param inEscape
+   * @param inQuotes
+   * @param sb
+   * @param c
+   * @return the new escape status
+   */
+  boolean handleRegular(boolean inEscape, boolean inQuotes, StringBuilder sb, char c) {
     if (strictQuotes) {
-      if (state.inQuotes) {
-        appendRegularChar(state, sb, c);
+      if (inQuotes) {
+        appendRegularChar(inEscape, sb, c);
+        return false;
+      }else{
+        return inEscape; 
       }
     } else {
-      appendRegularChar(state, sb, c);
+      appendRegularChar(inEscape, sb, c);
+      return false;
     }
   }
 
-  void handleEscape(State state, StringBuilder sb) {
-    state.escapeFound(true);
+  void handleEscape(boolean inQuotes, StringBuilder sb) {
     if (retainEscapeChars) {
       if (strictQuotes) {
-        if (state.inQuotes) {
+        if (inQuotes) {
           sb.append(escapechar);
         }
       } else {
@@ -335,11 +328,11 @@ public class MultiLineCsvParser implements CsvParser {
     }
   }
 
-  void handleQuote(State state, StringBuilder sb) {
+  void handleQuote(boolean inEscape, boolean inQuotes, StringBuilder sb) {
     // always retain outer quotes while parsing and then remove them at the end if appropriate
     if (strictQuotes) {
-      if (state.inQuotes) {
-        if (state.inEscape) {
+      if (inQuotes) {
+        if (inEscape) {
           sb.append(quotechar);
         }
       } else {
@@ -354,8 +347,6 @@ public class MultiLineCsvParser implements CsvParser {
     } else {
       sb.append(quotechar);
     }
-    state.quoteFound();
-    state.escapeFound(false);
   }
 
   String trim(StringBuilder sb) {
