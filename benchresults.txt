@@ -1,3 +1,21 @@
+---------------------------
+Final conclusions
+---------------------------
+
+1. I will keep the version that passes around List<String> rather than String[].  It is slightly more performant, having one less copy to do.
+2. I will keep an ArrayList as an instance variable in SimpleCsvParser and copy out a new one.  It is again mostly a wash, but slightly faster on large files.
+3. The SimpleCsv will be non-thread-safe and the MultiLineParser will be thread safe.
+4. I will add a `threadSafe` option to the CsvParserBuilder.
+5. The SimpleCsv parser is typically 10% to 25% faster than the MultiLineCsvParser (with other same settings) under most conditions tested on Windows and Linux.
+
+Optional: 
+1. The parsing code from footloose is mostly a wash, but appears to be slightly slower (2-5%) on large files.  It could be reverted.
+
+
+---------------------------
+Raw data and basic analysis
+---------------------------
+
 Benchmark Conditions: => reuse the toks ArrayList, creating and passing out a new one to the caller
                          Only changed/ran SimpleCsv
 

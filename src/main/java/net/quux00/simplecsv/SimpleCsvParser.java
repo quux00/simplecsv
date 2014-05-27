@@ -25,7 +25,7 @@ import java.util.List;
  *   - turn off retainEscapeChars mode
  *   - turn on alwaysQuoteOutput mode
  * 
- * @NotThreadSafe - only use one CsvParser per thread
+ * NotThreadSafe - only use one CsvParser per thread
  */
 public class SimpleCsvParser implements CsvParser {
   static final int INITIAL_READ_SIZE = 128;
@@ -175,9 +175,6 @@ public class SimpleCsvParser implements CsvParser {
     state.reset();
     sb.setLength(0);
     toks.clear();
-//    State state = new State();
-//    StringBuilder sb = new StringBuilder(INITIAL_READ_SIZE);
-//   List<String> toks = new ArrayList<String>();  // returned to caller, so created afresh each time
     
     for (int i = 0; i < ln.length(); i++) {
       char c = ln.charAt(i);
@@ -201,10 +198,10 @@ public class SimpleCsvParser implements CsvParser {
       throw new IllegalArgumentException("Un-terminated quoted field at end of CSV line");
     }
     toks.add( handleEndOfToken(sb) );
+
     List<String> returnList = new ArrayList<String>(toks.size());
     returnList.addAll(toks);
     return returnList;
-//    return toks;
   }  
 
   

@@ -1,3 +1,30 @@
+15f5e45d9db8d4a05063375c7ead30bef60e5d24 (List<String>)
+Benchmark                                                            Mode   Samples         Mean   Mean error    Units
+n.q.s.b.Benchmark.benchLargeCsvFromFileCsvReaderXMultiLine           avgt        30     3551.206       17.090    ms/op
+n.q.s.b.Benchmark.benchLargeCsvFromFileCsvReaderSimple               avgt        30     3134.487       21.035    ms/op
+
+n.q.s.b.Benchmark.benchLargeCsvFromFileMultiLine                     avgt        30     3553.025       26.180    ms/op
+n.q.s.b.Benchmark.benchLargeCsvFromFileSimple                        avgt        30     3180.384       64.774    ms/op
+
+n.q.s.b.Benchmark.benchLargeCsvFromFileMultiLineStrictQuotesTrim     avgt        30     3337.548       16.600    ms/op
+n.q.s.b.Benchmark.benchLargeCsvFromFileSimpleStrictQuotesTrim        avgt        30     3008.369       17.669    ms/op
+
+n.q.s.b.Benchmark.benchLongInMemoryStringMultiLine                   avgt        30       17.995        1.486    us/op
+n.q.s.b.Benchmark.benchLongInMemoryStringSimple                      avgt        30       11.958        0.801    us/op
+
+n.q.s.b.Benchmark.benchSmallCsvFromFileMultiLine                     avgt        30     1810.400      343.747    us/op
+n.q.s.b.Benchmark.benchSmallCsvFromFileSimple                        avgt        30     1636.180      294.048    us/op
+
+n.q.s.b.Benchmark.benchSmallCsvFromFileMultiLineStrictQuotesTrim     avgt        30     1699.427      292.065    us/op
+n.q.s.b.Benchmark.benchSmallCsvFromFileSimpleStrictQuotesTrim        avgt        30     1564.114      290.923    us/op
+
+n.q.s.b.Benchmark.benchRetainQuotesTrimWhitespaceMultiLine           avgt        30     1435.881      125.399    ns/op
+n.q.s.b.Benchmark.benchRetainQuotesTrimWhitespaceSimple              avgt        30      989.321       76.244    ns/op
+
+n.q.s.b.Benchmark.benchStrictQuotesTrimWhitespaceMultiLine           avgt        30     1388.054      175.114    ns/op
+n.q.s.b.Benchmark.benchStrictQuotesTrimWhitespaceSimple              avgt        30     1060.401       86.586    ns/op
+
+
 600c7adef73a5143dfacac59f437fe4ba85bdf65
 Benchmark                                                            Mode   Samples         Mean   Mean error    Units
 n.q.s.b.Benchmark.benchLargeCsvFromFileCsvReaderXMultiLine           avgt        30     3499.105       21.795    ms/op
@@ -24,6 +51,15 @@ n.q.s.b.Benchmark.benchRetainQuotesTrimWhitespaceSimple              avgt       
 n.q.s.b.Benchmark.benchStrictQuotesTrimWhitespaceMultiLine           avgt        30     1311.430       99.017    ns/op
 n.q.s.b.Benchmark.benchStrictQuotesTrimWhitespaceSimple              avgt        30     1190.112      165.143    ns/op
 
+
+
+String[] vs List<String> Analysis
+3647.687 / 3551.206 = 1.027
+3204.380 / 3134.487 = 1.022
+3615.407 / 3553.025 = 1.017
+3159.722 / 3180.384 = 0.993
+
+List<String> seems slightly faster for the ones where there was no overlap of mean error, but mostly a wash.
 
 5784f79a48abd502133770a8a80d8ed0dd442424 (String[])
 Benchmark                                                            Mode   Samples         Mean   Mean error    Units
@@ -52,6 +88,8 @@ n.q.s.b.Benchmark.benchStrictQuotesTrimWhitespaceMultiLine           avgt       
 n.q.s.b.Benchmark.benchStrictQuotesTrimWhitespaceSimple              avgt        30     1142.341       97.669    ns/op
 
 
+
+
 15f5e45d9db8d4a05063375c7ead30bef60e5d24 (List<String>)
 Benchmark                                                            Mode   Samples         Mean   Mean error    Units
 n.q.s.b.Benchmark.benchLargeCsvFromFileCsvReaderXMultiLine           avgt        30     3551.206       17.090    ms/op
@@ -78,7 +116,9 @@ n.q.s.b.Benchmark.benchRetainQuotesTrimWhitespaceSimple              avgt       
 n.q.s.b.Benchmark.benchStrictQuotesTrimWhitespaceMultiLine           avgt        30     1388.054      175.114    ns/op
 n.q.s.b.Benchmark.benchStrictQuotesTrimWhitespaceSimple              avgt        30     1060.401       86.586    ns/op
 
+Difference between v1 and v2 of footloose is about ~2.5% slower for big file and the others are w/in margin of error.
 
+===================================================================================================
 
 4dcce0b074c6c32b0bcc6741b676838c9370b40c (footloose revised parsing code)
 Benchmark                                                            Mode   Samples         Mean   Mean error    Units
