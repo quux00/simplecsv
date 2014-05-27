@@ -11,9 +11,14 @@ import java.util.List;
  * If you want to construct anything except the default parser, it is recommended
  * that you use the CsvParserBuilder.
  * 
- * The parser can be used standalone without the Reader. For example in a Hadoop
- * MapReduce scenario, no reader is needed, just a parser, so almost all of the
- * core logic of the library is in the CsvParser, not other classes.
+ * This parser has three features that the SimpleCsvParser does not have:
+ * - it is thread safe (probably of minor importance, but good to document)
+ * - it can handle the RFC4180 scenario of quoting quotes with a quote character
+ *   inside a quoted string
+ * - it can handle newlines (or CR/LF) embedded in a quoted string and does NOT
+ *   interpret them as the end of the line, but rather as part of the quoted string.
+ * 
+ * As with the SimpleCsvParser, the parser can be used with or without the CsvReader.
  *
  * Options / configurations:
  * - change the separator/delimiter char
@@ -24,7 +29,7 @@ import java.util.List;
  * - turn on allowUnbalancedQuotes mode
  * - turn off retainEscapeChars mode
  * - turn on alwaysQuoteOutput mode
- * - turn on alwaysAllowDoubleEscapedQuotes
+ * - turn on alwaysAllowDoubleEscapedQuotes (follows RFC4180 for allowing quotes to be escaped with quotes)
  *
  * This parser is ThreadSafe - Use the same CsvParser in as many threads as you want.
  */
@@ -129,6 +134,15 @@ public class MultiLineCsvParser implements CsvParser {
     }
   }
 
+  /**
+   * Defers to parseNext.  The string is wrapped in a StringReader and passed
+   * to parseNext, since the "multi-line" logic of the parser requires the
+   * functionality of a Reader to determine what NL or CR/NL characters are
+   * "real" or part of a quoted string.
+   * 
+   * @param s String to parser
+   * @return parsed tokens from the delimited string as List<String>
+   */
   @Override
   public List<String> parse(String s) {
     if (s == null) {
@@ -190,11 +204,14 @@ public class MultiLineCsvParser implements CsvParser {
           handleEscape(state, sb);
 
         } else if (!state.inQuotes) {
+          
           if(r == separator) {
             toks.add(handleEndOfToken(state, sb));
+          
           } else if (r == '\n') {
             // END OF RECORD
             break decide;
+          
           } else if (r == '\r') {
             if ((r = reader.read()) == '\n') {
               // END OF RECORD
@@ -203,6 +220,7 @@ public class MultiLineCsvParser implements CsvParser {
               handleRegular(state, sb, '\r');
               continue decide;
             }
+          
           } else {
             handleRegular(state, sb, (char) r);
           }
@@ -222,42 +240,6 @@ public class MultiLineCsvParser implements CsvParser {
     return toks;
   }
 
-  /**
-   * @param data
-   * @return the first record found
-   */
-  String[] parseFirstRecord(String data) throws IOException {
-    return parseNthRecord(data, 1);
-  }
-
-  /**
-   *
-   * @param data
-   * @param recordNumber Starts at 1, the record number to return.
-   * @return
-   */
-  String[] parseNthRecord(String data, int recordNumber) throws IOException {
-    if (data == null) {
-      throw new IllegalArgumentException("I cannot parse a null string");
-    }
-    if (recordNumber <= 0) {
-      throw new IllegalArgumentException("The record number must be greater than zero: " + recordNumber);
-    }
-
-    Reader r = new StringReader(data);
-
-    List<String> toks;
-    while (recordNumber > 1 && (toks = parseNext(r)) != null) {
-      recordNumber--;
-    }
-
-    toks = parseNext(r);
-    if (toks == null) {
-      return null;
-    } else {
-      return toks.toArray(new String[toks.size()]);
-    }
-  }
 
   /* --------------------------------- */
   /* ---[ internal helper methods ]--- */

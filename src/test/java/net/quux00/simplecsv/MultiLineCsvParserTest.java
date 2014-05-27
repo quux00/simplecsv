@@ -1316,23 +1316,6 @@ public class MultiLineCsvParserTest {
   /* ------------------------------------- */
   /* ---[ Various Mixed Mode Settings ]--- */
   /* ------------------------------------- */
-  @Test
-  public void testCrLfAsWhiteSpace() throws IOException {
-    MultiLineCsvParser p = (MultiLineCsvParser) new CsvParserBuilder().
-        trimWhitespace(true).
-        multiLine(true).
-        build();
-
-    String data = "a\n"
-        + ",\r\n"
-        + "b\n"
-        + ",c\r";
-
-    assertArrayEquals(new String[]{"a"}, p.parse(data).toArray());
-    assertArrayEquals(new String[]{"", ""}, p.parseNthRecord(data, 2));
-    assertArrayEquals(new String[]{"b"}, p.parseNthRecord(data, 3));
-    assertArrayEquals(new String[]{"", "c"}, p.parseNthRecord(data, 4));
-  }
 
 
   @Test
