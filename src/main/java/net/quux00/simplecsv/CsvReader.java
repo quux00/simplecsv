@@ -18,7 +18,6 @@ package net.quux00.simplecsv;
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.IOException;
-import java.io.PushbackReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -116,7 +115,7 @@ public class CsvReader implements Closeable, Iterable<String[]> {
         try {
             while (skipLines > 0) {
                 if (parser.parseNext(br) == null) {
-                    // if we reacher EOF, then consider all lines skipped
+                    // if we reach EOF, then consider all lines skipped
                     skipLines = 0;
                 } else {
                     recordNumber++;
