@@ -166,7 +166,11 @@ public class MultiLineCsvParser implements CsvParser {
                         sb.append(escapechar);
                     }
                 } else {
-                    appendRegularChar(true, sb, (char) r);
+                    if (!retainEscapeChars) {
+                        appendEscapedCharacter((char) r, sb);
+                    } else {
+                        sb.append((char) r);
+                    }
                 }
                 inEscape = false;
 
@@ -237,14 +241,18 @@ public class MultiLineCsvParser implements CsvParser {
                         break decide;
                     } else {
                         if (!strictQuotes) {
-                            appendRegularChar(true, sb, '\r');
+                            sb.append('\r');
                             inEscape = false;
                         }
                         continue decide;
                     }
                 } else {
                     if (!strictQuotes) {
-                        appendRegularChar(true, sb, (char) r);
+                        if (!retainEscapeChars) {
+                            appendEscapedCharacter((char) r, sb);
+                        } else {
+                            sb.append((char) r);
+                        }
                         inEscape = false;
                     }
                 }
@@ -283,13 +291,13 @@ public class MultiLineCsvParser implements CsvParser {
                         break decide;
                     } else {
                         if (!strictQuotes) {
-                            appendRegularChar(false, sb, '\r');
+                            sb.append('\r');
                         }
                         continue decide;
                     }
                 } else {
                     if (!strictQuotes) {
-                        appendRegularChar(false, sb, (char) r);
+                        sb.append((char) r);
                     }
                 }
             }
@@ -304,6 +312,29 @@ public class MultiLineCsvParser implements CsvParser {
 
         toks.add(handleEndOfToken(sb));
         return toks;
+    }
+
+    private void appendEscapedCharacter(char c, final StringBuilder sb) {
+        switch (c) {
+            case 'n':
+                sb.append('\n');
+                break;
+            case 't':
+                sb.append('\t');
+                break;
+            case 'r':
+                sb.append('\r');
+                break;
+            case 'b':
+                sb.append('\b');
+                break;
+            case 'f':
+                sb.append('\f');
+                break;
+            default:
+                sb.append(c);
+                break;
+        }
     }
 
     /**
@@ -366,54 +397,6 @@ public class MultiLineCsvParser implements CsvParser {
             sb.append(quotechar);
         }
         return trim(sb);
-    }
-
-    void appendRegularChar(boolean inEscape, StringBuilder sb, char c) {
-        if (inEscape && !retainEscapeChars) {
-            switch (c) {
-                case 'n':
-                    sb.append('\n');
-                    break;
-                case 't':
-                    sb.append('\t');
-                    break;
-                case 'r':
-                    sb.append('\r');
-                    break;
-                case 'b':
-                    sb.append('\b');
-                    break;
-                case 'f':
-                    sb.append('\f');
-                    break;
-                default:
-                    sb.append(c);
-                    break;
-            }
-        } else {
-            sb.append(c);
-        }
-    }
-
-    /**
-     * @param inEscape
-     * @param inQuotes
-     * @param sb
-     * @param c
-     * @return the new escape status
-     */
-    boolean handleRegular(boolean inEscape, boolean inQuotes, StringBuilder sb, char c) {
-        if (strictQuotes) {
-            if (inQuotes) {
-                appendRegularChar(inEscape, sb, c);
-                return false;
-            } else {
-                return inEscape;
-            }
-        } else {
-            appendRegularChar(inEscape, sb, c);
-            return false;
-        }
     }
 
     String trim(StringBuilder sb) {
