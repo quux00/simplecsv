@@ -187,7 +187,7 @@ public class MultiLineCsvParser implements CsvParser {
         }
 
         if (isQuoteChar(r)) {
-          if (allowsDoubledEscapedQuotes && state.inQuotes) {
+          if (allowsDoubledEscapedQuotes && !state.inEscape && state.inQuotes) {
             if (isQuoteChar(r = reader.read())) {
               // then consume and follow usual flow
               sb.append((char) r);
