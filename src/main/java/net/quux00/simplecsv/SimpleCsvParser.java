@@ -160,7 +160,7 @@ public class SimpleCsvParser implements CsvParser {
    */
   @Override
   public List<String> parse(String ln) {
-    if (ln == null || ln.isEmpty()) {
+    if (ln == null) {
       return null;
     }
     return parse0(ln);
