@@ -205,6 +205,12 @@ public class SimpleCsvParserTest {
   }
   
   @Test
+  public void returnNullWhenEmptyPassedIn() {
+    List<String> toks = parser.parse("");
+    assertNull(toks);
+  }
+  
+  @Test
   public void testInternalQuotes() {
     List<String> toks = parser.parse("a , \"b\",1000");
     assertEquals(3, toks.size());
