@@ -3,6 +3,7 @@ package net.quux00.simplecsv;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.Collections;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -160,8 +161,11 @@ public class SimpleCsvParser implements CsvParser {
    */
   @Override
   public List<String> parse(String ln) {
-    if (ln == null || ln.isEmpty()) {
-      return null;
+    if (ln == null) {
+      throw new IllegalArgumentException("I cannot parse a null");
+    }
+    if (ln.isEmpty()) {
+      return Collections.<String>emptyList();
     }
     return parse0(ln);
   }
