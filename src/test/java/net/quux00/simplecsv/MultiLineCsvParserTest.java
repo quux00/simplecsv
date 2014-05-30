@@ -234,6 +234,11 @@ public class MultiLineCsvParserTest {
   public void returnNullWhenNullPassedIn() {
     assertNull(parser.parse(null));
   }
+  
+  @Test
+  public void returnNullWhenEmptyPassedIn() {
+    assertNull(parser.parse(""));
+  }
 
   @Test
   public void testInternalQuotes() {
