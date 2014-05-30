@@ -3,6 +3,7 @@ package net.quux00.simplecsv;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.Collections;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -146,7 +147,10 @@ public class MultiLineCsvParser implements CsvParser {
   @Override
   public List<String> parse(String s) {
     if (s == null) {
-      return null;
+      throw new IllegalArgumentException("I cannot parse a null");
+    }
+    if (s.isEmpty()) {
+      return Collections.<String>emptyList();
     }
     try {
       return parseNext(new StringReader(s));
