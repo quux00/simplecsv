@@ -1,22 +1,7 @@
 package net.quux00.simplecsv.bean;
 
-/**
- Copyright 2007 Kyle Miller.
-
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
-
- http://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
- */
-
-
+import net.quux00.simplecsv.CsvParser;
+import net.quux00.simplecsv.CsvParserBuilder;
 import net.quux00.simplecsv.CsvReader;
 import net.quux00.simplecsv.bean.CsvToBean;
 import net.quux00.simplecsv.bean.HeaderColumnNameMappingStrategy;
@@ -47,6 +32,16 @@ public class HeaderColumnNameMappingStrategyTest {
     return csv.parse(strat, new StringReader(parseString));
   }
 
+  private List<MockBean> createTestParseResultWithMultiLineReader(String parseString) {
+    HeaderColumnNameMappingStrategy<MockBean> strat = new HeaderColumnNameMappingStrategy<MockBean>();
+    strat.setType(MockBean.class);
+    CsvToBean<MockBean> csv = new CsvToBean<MockBean>();
+    CsvParser p = new CsvParserBuilder().multiLine(true).build();
+    CsvReader r = new CsvReader(new StringReader(parseString), p);
+    return csv.parse(strat, r);
+  }
+
+  
   @Test
   public void testParse() {
     List<MockBean> list = createTestParseResult(TEST_STRING);
@@ -59,6 +54,18 @@ public class HeaderColumnNameMappingStrategyTest {
   }
 
   @Test
+  public void testParseWithMultiLineReader() {
+    List<MockBean> list = createTestParseResultWithMultiLineReader(TEST_STRING);
+    assertNotNull(list);
+    assertTrue(list.size() == 2);
+    MockBean bean = list.get(0);
+    assertEquals("kyle", bean.getName());
+    assertEquals("abc123456", bean.getOrderNumber());
+    assertEquals(123, bean.getNum());
+  }
+
+  
+  @Test
   public void testQuotedString() {
     List<MockBean> list = createTestParseResult(TEST_QUOTED_STRING);
     assertNotNull(list);
@@ -70,8 +77,31 @@ public class HeaderColumnNameMappingStrategyTest {
   }
 
   @Test
+  public void testQuotedStringWithMultiLineReader() {
+    List<MockBean> list = createTestParseResultWithMultiLineReader(TEST_QUOTED_STRING);
+    assertNotNull(list);
+    assertTrue(list.size() == 2);
+    MockBean bean = list.get(0);
+    assertEquals("kyle", bean.getName());
+    assertEquals("abc123456", bean.getOrderNumber());
+    assertEquals(123, bean.getNum());
+  }
+
+  
+  @Test
   public void testParseWithSpacesInHeader() {
     List<MockBean> list = createTestParseResult(TEST_STRING);
+    assertNotNull(list);
+    assertTrue(list.size() == 2);
+    MockBean bean = list.get(0);
+    assertEquals("kyle", bean.getName());
+    assertEquals("abc123456", bean.getOrderNumber());
+    assertEquals(123, bean.getNum());
+  }
+
+  @Test
+  public void testParseWithSpacesInHeaderWithMultiLineReader() {
+    List<MockBean> list = createTestParseResultWithMultiLineReader(TEST_STRING);
     assertNotNull(list);
     assertTrue(list.size() == 2);
     MockBean bean = list.get(0);
@@ -96,7 +126,26 @@ public class HeaderColumnNameMappingStrategyTest {
     assertEquals(strat.findDescriptor(0), strat.findDescriptor("name"));
     assertTrue(strat.matches("name", strat.findDescriptor("name")));
   }
-  
+
+  @Test
+  public void verifyColumnNamesUsingMultiLineParser() throws IOException, IntrospectionException {
+    HeaderColumnNameMappingStrategy<MockBean> strat = new HeaderColumnNameMappingStrategy<MockBean>();
+    strat.setType(MockBean.class);
+    assertNull(strat.getColumnName(0));
+    assertNull(strat.findDescriptor(0));
+
+    StringReader reader = new StringReader(TEST_STRING);
+
+    CsvParser p = new CsvParserBuilder().multiLine(true).build();
+    CsvReader csvReader = new CsvReader(reader, p);
+    strat.captureHeader(csvReader);
+
+    assertEquals("name", strat.getColumnName(0));
+    assertEquals(strat.findDescriptor(0), strat.findDescriptor("name"));
+    assertTrue(strat.matches("name", strat.findDescriptor("name")));
+  }
+
+  @Test
   public void verifyColumnNamesSettingTypeInConstructor() throws IOException, IntrospectionException {
     HeaderColumnNameMappingStrategy<MockBean> strat = 
         new HeaderColumnNameMappingStrategy<MockBean>(MockBean.class);

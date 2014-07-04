@@ -1,4 +1,4 @@
-### Differences between simplecsv and OpenCSV-2.3 (and 2.4)
+### Differences between simplecsv version 1 and OpenCSV-2.3 (and 2.4)
 
 * Default settings in simplecsv do not trim any whitespace
  * In OpenCSV, the default parser of `"this", "is","a test"` returns `>>is<<` for the second token, having removed the leading whitespace.  In simplecsv, the second token is `>> is<<`.  (The `<<` chars are shown to demarcate the start and end of the string.)
@@ -36,10 +36,6 @@ The notion of escaping a quote with a quote comes from [RFC 4180](https://tools.
 1. opening and closing quotes, which are not considered part of the value and discarded
 2. quotes that are RFC 4180 escapes
 3. internal (non opening-closing) quotes that are not escapes
-
-Frankly, using a character to escape itself is simply flawed thinking and I find it unfortunate RFC 4180 ever saw the light of day.  I much prefer the programming language model: escape with backslashes.
-
-However, if there is a strong desire to have an RFC 4180 compliant option by users of simplecsv, I believe it should not be tacked onto the current CsvParser.  Instead, a second parser should be written just to handle that.  I'm open to feedback.
 
 
 #### Additional dictums in RFC 4180

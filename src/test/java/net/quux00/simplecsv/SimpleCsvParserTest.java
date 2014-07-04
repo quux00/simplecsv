@@ -199,15 +199,22 @@ public class SimpleCsvParserTest {
   }
   
   @Test
-  public void returnNullWhenNullPassedIn() {
+  public void returnEmptyListWhenNullPassedIn() {
     List<String> toks = parser.parse(null);
-    assertNull(toks);
+    assertEquals(0, toks.size());
   }
   
   @Test
-  public void returnNullWhenEmptyPassedIn() {
+  public void returnEmptyListWhenEmptyStringPassedIn() {
     List<String> toks = parser.parse("");
-    assertNull(toks);
+    assertEquals(0, toks.size());
+  }
+
+  @Test
+  public void returnListOfSizeOneWhenStringOfOneSpacePassedIn() {
+    List<String> toks = parser.parse(" ");
+    assertEquals(1, toks.size());
+    assertEquals(" ", toks.get(0));
   }
   
   @Test

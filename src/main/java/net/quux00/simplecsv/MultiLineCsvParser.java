@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -145,8 +146,8 @@ public class MultiLineCsvParser implements CsvParser {
    */
   @Override
   public List<String> parse(String s) {
-    if (s == null) {
-      return null;
+    if (s == null || s.isEmpty()) {
+      return Collections.emptyList();
     }
     try {
       return parseNext(new StringReader(s));

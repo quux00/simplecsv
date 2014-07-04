@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -161,7 +162,7 @@ public class SimpleCsvParser implements CsvParser {
   @Override
   public List<String> parse(String ln) {
     if (ln == null || ln.isEmpty()) {
-      return null;
+      return Collections.emptyList();
     }
     return parse0(ln);
   }

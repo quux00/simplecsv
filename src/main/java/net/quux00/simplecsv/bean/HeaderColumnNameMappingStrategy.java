@@ -28,69 +28,69 @@ import net.quux00.simplecsv.CsvReader;
  */
 
 public class HeaderColumnNameMappingStrategy<T> implements MappingStrategy<T> {
-    protected List<String> header;
-    protected Map<String, PropertyDescriptor> descriptorMap = null;
-    protected Class<T> type;
+  protected List<String> header;
+  protected Map<String, PropertyDescriptor> descriptorMap = null;
+  protected Class<T> type;
 
-    public HeaderColumnNameMappingStrategy() {}
-    
-    /**
-     * Use this to set the type immediately rather than via the <code>setType</code> method
-     * 
-     * @param type
-     */
-    public HeaderColumnNameMappingStrategy(Class<T> type) {
-      setType(type);
-    }
-    
-    public void captureHeader(CsvReader reader) throws IOException {
-        header = reader.readNext();
-    }
+  public HeaderColumnNameMappingStrategy() {}
 
-    public PropertyDescriptor findDescriptor(int col) throws IntrospectionException {
-        String columnName = getColumnName(col);
-        return (null != columnName && columnName.trim().length() > 0) ? findDescriptor(columnName) : null;
-    }
+  /**
+   * Use this to set the type immediately rather than via the <code>setType</code> method
+   * 
+   * @param type
+   */
+  public HeaderColumnNameMappingStrategy(Class<T> type) {
+    setType(type);
+  }
 
-    protected String getColumnName(int col) {
-        return (null != header && col < header.size()) ? header.get(col) : null;
-    }
+  public void captureHeader(CsvReader reader) throws IOException {
+    header = reader.readNext();
+  }
 
-    protected PropertyDescriptor findDescriptor(String name) throws IntrospectionException {
-        if (null == descriptorMap) descriptorMap = loadDescriptorMap(getType()); //lazy load descriptors
-        return descriptorMap.get(name.toUpperCase().trim());
-    }
+  public PropertyDescriptor findDescriptor(int col) throws IntrospectionException {
+    String columnName = getColumnName(col);
+    return (null != columnName && columnName.trim().length() > 0) ? findDescriptor(columnName) : null;
+  }
 
-    protected boolean matches(String name, PropertyDescriptor desc) {
-        return desc.getName().equals(name.trim());
-    }
+  protected String getColumnName(int col) {
+    return (null != header && col < header.size()) ? header.get(col) : null;
+  }
 
-    protected Map<String, PropertyDescriptor> loadDescriptorMap(Class<T> cls) throws IntrospectionException {
-        Map<String, PropertyDescriptor> map = new HashMap<String, PropertyDescriptor>();
+  protected PropertyDescriptor findDescriptor(String name) throws IntrospectionException {
+    if (null == descriptorMap) descriptorMap = loadDescriptorMap(getType()); //lazy load descriptors
+    return descriptorMap.get(name.toUpperCase().trim());
+  }
 
-        PropertyDescriptor[] descriptors;
-        descriptors = loadDescriptors(getType());
-        for (PropertyDescriptor descriptor : descriptors) {
-            map.put(descriptor.getName().toUpperCase().trim(), descriptor);
-        }
+  protected boolean matches(String name, PropertyDescriptor desc) {
+    return desc.getName().equals(name.trim());
+  }
 
-        return map;
+  protected Map<String, PropertyDescriptor> loadDescriptorMap(Class<T> cls) throws IntrospectionException {
+    Map<String, PropertyDescriptor> map = new HashMap<String, PropertyDescriptor>();
+
+    PropertyDescriptor[] descriptors;
+    descriptors = loadDescriptors(getType());
+    for (PropertyDescriptor descriptor : descriptors) {
+      map.put(descriptor.getName().toUpperCase().trim(), descriptor);
     }
 
-    private PropertyDescriptor[] loadDescriptors(Class<T> cls) throws IntrospectionException {
-        BeanInfo beanInfo = Introspector.getBeanInfo(cls);
-        return beanInfo.getPropertyDescriptors();
-    }
+    return map;
+  }
 
-    public T createBean() throws InstantiationException, IllegalAccessException {
-        return type.newInstance();
-    }
+  private PropertyDescriptor[] loadDescriptors(Class<T> cls) throws IntrospectionException {
+    BeanInfo beanInfo = Introspector.getBeanInfo(cls);
+    return beanInfo.getPropertyDescriptors();
+  }
 
-    public Class<T> getType() {
-        return type;
-    }
+  public T createBean() throws InstantiationException, IllegalAccessException {
+    return type.newInstance();
+  }
 
-    public void setType(Class<T> type) {
-        this.type = type;
-    }
+  public Class<T> getType() {
+    return type;
+  }
+
+  public void setType(Class<T> type) {
+    this.type = type;
+  }
 }

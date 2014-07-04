@@ -3,7 +3,6 @@ package net.quux00.simplecsv;
 import static net.quux00.simplecsv.ParserUtil.DEFAULT_QUOTE_CHAR;
 import static net.quux00.simplecsv.ParserUtil.DEFAULT_SEPARATOR;
 import static net.quux00.simplecsv.ParserUtil.NULL_CHARACTER;
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
@@ -231,13 +230,22 @@ public class MultiLineCsvParserTest {
   }
 
   @Test
-  public void returnNullWhenNullPassedIn() {
-    assertNull(parser.parse(null));
+  public void returnEmptyListWhenNullPassedIn() {
+    List<String> toks = parser.parse(null);
+    assertEquals(0, toks.size());
   }
   
   @Test
-  public void returnNullWhenEmptyPassedIn() {
-    assertNull(parser.parse(""));
+  public void returnEmptyListWhenEmptyStringPassedIn() {
+    List<String> toks = parser.parse("");
+    assertEquals(0, toks.size());
+  }
+
+  @Test
+  public void returnListOfSizeOneWhenStringOfOneSpacePassedIn() {
+    List<String> toks = parser.parse(" ");
+    assertEquals(1, toks.size());
+    assertEquals(" ", toks.get(0));
   }
 
   @Test
