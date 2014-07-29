@@ -171,7 +171,7 @@ public class SimpleCsvParserTest {
     assertEquals("Small test", toks.get(0));
     assertEquals("This is a test across \ntwo lines.", toks.get(1));
   }
-
+  
   /**
    * Test issue 2726363
    * <p/>

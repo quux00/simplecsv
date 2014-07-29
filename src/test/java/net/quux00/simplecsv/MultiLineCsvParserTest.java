@@ -5,7 +5,6 @@ import static net.quux00.simplecsv.ParserUtil.DEFAULT_SEPARATOR;
 import static net.quux00.simplecsv.ParserUtil.NULL_CHARACTER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;

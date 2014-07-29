@@ -2,6 +2,7 @@ package net.quux00.simplecsv;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.anyInt;
@@ -433,6 +434,113 @@ public class CsvReaderTest {
     assertNull(toks);
   }
 
+  @Test(expected=IllegalArgumentException.class)
+  public void testMultiLineInputWithSimpleCsvParser() throws IOException {
+    FileReader fr = new FileReader("src/test/resources/quotednl.csv");
+    csvr = new CsvReader(fr, 1);
+    
+    List<String> toks = csvr.readNext();
+    assertEquals(5, toks.size());
+    assertEquals("1", toks.get(0));
+    assertEquals(" abc", toks.get(1));
+    assertEquals(" Stan \"\"The Man\"\" Musial", toks.get(2));
+    assertEquals(" Mike \\\"The Situation\\\"", toks.get(3));
+    assertEquals(" I\\nlike\\nIke", toks.get(4));
+
+    csvr.readNext();
+  }
+  
+  /* ---[ quotednl.csv tests with MultiLine Parser ]--- */
+  
+  @Test
+  public void testMultiLineInputWithMultiLineParser() throws IOException {
+    FileReader fr = new FileReader("src/test/resources/quotednl.csv");
+    CsvParser p = new CsvParserBuilder().
+        multiLine(true).
+        build();
+    assertTrue(p instanceof MultiLineCsvParser);
+    csvr = new CsvReaderBuilder(fr).skipLines(1).csvParser(p).build();
+    
+    List<String> toks = csvr.readNext();
+    assertEquals(5, toks.size());
+    assertEquals("1", toks.get(0));
+    assertEquals(" abc", toks.get(1));
+    assertEquals(" Stan \"\"The Man\"\" Musial", toks.get(2));
+    assertEquals(" Mike \\\"The Situation\\\"", toks.get(3));
+    assertEquals(" I\\nlike\\nIke", toks.get(4));
+
+    toks = csvr.readNext();
+    assertEquals(6, toks.size());
+    assertEquals("2", toks.get(0));
+    assertEquals(" def", toks.get(1));
+    assertEquals("", toks.get(2));
+    assertEquals("", toks.get(3));
+    assertEquals("z\nabc\"d\"efg ", toks.get(4));
+    assertEquals("Stan \"The Man\" Musial        ", toks.get(5));
+    
+    toks = csvr.readNext();
+    assertEquals(1, toks.size());
+    assertEquals("", toks.get(0));
+    
+    toks = csvr.readNext();
+    assertEquals(6, toks.size());
+    assertEquals("2\\\\n", toks.get(0));
+    assertEquals("\\f", toks.get(1));
+    assertEquals("\\b", toks.get(2));
+    assertEquals("\\r\\n", toks.get(3));
+    assertEquals("\\t", toks.get(4));
+    assertEquals("\tlast", toks.get(5));
+
+    toks = csvr.readNext();
+    assertNull(toks);
+  }
+
+  
+  @Test
+  public void testMultiLineInputWithMultiLineParserAndRfc4180Support() throws IOException {
+    FileReader fr = new FileReader("src/test/resources/quotednl.csv");
+    CsvParser p = new CsvParserBuilder().
+        multiLine(true).
+        allowDoubleEscapedQuotes(true).
+        build();
+    assertTrue(p instanceof MultiLineCsvParser);
+    csvr = new CsvReaderBuilder(fr).skipLines(1).csvParser(p).build();
+    
+    List<String> toks = csvr.readNext();
+    assertEquals(5, toks.size());
+    assertEquals("1", toks.get(0));
+    assertEquals(" abc", toks.get(1));
+    // with RFC4180 turned on the double quotes in the input go to single quotes here
+    assertEquals(" Stan \"The Man\" Musial", toks.get(2));  // key difference
+    assertEquals(" Mike \\\"The Situation\\\"", toks.get(3));
+    assertEquals(" I\\nlike\\nIke", toks.get(4));
+
+    toks = csvr.readNext();
+    assertEquals(6, toks.size());
+    assertEquals("2", toks.get(0));
+    assertEquals(" def", toks.get(1));
+    assertEquals("", toks.get(2));
+    assertEquals("", toks.get(3));
+    assertEquals("z\nabc\"d\"efg ", toks.get(4));
+    assertEquals("Stan \"The Man\" Musial        ", toks.get(5));
+    
+    toks = csvr.readNext();
+    assertEquals(1, toks.size());
+    assertEquals("", toks.get(0));
+    
+    toks = csvr.readNext();
+    assertEquals(6, toks.size());
+    assertEquals("2\\\\n", toks.get(0));
+    assertEquals("\\f", toks.get(1));
+    assertEquals("\\b", toks.get(2));
+    assertEquals("\\r\\n", toks.get(3));
+    assertEquals("\\t", toks.get(4));
+    assertEquals("\tlast", toks.get(5));
+
+    toks = csvr.readNext();
+    assertNull(toks);
+  }
+  
   
   /* ---------------------------------- */  
   /* ---[ StringReader based tests ]--- */

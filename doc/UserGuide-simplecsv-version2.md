@@ -1,4 +1,7 @@
+* [Pluggable Parser Model](#pluggable)
+ * [MultiLine Parser and RFC4180 compliance](#multiline)
 * [Options to the CsvParser](#options)
+ * [Details on CsvParser Options](#optionDetails)
 * [Examples](#examples)
  * [CsvParser](#csvparser)
  * [CsvReader](#csvreader)
@@ -8,24 +11,63 @@
 
 ----
 
+<a name="pluggable"></a>
+## Pluggable Parser Model
+
+With simplecsv-2.0, `CsvParser` is now an interface with the methods:
+
+    List<String> parse(String s);
+    List<String> parseNext(Reader reader) throws IOException;
+
+Thus, simplecsv has a pluggable parser model.  The original CsvParser (from simplecsv-1.x) is now called `SimpleCsvParser` and a new parser `MultiLineCsvParser` has been added (by contributor [footlosejava](https://github.com/footloosejava)).
+
+<br>
+<a name="multiline"></a>
+### MultiLine Parser and RFC4180 compliance
+
+The `MultiLineCsvParser` parser adds three features not found in the `SimpleCsvParser`:
+
+1. it can parse a csv "record" that has newlines embedded inside a quoted field
+2. it can follow [RFC4180](http://tools.ietf.org/html/rfc4180) in allowing quotes to escape quotes in a quoted field. This is described in more detail below if you aren't familiar with this (somewhat peculiar) RFC "standard".
+3. it is threadsafe
+
+Based on a series of benchmarks I ran, the `SimpleCsvParser` is typically 20 to 30% faster than the `MultiLineCsvParser`, so `SimpleCsvParser` is used as the default parser.  The `CsvParserBuilder` will return you a `MultiLineCsvParser` only if you ask for any one of the following options:
+
+* `multiLine` (no surprise!)
+* `allowDoubleEscapedQuotes` - meaning allowing quotes to quote quotes, ala RFC 4180.  See the [Options to the CsvParser](#options) section for more details on this.
+* `threadSafe`
 
 
+<br>
 <a name="options"></a>
 ## Options to the CsvParser
 
-With many Java CSV libraries, you have to use a Reader to get anything done.  In simplecsv (and OpenCSV), the CsvParser is a first-class citizen and can be used on its own or with a Reader.
+With many Java CSV libraries, you have to use a Reader to get anything done.  In simplecsv (as with OpenCSV), the CsvParser is a first-class citizen and can be used on its own. A CsvReader is really just a convenience wrapper around the CsvParser.
 
 As with OpenCSV, the separator or delimiter, the escape char and the quote char are configurable.
 
-simplecsv also preserves many of the nice configurable options that OpenCSV provided, changes a few to be more consistent or sensible and adds a number of new ones.  Here is a quick breakdown of those options:
+simplecsv also preserves many of the nice configurable options that OpenCSV provided, changes a few to be more consistent or sensible and adds a number of new ones.  Here is a full listing of the options and their defaults:
 
-separator
-trimWhitespace
-allowUnbalancedQuotes
-RetainEscapeChars
-threadSafe
-multiline
-StrictQuotes
+    |--------------------------+---------|
+    | Option                   | Default |
+    |--------------------------+---------|
+    | separator                | `,`     |x
+    | quoteChar                | `"`     |x
+    | escapeChar               | `\`     |x
+    | trimWhitespace           | false   |1
+    | allowUnbalancedQuotes    | false   |2
+    | retainOuterQuotes        | false   |4
+    | alwaysQuoteOutput        | false   |5
+    | strictQuotes             | false   |6
+    | retainEscapeChars        | true    |3
+    | multiline                | false   |
+    | allowDoubleEscapedQuotes | false   |
+    | threadSafe               | false   |
+    |--------------------------+---------|
+
+
+<a name="optionDetails"></a>
+### Details on CsvParser Options
 
 <br>
 **Default behavior**
@@ -34,10 +76,20 @@ By default, fields do not have whitespace trimmed, unbalanced quotes will cause 
 
 The default separator is comma; the default escape char is backslash; the default quote char is double quote.
 
-In the examples below, the `<<` and `>>` characters are not part of the string - they just indicate its start and end, so whitespace can be "seen" in the input.  Also these are examples are shown as if in a text file - not as they would appear in a Java string.  The outputs are shown with braces to indicate that the output is a `String[]` (if you call `CsvParser#parseLine()`) or a `List<String>` (if you call `CsvParser#parse()`).
+If any newlines are present, even inside quoted strings, they will be interpreted as the end of the csv record.
+
+In the examples below, the `<<` and `>>` characters are not part of the string - they just indicate its start and end, so whitespace can be "seen" in the input.  Also these are examples are shown as if in a text file - not as they would appear in a Java string.  The outputs are shown with braces to indicate that the output is a `List<String>`  The spaces between words in the output are significant.
 
     _Input_                                  _Output_
+    >>"one","two","3 3",\"four\"<<       =>  [one,two,3 3,\"four\"]
     >>"one", " two " , "3 3",\"four\"<<  =>  [one,  two  , 3 3,\"four\"]
+
+
+*Important Notes:* 
+
+* the CsvParser is fastest when using the default settings. Changing some settings can lead to a 10 to 30% decrease in overall throughput based on a series of (unpublished) benchmarks I have done.  So use as many of the default settings as you can if you are concerned about overall parsing throughput.
+* each of the options described below are described in isolation - if you combine options you may get different results and some option combinations are not allowed.  Disallowed combinations are detected at construction time and an error will be thrown.
+
 
 
 <br><br>
@@ -90,8 +142,8 @@ The first `|` seen is interpreted as a field separator, but the second (between 
 
 Thus the expected output will be:
 
-    blah
-    this is a long name for this" record|blah2
+    tok0: blah
+    tok1: this is a long name for this" record|blah2
 
 
 <br>
@@ -155,8 +207,7 @@ If you want the output to always be quoted, regardless of whether the each input
 This setting informs the parser to only keep characters that lie between unescaped quote chars. This sounds promising and can be useful at times, but it is the trickiest setting and it can have unexpected consequences, so make sure this is really what you want.  Look at the CsvParserTest unit test for many examples.  Here's a straightforward example:
 
     CsvParser p = new CsvParserBuilder().strictQuotes(true).build();
-
-
+    
     _Input_                       _Output_
     >>this, "is","a test" xyz<<  =>  [,is,a test]
 
@@ -170,7 +221,19 @@ Here's a more complicated example:
 Like I said, think carefully if this is the setting you really want.  I retained it from the original Open CSVParser in case others have found it beneficial.
 
 
-Finally, you can combine any of the above options together.  The CsvParserTest unit tests shows a number of variations.  Here are some examples to give you an idea of how they combine:
+<br>
+**MultiLine=true**
+
+With this setting you will get the `MultiLineCsvParser`. It can handle newlines that are embedded in quoted strings and treat them as part of the quoted string, rather than the end of a csv record.
+
+
+
+
+
+
+Finally, you can combine any of the above options together.  Each of the options described below are described in isolation - if you combine options you may get different results and some option combinations are not allowed.  Disallowed combinations are detected at construction time and an error will be thrown.
+
+The `SimpleCsvParserTest` and `MultiLineCsvParserTest` unit tests shows a number of variations of combining options.  Here are some examples to give you an idea of how they combine:
 
     CsvParser p = new CsvParserBuilder().
       quoteChar('\'').
@@ -181,6 +244,7 @@ Finally, you can combine any of the above options together.  The CsvParserTest u
 
     _Input_                      _Output_
     >> 'a' |' 'hello' '|c<<  =>  ['a',' 'hello' ',c]
+
 
     -------------------------------------------------
 
