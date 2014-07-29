@@ -1746,16 +1746,15 @@ public class MultiLineCsvParserTest {
   }
 
   
-  /* --------------------------------------------------------- */
-  /* ---[ Rfc4180 allowDoubleEscapedQuotes settings tests ]--- */
-  /* --------------------------------------------------------- */
-  // Note "rfc4180" below means that allowDoubleEscapedQuotes = true
+  /* ----------------------------------------------------------- */
+  /* ---[ Rfc4180 supportRfc4180QuotedQuotes settings tests ]--- */
+  /* ----------------------------------------------------------- */
   
   @Test
   public void rfc4180PlusRetainEscapeCharsEqualsFalsePlusTrimWhitespace() {
     CsvParser rfc4180 = new CsvParserBuilder().
         multiLine(true).
-        allowDoubleEscapedQuotes(true).
+        supportRfc4180QuotedQuotes(true).
         retainEscapeChars(false).
         trimWhitespace(true).
         build();
@@ -1780,7 +1779,7 @@ public class MultiLineCsvParserTest {
   public void rfc4180PlusAllowUnbalancedQuotesPlusTrimWhitespace() {
     CsvParser rfc4180 = new CsvParserBuilder().
         multiLine(true).
-        allowDoubleEscapedQuotes(true).
+        supportRfc4180QuotedQuotes(true).
         allowUnbalancedQuotes(true).
         trimWhitespace(true).
         build();
@@ -1799,7 +1798,7 @@ public class MultiLineCsvParserTest {
   public void rfc4180PlusTimeWhitespacePlusAlwaysQuoteOutput() {
     MultiLineCsvParser rfc4180 = (MultiLineCsvParser) new CsvParserBuilder().
         multiLine(true).
-        allowDoubleEscapedQuotes(true).
+        supportRfc4180QuotedQuotes(true).
         alwaysQuoteOutput(true).
         trimWhitespace(true).
         build();
@@ -1818,7 +1817,7 @@ public class MultiLineCsvParserTest {
   public void rfc4180PlusAlwaysQuoteOutput() {
     MultiLineCsvParser rfc4180 = (MultiLineCsvParser) new CsvParserBuilder().
         multiLine(true).
-        allowDoubleEscapedQuotes(true).
+        supportRfc4180QuotedQuotes(true).
         alwaysQuoteOutput(true).
         build();
     
@@ -1836,7 +1835,7 @@ public class MultiLineCsvParserTest {
   public void rfc4180PlusStrictQuotes() {
     MultiLineCsvParser rfc4180 = (MultiLineCsvParser) new CsvParserBuilder().
         multiLine(true).
-        allowDoubleEscapedQuotes(true).
+        supportRfc4180QuotedQuotes(true).
         strictQuotes(true).
         build();
     
@@ -1852,11 +1851,11 @@ public class MultiLineCsvParserTest {
   @Test
   public void rfc4180() {
     MultiLineCsvParser rfc4180 = (MultiLineCsvParser) new CsvParserBuilder().
-        allowDoubleEscapedQuotes(true).
+        supportRfc4180QuotedQuotes(true).
         multiLine(true).
         build();
     MultiLineCsvParser regular = (MultiLineCsvParser) new CsvParserBuilder().
-        allowDoubleEscapedQuotes(false).
+        supportRfc4180QuotedQuotes(false).
         multiLine(true).
         build();
   
@@ -1887,7 +1886,7 @@ public class MultiLineCsvParserTest {
   public void rfc4180PlusRetainEscapeCharsEqualsFalsePlusChangeEscapeCharToDoubleQuote() {
     CsvParser rfc4180 = new CsvParserBuilder().
         multiLine(true).
-        allowDoubleEscapedQuotes(true).
+        supportRfc4180QuotedQuotes(true).
         escapeChar('"').
         quoteChar('\'').
         retainEscapeChars(false).
@@ -1915,7 +1914,7 @@ public class MultiLineCsvParserTest {
   public void rfc4180PlusChangeEscapeCharToDoubleQuote() {
     CsvParser rfc4180 = new CsvParserBuilder().
         multiLine(true).
-        allowDoubleEscapedQuotes(true).
+        supportRfc4180QuotedQuotes(true).
         escapeChar('"').
         quoteChar('\'').
         build();

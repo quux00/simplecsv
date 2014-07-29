@@ -11,7 +11,7 @@ public class CsvParserBuilder {
   boolean retainEscapeChars = ParserUtil.DEFAULT_RETAIN_ESCAPE_CHARS;
   boolean alwaysQuoteOutput = ParserUtil.DEFAULT_ALWAYS_QUOTE_OUTPUT;
   MultiLineStatus supportsMultiLine = MultiLineStatus.DEFAULT;
-  boolean allowDoubleEscapedQuotes = false;
+  boolean rfc4180quotes = false;
   boolean threadSafe = false;
   
   private enum MultiLineStatus {
@@ -72,8 +72,8 @@ public class CsvParserBuilder {
     return this;
   }
   
-  public CsvParserBuilder allowDoubleEscapedQuotes(boolean rfc4180) {
-    allowDoubleEscapedQuotes = rfc4180;
+  public CsvParserBuilder supportRfc4180QuotedQuotes(boolean rfc4180) {
+    rfc4180quotes = rfc4180;
     return this;
   }
   
@@ -88,12 +88,12 @@ public class CsvParserBuilder {
    */
   public CsvParser build() {
     if (supportsMultiLine == MultiLineStatus.REQUESTED_FALSE && 
-        (allowDoubleEscapedQuotes || threadSafe)) {
+        (rfc4180quotes || threadSafe)) {
       throw new IllegalStateException("Request of 'allowDoubleEscapedQuotes' or 'threadSafe' requires MultiLineParser");
     }
     
     if (supportsMultiLine == MultiLineStatus.REQUESTED_TRUE || 
-        allowDoubleEscapedQuotes || threadSafe) {
+        rfc4180quotes || threadSafe) {
       return new MultiLineCsvParser(
           separator,
           quoteChar,
@@ -104,7 +104,7 @@ public class CsvParserBuilder {
           retainOuterQuotes,
           retainEscapeChars,
           alwaysQuoteOutput,
-          allowDoubleEscapedQuotes);
+          rfc4180quotes);
     }
     
     return new SimpleCsvParser(

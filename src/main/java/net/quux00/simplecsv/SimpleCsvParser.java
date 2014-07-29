@@ -133,7 +133,7 @@ public class SimpleCsvParser implements CsvParser {
    * This method is used by the CsvReader. If the Reader passed in is not a BufferedReader
    * a BufferedReader is constructed to wrap the reader.
    * 
-   * @param ln Single line of text to parse
+   * @param Reader ideally should be a BufferedReader, but not required
    * @return parsed tokens as List<String>
    */
   public List<String> parseNext(Reader reader) throws IOException {

@@ -501,7 +501,7 @@ public class CsvReaderTest {
     FileReader fr = new FileReader("src/test/resources/quotednl.csv");
     CsvParser p = new CsvParserBuilder().
         multiLine(true).
-        allowDoubleEscapedQuotes(true).
+        supportRfc4180QuotedQuotes(true).
         build();
     assertTrue(p instanceof MultiLineCsvParser);
     csvr = new CsvReaderBuilder(fr).skipLines(1).csvParser(p).build();
@@ -1119,7 +1119,7 @@ public class CsvReaderTest {
   public void rfc4180PlusChangeEscapeCharToDoubleQuote() throws IOException {
     CsvParser rfc4180 = new CsvParserBuilder().
         multiLine(true).
-        allowDoubleEscapedQuotes(true).
+        supportRfc4180QuotedQuotes(true).
         escapeChar('"').
         quoteChar('\'').
         build();

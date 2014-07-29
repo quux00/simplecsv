@@ -45,7 +45,7 @@ public class MultiLineCsvParser implements CsvParser {
   final boolean retainOuterQuotes;        // if true, outer quote chars are retained
   final boolean retainEscapeChars;        // if true, leaves escape chars in; if false removes them
   final boolean alwaysQuoteOutput;        // if true, put quote around around all outgoing tokens
-  final boolean allowsDoubledEscapedQuotes; // if true, allows quotes to exist within a quoted field as long as they are doubled.
+  final boolean rfc4180quotes;  // if true, allows quotes to exist within a quoted field as long as they are doubled
 
   static final int INITIAL_READ_SIZE = 128;
 
@@ -61,7 +61,7 @@ public class MultiLineCsvParser implements CsvParser {
     retainOuterQuotes = ParserUtil.DEFAULT_RETAIN_OUTER_QUOTES;
     retainEscapeChars = ParserUtil.DEFAULT_RETAIN_ESCAPE_CHARS;
     alwaysQuoteOutput = ParserUtil.DEFAULT_ALWAYS_QUOTE_OUTPUT;
-    allowsDoubledEscapedQuotes = ParserUtil.DEFAULT_ALLOW_DOUBLED_ESCAPED_QUOTES;
+    rfc4180quotes = ParserUtil.DEFAULT_ALLOW_RFC4180_DOUBLED_ESCAPED_QUOTES;
   }
 
   /**
@@ -93,7 +93,7 @@ public class MultiLineCsvParser implements CsvParser {
     this.retainOuterQuotes = retainOuterQuotes;
     this.retainEscapeChars = retainEscapeChars;
     this.alwaysQuoteOutput = alwaysQuoteOutput;
-    this.allowsDoubledEscapedQuotes = allowsDoubledEscapedQuotes;
+    this.rfc4180quotes = allowsDoubledEscapedQuotes;
 
     checkInvariants();
   }
@@ -188,7 +188,7 @@ public class MultiLineCsvParser implements CsvParser {
         }
 
         if (isQuoteChar(r)) {
-          if (allowsDoubledEscapedQuotes && !state.inEscape && state.inQuotes) {
+          if (rfc4180quotes && !state.inEscape && state.inQuotes) {
             if (isQuoteChar(r = reader.read())) {
               // then consume and follow usual flow
               sb.append((char) r);

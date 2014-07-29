@@ -33,7 +33,7 @@ public class CsvReaderBuilder {
   /**
    * Sets the parser to use to parse the input
    *
-   * @param CsvParser the parser to use to parse the input
+   * @param csvParser the parser to use to parse the input
    */
   public CsvReaderBuilder csvParser(final CsvParser csvParser) {
     this.parser = csvParser;

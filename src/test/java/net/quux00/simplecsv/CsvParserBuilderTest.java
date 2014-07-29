@@ -11,7 +11,7 @@ public class CsvParserBuilderTest {
     CsvParser p = new CsvParserBuilder().build();
     assertTrue(p instanceof SimpleCsvParser);
 
-    p = new CsvParserBuilder().allowDoubleEscapedQuotes(false).build();
+    p = new CsvParserBuilder().supportRfc4180QuotedQuotes(false).build();
     assertTrue(p instanceof SimpleCsvParser);
     
     p = new CsvParserBuilder().threadSafe(false).build();
@@ -30,7 +30,7 @@ public class CsvParserBuilderTest {
     
     p = new CsvParserBuilder().
         threadSafe(false).
-        allowDoubleEscapedQuotes(false).
+        supportRfc4180QuotedQuotes(false).
         multiLine(false).
         retainEscapeChars(true).
         strictQuotes(true).
@@ -42,7 +42,7 @@ public class CsvParserBuilderTest {
   
   @Test
   public void testCreateMultiLineParser() {
-    CsvParser p = new CsvParserBuilder().allowDoubleEscapedQuotes(true).build();
+    CsvParser p = new CsvParserBuilder().supportRfc4180QuotedQuotes(true).build();
     assertTrue(p instanceof MultiLineCsvParser);
     
     p = new CsvParserBuilder().threadSafe(true).build();
@@ -51,18 +51,18 @@ public class CsvParserBuilderTest {
     p = new CsvParserBuilder().multiLine(true).build();
     assertTrue(p instanceof MultiLineCsvParser);
 
-    p = new CsvParserBuilder().threadSafe(true).allowDoubleEscapedQuotes(true).build();
+    p = new CsvParserBuilder().threadSafe(true).supportRfc4180QuotedQuotes(true).build();
     assertTrue(p instanceof MultiLineCsvParser);
 
-    p = new CsvParserBuilder().threadSafe(false).allowDoubleEscapedQuotes(true).build();
+    p = new CsvParserBuilder().threadSafe(false).supportRfc4180QuotedQuotes(true).build();
     assertTrue(p instanceof MultiLineCsvParser);
 
-    p = new CsvParserBuilder().threadSafe(true).allowDoubleEscapedQuotes(false).build();
+    p = new CsvParserBuilder().threadSafe(true).supportRfc4180QuotedQuotes(false).build();
     assertTrue(p instanceof MultiLineCsvParser);
     
     p = new CsvParserBuilder().
         threadSafe(false).
-        allowDoubleEscapedQuotes(true).
+        supportRfc4180QuotedQuotes(true).
         retainEscapeChars(true).
         strictQuotes(true).
         alwaysQuoteOutput(true).
@@ -72,7 +72,7 @@ public class CsvParserBuilderTest {
     
     p = new CsvParserBuilder().
         threadSafe(false).
-        allowDoubleEscapedQuotes(false).
+        supportRfc4180QuotedQuotes(false).
         multiLine(true).
         retainEscapeChars(true).
         strictQuotes(true).
@@ -89,6 +89,6 @@ public class CsvParserBuilderTest {
   
   @Test(expected=IllegalStateException.class)
   public void testRequestAllowDoubleEscapedQuotestAndSettingMultiLineSetToFalseThrowsException() {
-    new CsvParserBuilder().multiLine(false).allowDoubleEscapedQuotes(true).build();
+    new CsvParserBuilder().multiLine(false).supportRfc4180QuotedQuotes(true).build();
   }
 }

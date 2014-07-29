@@ -11,7 +11,7 @@ public class ParserUtil {
   public static final boolean DEFAULT_ALLOW_UNBALANCED_QUOTES = false;
   public static final boolean DEFAULT_RETAIN_ESCAPE_CHARS = true;
   public static final boolean DEFAULT_ALWAYS_QUOTE_OUTPUT = false;
-  public static final boolean DEFAULT_ALLOW_DOUBLED_ESCAPED_QUOTES = false; // if true, allows quotes to exist within a quoted field as long as they are doubled.
+  public static final boolean DEFAULT_ALLOW_RFC4180_DOUBLED_ESCAPED_QUOTES = false; 
 
   // This is the "null" character - if a value is set to this then it is ignored.
   public static final char NULL_CHARACTER = '\0';
