@@ -1079,9 +1079,7 @@ public class CsvReaderTest {
   /* ---[ END Test OpenCSV bug 97 ]--- */
   
   
-  
   // CsvReader tests using MultiLine parser
-  // TODO: this should be moved to the CsvReader unit test => why is this here?
   public void testCrLfAndAlwaysQuoteOutput() throws IOException {
     CsvParser p = new CsvParserBuilder().
         trimWhitespace(true).
