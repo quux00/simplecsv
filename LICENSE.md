@@ -1,6 +1,9 @@
-The `CsvParser`, `CsvParserBuilder` and `CsvParserTest` code are:
+The `SimpleCsvParser`, `CsvParserBuilder` and `CsvParserTest` code are:
 
 Copyright 2013 Michael Peterson
+
+The `MultiLineCsvParser` is copyright footloosejava (https://github.com/footloosejava) (real name unknown).
+
 
 Many of the other classes were copied directly from the OpenCSV svn, taking the unpublished (to maven central) OpenCSV-2.4 version.  Most of those classes retain their original copyright notices from the OpenCSV authors and contributors.
 
