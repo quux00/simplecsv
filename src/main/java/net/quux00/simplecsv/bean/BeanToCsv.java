@@ -49,7 +49,7 @@ public class BeanToCsv<T> {
       csv.writeNext(processHeader(mapper));
       List<Method> getters = findGetters(mapper);
       for (Object obj : objects) {
-        String[] line = processObject(getters, obj);
+        List<String> line = processObject(getters, obj);
         csv.writeNext(line);
       }
       return true;
@@ -58,7 +58,7 @@ public class BeanToCsv<T> {
     }
   }
 
-  protected String[] processHeader(MappingStrategy<T> mapper)
+  protected List<String> processHeader(MappingStrategy<T> mapper)
       throws IntrospectionException {
     List<String> values = new ArrayList<String>();
     int i = 0;
@@ -68,10 +68,10 @@ public class BeanToCsv<T> {
       i++;
       prop = mapper.findDescriptor(i);
     }
-    return values.toArray(new String[0]);
+    return values;
   }
 
-  protected String[] processObject(List<Method> getters, Object bean)
+  protected List<String> processObject(List<Method> getters, Object bean)
       throws IntrospectionException, IllegalArgumentException,
       IllegalAccessException, InvocationTargetException {
     List<String> values = new ArrayList<String>();
@@ -84,7 +84,7 @@ public class BeanToCsv<T> {
         values.add(value.toString());
       }
     }
-    return values.toArray(new String[0]);
+    return values;
   }
 
   /**

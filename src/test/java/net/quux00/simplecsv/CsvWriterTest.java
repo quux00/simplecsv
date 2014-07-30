@@ -30,6 +30,7 @@ import java.io.StringWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import net.quux00.simplecsv.CsvWriter;
@@ -49,7 +50,7 @@ public class CsvWriterTest {
    * @return a String version
    * @throws IOException if there are problems writing
    */
-  private String invokeWriter(String[] args) throws IOException {
+  private String invokeWriter(List<String> args) throws IOException {
     StringWriter sw = new StringWriter();
     CsvWriter csvw = new CsvWriterBuilder(sw).
         quoteChar('\'').
@@ -60,7 +61,7 @@ public class CsvWriterTest {
     return sw.toString();
   }
 
-  private String invokeNoEscapeWriter(String[] args) throws IOException {
+  private String invokeNoEscapeWriter(List<String> args) throws IOException {
     StringWriter sw = new StringWriter();
     CsvWriter csvw = new CsvWriterBuilder(sw).
         quoteChar('\'').
@@ -97,28 +98,28 @@ public class CsvWriterTest {
   @Test
   public void testParseLine() throws IOException {
     // test normal case
-    String[] normal = {"a", "b", "c"};
+    List<String> normal = Arrays.asList("a", "b", "c");
     String output = invokeWriter(normal);
     assertEquals("'a','b','c'\n", output);
 
     // test quoted commas
-    String[] quoted = {"a", "b,b,b", "c"};
+    List<String> quoted = Arrays.asList("a", "b,b,b", "c");
     output = invokeWriter(quoted);
     assertEquals("'a','b,b,b','c'\n", output);
 
     // test empty elements
-    String[] empty = {,};
+    List<String> empty = new ArrayList<String>();
     output = invokeWriter(empty);
     assertEquals("\n", output);
 
     // test multiline quoted
-    String[] multiline = {"This is a \n multiline entry", "so is \n this"};
+    List<String> multiline = Arrays.asList("This is a \n multiline entry", "so is \n this");
     output = invokeWriter(multiline);
     assertEquals("'This is a \n multiline entry','so is \n this'\n", output);
 
 
     // test quoted line
-    String[] quoteLine = {"This is a \" multiline entry", "so is \n this"};
+    List<String> quoteLine = Arrays.asList("This is a \" multiline entry", "so is \n this");
     output = invokeWriter(quoteLine);
     assertEquals("'This is a \" multiline entry','so is \n this'\n", output);
 
@@ -127,7 +128,7 @@ public class CsvWriterTest {
   @Test
   public void testSpecialCharacters() throws IOException {
     // test quoted line
-    String[] quoteLine = {"This is a \r multiline entry", "so is \n this"};
+    List<String> quoteLine = Arrays.asList("This is a \r multiline entry", "so is \n this");
     String output = invokeWriter(quoteLine);
     assertEquals("'This is a \r multiline entry','so is \n this'\n", output);
   }
@@ -135,7 +136,7 @@ public class CsvWriterTest {
   @Test
   public void parseLineWithBothEscapeAndQuoteChar() throws IOException {
     // test quoted line
-    String[] quoteLine = {"This is a 'multiline' entry", "so is \n this"};
+    List<String> quoteLine = Arrays.asList("This is a 'multiline' entry", "so is \n this");
     String output = invokeWriter(quoteLine);
     assertEquals("'This is a \\'multiline\\' entry','so is \n this'\n", output);
   }
@@ -148,29 +149,29 @@ public class CsvWriterTest {
   @Test
   public void testParseLineWithNoEscapeChar() throws IOException {
     // test normal case
-    String[] normal = {"a", "b", "c"};
+    List<String> normal = Arrays.asList("a", "b", "c");
     String output = invokeNoEscapeWriter(normal);
     assertEquals("'a','b','c'\n", output);
 
     // test quoted commas
-    String[] quoted = {"a", "b,b,b", "c"};
+    List<String> quoted = Arrays.asList("a", "b,b,b", "c");
     output = invokeNoEscapeWriter(quoted);
     assertEquals("'a','b,b,b','c'\n", output);
 
     // test empty elements
-    String[] empty = {,};
+    List<String> empty = new ArrayList<String>();
     output = invokeNoEscapeWriter(empty);
     assertEquals("\n", output);
 
     // test multiline quoted
-    String[] multiline = {"This is a \n multiline entry", "so is \n this"};
+    List<String> multiline = Arrays.asList("This is a \n multiline entry", "so is \n this");
     output = invokeNoEscapeWriter(multiline);
     assertEquals("'This is a \n multiline entry','so is \n this'\n", output);
   }
 
   @Test
   public void parseLineWithNoEscapeCharAndQuotes() throws IOException {
-    String[] quoteLine = {"This is a \" 'multiline' entry", "so is \n this"};
+    List<String> quoteLine = Arrays.asList("This is a \" 'multiline' entry", "so is \n this");
     String output = invokeNoEscapeWriter(quoteLine);
     assertEquals("'This is a \" 'multiline' entry','so is \n this'\n", output);
   }
@@ -183,10 +184,10 @@ public class CsvWriterTest {
    */
   @Test
   public void testWriteAll() throws IOException {
-    List<String[]> allElements = new ArrayList<String[]>();
-    String[] line1 = "Name#Phone#Email".split("#");
-    String[] line2 = "Glen#1234#glen@abcd.com".split("#");
-    String[] line3 = "John#5678#john@efgh.com".split("#");
+    List<List<String>> allElements = new ArrayList<List<String>>();
+    List<String> line1 = Arrays.asList("Name#Phone#Email".split("#"));
+    List<String> line2 = Arrays.asList("Glen#1234#glen@abcd.com".split("#"));
+    List<String> line3 = Arrays.asList("John#5678#john@efgh.com".split("#"));
     allElements.add(line1);
     allElements.add(line2);
     allElements.add(line3);
@@ -209,10 +210,10 @@ public class CsvWriterTest {
    */
   @Test
   public void testWriteAllObjects() throws IOException {
-    List<String[]> allElements = new ArrayList<String[]>(3);
-    String[] line1 = "Name#Phone#Email".split("#");
-    String[] line2 = "Glen#1234#glen@abcd.com".split("#");
-    String[] line3 = "John#5678#john@efgh.com".split("#");
+    List<List<String>> allElements = new ArrayList<List<String>>(3);
+    List<String> line1 = Arrays.asList("Name#Phone#Email".split("#"));
+    List<String> line2 = Arrays.asList("Glen#1234#glen@abcd.com".split("#"));
+    List<String> line3 = Arrays.asList("John#5678#john@efgh.com".split("#"));
     allElements.add(line1);
     allElements.add(line2);
     allElements.add(line3);
@@ -238,7 +239,7 @@ public class CsvWriterTest {
    */
   @Test
   public void testNoQuoteChars() throws IOException {
-    String[] line = {"Foo", "Bar", "Baz"};
+    List<String> line = Arrays.asList("Foo", "Bar", "Baz");
     StringWriter sw = new StringWriter();
     CsvWriter csvw = new CsvWriter(sw, CsvWriter.DEFAULT_SEPARATOR, CsvWriter.NO_QUOTE_CHARACTER);
     csvw.writeNext(line);
@@ -255,7 +256,7 @@ public class CsvWriterTest {
    */
   @Test
   public void testNoQuoteCharsAndNoEscapeChars() throws IOException {
-    String[] line = {"Foo", "Bar's", "Baz"};
+    List<String> line = Arrays.asList("Foo", "Bar's", "Baz");
     StringWriter sw = new StringWriter();
     CsvWriter csvw = new CsvWriterBuilder(sw).
         quoteChar(CsvWriter.NO_QUOTE_CHARACTER).
@@ -274,7 +275,7 @@ public class CsvWriterTest {
    */
   @Test
   public void testIntelligentQuotes() throws IOException {
-    String[] line = {"1", "Foo", "With,Separator", "Line\nBreak", "Hello \"Foo Bar\" World", "Bar"};
+    List<String> line = Arrays.asList("1", "Foo", "With,Separator", "Line\nBreak", "Hello \"Foo Bar\" World", "Bar");
     StringWriter sw = new StringWriter();
     CsvWriter csvw = new CsvWriter(sw);
     csvw.writeNext(line, false);
@@ -292,7 +293,7 @@ public class CsvWriterTest {
    */
   @Test
   public void testNullValues() throws IOException {
-    String[] line = {"Foo", null, "Bar", "baz"};
+    List<String> line = Arrays.asList("Foo", null, "Bar", "baz");
     StringWriter sw = new StringWriter();
     CsvWriter csvw = new CsvWriter(sw);
     csvw.writeNext(line);
@@ -305,7 +306,7 @@ public class CsvWriterTest {
   @Test
   public void testStreamFlushing() throws IOException {
     String WRITE_FILE = "myfile.csv";
-    String[] nextLine = new String[]{"aaaa", "bbbb", "cccc", "dddd"};
+    List<String> nextLine = Arrays.asList("aaaa", "bbbb", "cccc", "dddd");
 
     FileWriter fileWriter = new FileWriter(WRITE_FILE);
     CsvWriter writer = new CsvWriter(fileWriter);
@@ -318,7 +319,7 @@ public class CsvWriterTest {
 
   @Test(expected = IOException.class)
   public void flushWillThrowIOException() throws IOException {
-    String[] line = {"Foo", "bar's"};
+    List<String> line = Arrays.asList("Foo", "bar's");
     StringWriter sw = new StringWriter();
     CsvWriter csvw = new CsvWriterExceptionThrower(sw);
     csvw.writeNext(line);
@@ -328,7 +329,7 @@ public class CsvWriterTest {
 
   @Test
   public void flushQuietlyWillNotThrowException() throws IOException {
-    String[] line = {"Foo", "bar's"};
+    List<String> line = Arrays.asList("Foo", "bar's");
     StringWriter sw = new StringWriter();
     CsvWriter csvw = new CsvWriterExceptionThrower(sw);
     csvw.writeNext(line);
@@ -342,7 +343,7 @@ public class CsvWriterTest {
 
   @Test
   public void testAlternateEscapeChar() throws IOException {
-    String[] line = {"Foo", "bar's"};
+    List<String> line = Arrays.asList("Foo", "bar's");
     StringWriter sw = new StringWriter();
     CsvWriter csvw = new CsvWriterBuilder(sw).escapeChar('\'').build();
     csvw.writeNext(line);
@@ -352,7 +353,7 @@ public class CsvWriterTest {
 
   @Test
   public void testNoQuotingNoEscaping() throws IOException {
-    String[] line = {"\"Foo\",\"Bar\""};
+    List<String> line = Arrays.asList("\"Foo\",\"Bar\"");
     StringWriter sw = new StringWriter();
     CsvWriter csvw = new CsvWriterBuilder(sw).
         escapeChar(CsvWriter.NO_ESCAPE_CHARACTER).
@@ -365,7 +366,7 @@ public class CsvWriterTest {
 
   @Test
   public void testNestedQuotes() {
-    String[] data = new String[]{"\"\"", "test"};
+    List<String> data = Arrays.asList("\"\"", "test");
     String oracle = new String("\"\\\"\\\"\",\"test\"\n");
 
     CsvWriter writer = null;
@@ -423,7 +424,7 @@ public class CsvWriterTest {
 
   @Test
   public void testAlternateLineFeeds() throws IOException {
-    String[] line = {"Foo", "Bar", "baz"};
+    List<String> line = Arrays.asList("Foo", "Bar", "baz");
     StringWriter sw = new StringWriter();
     CsvWriter csvw = new CsvWriterBuilder(sw).lineEnd("\r").build();
     csvw.writeNext(line);
@@ -517,7 +518,7 @@ public class CsvWriterTest {
   @Test
   public void testResultSetTrim() throws SQLException, IOException {
     String[] header = {"Foo", "Bar", "baz"};
-    String[] value = {"v1         ", "v2 ", "v3"};
+    String[] value  = {"v1         ", "v2 ", "v3"};
 
     StringWriter sw = new StringWriter();
     CsvWriter csvw = new CsvWriter(sw);

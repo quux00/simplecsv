@@ -1,15 +1,22 @@
 package net.quux00.simplecsv;
 
 public class CsvParserBuilder {
-  char separator = CsvParser.DEFAULT_SEPARATOR;
-  char quoteChar = CsvParser.DEFAULT_QUOTE_CHAR;
-  char escapeChar = CsvParser.DEFAULT_ESCAPE_CHAR;
-  boolean strictQuotes = CsvParser.DEFAULT_STRICT_QUOTES;
-  boolean trimWhitespace = CsvParser.DEFAULT_TRIM_WS;
-  boolean allowUnbalancedQuotes = CsvParser.DEFAULT_ALLOW_UNBALANCED_QUOTES;
-  boolean retainOuterQuotes = CsvParser.DEFAULT_RETAIN_OUTER_QUOTES;
-  boolean retainEscapeChars = CsvParser.DEFAULT_RETAIN_ESCAPE_CHARS;
-  boolean alwaysQuoteOutput = CsvParser.DEFAULT_ALWAYS_QUOTE_OUTPUT;
+  char separator = ParserUtil.DEFAULT_SEPARATOR;
+  char quoteChar = ParserUtil.DEFAULT_QUOTE_CHAR;
+  char escapeChar = ParserUtil.DEFAULT_ESCAPE_CHAR;
+  boolean strictQuotes = ParserUtil.DEFAULT_STRICT_QUOTES;
+  boolean trimWhitespace = ParserUtil.DEFAULT_TRIM_WS;
+  boolean allowUnbalancedQuotes = ParserUtil.DEFAULT_ALLOW_UNBALANCED_QUOTES;
+  boolean retainOuterQuotes = ParserUtil.DEFAULT_RETAIN_OUTER_QUOTES;
+  boolean retainEscapeChars = ParserUtil.DEFAULT_RETAIN_ESCAPE_CHARS;
+  boolean alwaysQuoteOutput = ParserUtil.DEFAULT_ALWAYS_QUOTE_OUTPUT;
+  MultiLineStatus supportsMultiLine = MultiLineStatus.DEFAULT;
+  boolean rfc4180quotes = false;
+  boolean threadSafe = false;
+  
+  private enum MultiLineStatus {
+    DEFAULT, REQUESTED_TRUE, REQUESTED_FALSE;
+  }
   
   public CsvParserBuilder separator(final char separator) {
     this.separator = separator;
@@ -56,11 +63,51 @@ public class CsvParserBuilder {
     return this;
   }
 
+  public CsvParserBuilder multiLine(boolean multi) {
+    if (multi) {
+      supportsMultiLine = MultiLineStatus.REQUESTED_TRUE;
+    } else {
+      supportsMultiLine = MultiLineStatus.REQUESTED_FALSE;
+    }
+    return this;
+  }
+  
+  public CsvParserBuilder supportRfc4180QuotedQuotes(boolean rfc4180) {
+    rfc4180quotes = rfc4180;
+    return this;
+  }
+  
+  public CsvParserBuilder threadSafe(boolean safe) {
+    threadSafe = safe;
+    return this;
+  }
+  
+  
   /**
    * Constructs Parser
    */
   public CsvParser build() {
-    return new CsvParser(
+    if (supportsMultiLine == MultiLineStatus.REQUESTED_FALSE && 
+        (rfc4180quotes || threadSafe)) {
+      throw new IllegalStateException("Request of 'allowDoubleEscapedQuotes' or 'threadSafe' requires MultiLineParser");
+    }
+    
+    if (supportsMultiLine == MultiLineStatus.REQUESTED_TRUE || 
+        rfc4180quotes || threadSafe) {
+      return new MultiLineCsvParser(
+          separator,
+          quoteChar,
+          escapeChar,
+          strictQuotes,
+          trimWhitespace,
+          allowUnbalancedQuotes,
+          retainOuterQuotes,
+          retainEscapeChars,
+          alwaysQuoteOutput,
+          rfc4180quotes);
+    }
+    
+    return new SimpleCsvParser(
         separator,
         quoteChar,
         escapeChar,

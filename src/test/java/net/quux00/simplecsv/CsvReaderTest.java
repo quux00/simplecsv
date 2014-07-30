@@ -2,6 +2,7 @@ package net.quux00.simplecsv;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.anyInt;
@@ -18,6 +19,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import net.quux00.simplecsv.CsvParser;
@@ -31,6 +33,11 @@ import org.mockito.Matchers;
 
 public class CsvReaderTest {
 
+  public static final int INITIAL_READ_SIZE = 128;
+  static final String CR = "\r";
+  static final String LF = "\n";
+  static final String CRLF = CR + LF;
+
   CsvReader csvr;
   String lines;
   
@@ -39,7 +46,7 @@ public class CsvReaderTest {
    */
   @Before
   public void setUp() throws Exception {
-    StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
+    StringBuilder sb = new StringBuilder(SimpleCsvParser.INITIAL_READ_SIZE);
     sb.append("a,b,c").append("\n");   // standard case
     sb.append("a,\"b,b,b\",c").append("\n");  // quoted elements
     sb.append(",,").append("\n"); // empty elements
@@ -80,9 +87,9 @@ public class CsvReaderTest {
     expectedResult[6] = new String[]{"a\\nb", "b", "\\nd", "e"};
     
     int idx = 0;
-    for (String[] line : csvr) {
+    for (List<String> line : csvr) {
       String[] expectedLine = expectedResult[idx++];
-      assertArrayEquals(expectedLine, line);
+      assertArrayEquals(expectedLine, line.toArray());
     }
   }
   
@@ -100,9 +107,9 @@ public class CsvReaderTest {
     expectedResult[5] = new String[]{"\"\"\"\"", "test"};
     expectedResult[6] = new String[]{"a\nb", "b", "\nd", "e"};
     int idx = 0;
-    for (String[] line : cr) {
+    for (List<String> line : cr) {
       String[] expectedLine = expectedResult[idx++];
-      assertArrayEquals(expectedLine, line);
+      assertArrayEquals(expectedLine, line.toArray());
     }
     
     cr.close();
@@ -126,9 +133,9 @@ public class CsvReaderTest {
     expectedResult[6] = new String[]{"\"a\nb\"", "\"b\"", "\"\nd\"", "\"e\""};
 
     int idx = 0;
-    for (String[] line : cr) {
+    for (List<String> line : cr) {
       String[] expectedLine = expectedResult[idx++];
-      assertArrayEquals(expectedLine, line);
+      assertArrayEquals(expectedLine, line.toArray());
     }
     
     cr.close();
@@ -157,39 +164,39 @@ public class CsvReaderTest {
     FileReader fr = new FileReader("src/test/resources/basic.csv");
     csvr = new CsvReader(fr, 1);
     
-    String[] toks = csvr.readNext();
-    assertEquals(5, toks.length);
-    assertEquals("1", toks[0]);
-    assertEquals(" abc", toks[1]);
-    assertEquals(" Stan \"The Man\" Musial", toks[2]);
-    assertEquals(" Mike \\\"The Situation\\\"", toks[3]);
-    assertEquals(" I\\nlike\\nIke", toks[4]);
+    List<String> toks = csvr.readNext();
+    assertEquals(5, toks.size());
+    assertEquals("1", toks.get(0));
+    assertEquals(" abc", toks.get(1));
+    assertEquals(" Stan \"The Man\" Musial", toks.get(2));
+    assertEquals(" Mike \\\"The Situation\\\"", toks.get(3));
+    assertEquals(" I\\nlike\\nIke", toks.get(4));
 
     toks = csvr.readNext();
-    assertEquals(5, toks.length);
-    assertEquals("2", toks[0]);
-    assertEquals(" def", toks[1]);
-    assertEquals("", toks[2]);
-    assertEquals("", toks[3]);
-    assertEquals("", toks[4]);
+    assertEquals(5, toks.size());
+    assertEquals("2", toks.get(0));
+    assertEquals(" def", toks.get(1));
+    assertEquals("", toks.get(2));
+    assertEquals("", toks.get(3));
+    assertEquals("", toks.get(4));
     
     toks = csvr.readNext();
-    assertEquals(2, toks.length);
-    assertEquals("abc\"d\"efg ", toks[0]);
-    assertEquals("Stan \"The Man\" Musial        ", toks[1]);
+    assertEquals(2, toks.size());
+    assertEquals("abc\"d\"efg ", toks.get(0));
+    assertEquals("Stan \"The Man\" Musial        ", toks.get(1));
 
     toks = csvr.readNext();
-    assertEquals(1, toks.length);
-    assertEquals("", toks[0]);
+    assertEquals(1, toks.size());
+    assertEquals("", toks.get(0));
     
     toks = csvr.readNext();
-    assertEquals(6, toks.length);
-    assertEquals("2\\\\n", toks[0]);
-    assertEquals("\\f", toks[1]);
-    assertEquals("\\b", toks[2]);
-    assertEquals("\\r\\n", toks[3]);
-    assertEquals("\\t", toks[4]);
-    assertEquals("\tlast", toks[5]);
+    assertEquals(6, toks.size());
+    assertEquals("2\\\\n", toks.get(0));
+    assertEquals("\\f", toks.get(1));
+    assertEquals("\\b", toks.get(2));
+    assertEquals("\\r\\n", toks.get(3));
+    assertEquals("\\t", toks.get(4));
+    assertEquals("\tlast", toks.get(5));
 
     toks = csvr.readNext();
     assertNull(toks);
@@ -202,39 +209,39 @@ public class CsvReaderTest {
     CsvParser p = new CsvParserBuilder().strictQuotes(true).build();
     csvr = new CsvReaderBuilder(fr).skipLines(1).csvParser(p).build();
         
-    String[] toks = csvr.readNext();
-    assertEquals(5, toks.length);
-    assertEquals("", toks[0]);
-    assertEquals("", toks[1]);
-    assertEquals("Stan  Musial", toks[2]);
-    assertEquals("Mike \\\"The Situation\\\"", toks[3]);
-    assertEquals("I\\nlike\\nIke", toks[4]);
+    List<String> toks = csvr.readNext();
+    assertEquals(5, toks.size());
+    assertEquals("", toks.get(0));
+    assertEquals("", toks.get(1));
+    assertEquals("Stan  Musial", toks.get(2));
+    assertEquals("Mike \\\"The Situation\\\"", toks.get(3));
+    assertEquals("I\\nlike\\nIke", toks.get(4));
 
     toks = csvr.readNext();
-    assertEquals(5, toks.length);
-    assertEquals("", toks[0]);
-    assertEquals("", toks[1]);
-    assertEquals("", toks[2]);
-    assertEquals("", toks[3]);
-    assertEquals("", toks[4]);
+    assertEquals(5, toks.size());
+    assertEquals("", toks.get(0));
+    assertEquals("", toks.get(1));
+    assertEquals("", toks.get(2));
+    assertEquals("", toks.get(3));
+    assertEquals("", toks.get(4));
     
     toks = csvr.readNext();
-    assertEquals(2, toks.length);
-    assertEquals("abcefg", toks[0]);
-    assertEquals("Stan  Musial", toks[1]);
+    assertEquals(2, toks.size());
+    assertEquals("abcefg", toks.get(0));
+    assertEquals("Stan  Musial", toks.get(1));
 
     toks = csvr.readNext();
-    assertEquals(1, toks.length);
-    assertEquals("", toks[0]);
+    assertEquals(1, toks.size());
+    assertEquals("", toks.get(0));
     
     toks = csvr.readNext();
-    assertEquals(6, toks.length);
-    assertEquals("", toks[0]);
-    assertEquals("", toks[1]);
-    assertEquals("", toks[2]);
-    assertEquals("", toks[3]);
-    assertEquals("\\t", toks[4]);
-    assertEquals("", toks[5]);
+    assertEquals(6, toks.size());
+    assertEquals("", toks.get(0));
+    assertEquals("", toks.get(1));
+    assertEquals("", toks.get(2));
+    assertEquals("", toks.get(3));
+    assertEquals("\\t", toks.get(4));
+    assertEquals("", toks.get(5));
 
     toks = csvr.readNext();
     assertNull(toks);
@@ -247,39 +254,39 @@ public class CsvReaderTest {
     CsvParser p = new CsvParserBuilder().trimWhitespace(true).retainEscapeChars(false).build();
     csvr = new CsvReaderBuilder(fr).skipLines(1).csvParser(p).build();
         
-    String[] toks = csvr.readNext();
-    assertEquals(5, toks.length);
-    assertEquals("1", toks[0]);
-    assertEquals("abc", toks[1]);
-    assertEquals("Stan \"The Man\" Musial", toks[2]);
-    assertEquals("Mike \"The Situation\"", toks[3]);
-    assertEquals("I\nlike\nIke", toks[4]);
+    List<String> toks = csvr.readNext();
+    assertEquals(5, toks.size());
+    assertEquals("1", toks.get(0));
+    assertEquals("abc", toks.get(1));
+    assertEquals("Stan \"The Man\" Musial", toks.get(2));
+    assertEquals("Mike \"The Situation\"", toks.get(3));
+    assertEquals("I\nlike\nIke", toks.get(4));
 
     toks = csvr.readNext();
-    assertEquals(5, toks.length);
-    assertEquals("2", toks[0]);
-    assertEquals("def", toks[1]);
-    assertEquals("", toks[2]);
-    assertEquals("", toks[3]);
-    assertEquals("", toks[4]);
+    assertEquals(5, toks.size());
+    assertEquals("2", toks.get(0));
+    assertEquals("def", toks.get(1));
+    assertEquals("", toks.get(2));
+    assertEquals("", toks.get(3));
+    assertEquals("", toks.get(4));
     
     toks = csvr.readNext();
-    assertEquals(2, toks.length);
-    assertEquals("abc\"d\"efg", toks[0]);
-    assertEquals("Stan \"The Man\" Musial", toks[1]);
+    assertEquals(2, toks.size());
+    assertEquals("abc\"d\"efg", toks.get(0));
+    assertEquals("Stan \"The Man\" Musial", toks.get(1));
 
     toks = csvr.readNext();
-    assertEquals(1, toks.length);
-    assertEquals("", toks[0]);
+    assertEquals(1, toks.size());
+    assertEquals("", toks.get(0));
     
     toks = csvr.readNext();
-    assertEquals(6, toks.length);
-    assertEquals("2n", toks[0]);
-    assertEquals("\f", toks[1]);
-    assertEquals("\b", toks[2]);
-    assertEquals("\r\n", toks[3]);
-    assertEquals("\t", toks[4]);
-    assertEquals("last", toks[5]);
+    assertEquals(6, toks.size());
+    assertEquals("2n", toks.get(0));
+    assertEquals("\f", toks.get(1));
+    assertEquals("\b", toks.get(2));
+    assertEquals("\r\n", toks.get(3));
+    assertEquals("\t", toks.get(4));
+    assertEquals("last", toks.get(5));
 
     toks = csvr.readNext();
     assertNull(toks);
@@ -292,39 +299,39 @@ public class CsvReaderTest {
     CsvParser p = new CsvParserBuilder().strictQuotes(true).retainEscapeChars(false).build();
     csvr = new CsvReaderBuilder(fr).skipLines(1).csvParser(p).build();
         
-    String[] toks = csvr.readNext();
-    assertEquals(5, toks.length);
-    assertEquals("", toks[0]);
-    assertEquals("", toks[1]);
-    assertEquals("Stan  Musial", toks[2]);
-    assertEquals("Mike \"The Situation\"", toks[3]);
-    assertEquals("I\nlike\nIke", toks[4]);
+    List<String> toks = csvr.readNext();
+    assertEquals(5, toks.size());
+    assertEquals("", toks.get(0));
+    assertEquals("", toks.get(1));
+    assertEquals("Stan  Musial", toks.get(2));
+    assertEquals("Mike \"The Situation\"", toks.get(3));
+    assertEquals("I\nlike\nIke", toks.get(4));
 
     toks = csvr.readNext();
-    assertEquals(5, toks.length);
-    assertEquals("", toks[0]);
-    assertEquals("", toks[1]);
-    assertEquals("", toks[2]);
-    assertEquals("", toks[3]);
-    assertEquals("", toks[4]);
+    assertEquals(5, toks.size());
+    assertEquals("", toks.get(0));
+    assertEquals("", toks.get(1));
+    assertEquals("", toks.get(2));
+    assertEquals("", toks.get(3));
+    assertEquals("", toks.get(4));
     
     toks = csvr.readNext();
-    assertEquals(2, toks.length);
-    assertEquals("abcefg", toks[0]);
-    assertEquals("Stan  Musial", toks[1]);
+    assertEquals(2, toks.size());
+    assertEquals("abcefg", toks.get(0));
+    assertEquals("Stan  Musial", toks.get(1));
 
     toks = csvr.readNext();
-    assertEquals(1, toks.length);
-    assertEquals("", toks[0]);
+    assertEquals(1, toks.size());
+    assertEquals("", toks.get(0));
     
     toks = csvr.readNext();
-    assertEquals(6, toks.length);
-    assertEquals("", toks[0]);
-    assertEquals("", toks[1]);
-    assertEquals("", toks[2]);
-    assertEquals("", toks[3]);
-    assertEquals("\t", toks[4]);
-    assertEquals("", toks[5]);
+    assertEquals(6, toks.size());
+    assertEquals("", toks.get(0));
+    assertEquals("", toks.get(1));
+    assertEquals("", toks.get(2));
+    assertEquals("", toks.get(3));
+    assertEquals("\t", toks.get(4));
+    assertEquals("", toks.get(5));
 
     toks = csvr.readNext();
     assertNull(toks);
@@ -341,39 +348,39 @@ public class CsvReaderTest {
         build();
     csvr = new CsvReaderBuilder(fr).skipLines(1).csvParser(p).build();
         
-    String[] toks = csvr.readNext();
-    assertEquals(5, toks.length);
-    assertEquals("1", toks[0]);
-    assertEquals("abc", toks[1]);
-    assertEquals("\"Stan \"The Man\" Musial\"", toks[2]);
-    assertEquals("\"Mike \"The Situation\"\"", toks[3]);
-    assertEquals("\"I\nlike\nIke\"", toks[4]);
+    List<String> toks = csvr.readNext();
+    assertEquals(5, toks.size());
+    assertEquals("1", toks.get(0));
+    assertEquals("abc", toks.get(1));
+    assertEquals("\"Stan \"The Man\" Musial\"", toks.get(2));
+    assertEquals("\"Mike \"The Situation\"\"", toks.get(3));
+    assertEquals("\"I\nlike\nIke\"", toks.get(4));
 
     toks = csvr.readNext();
-    assertEquals(5, toks.length);
-    assertEquals("2", toks[0]);
-    assertEquals("def", toks[1]);
-    assertEquals("", toks[2]);
-    assertEquals("", toks[3]);
-    assertEquals("", toks[4]);
+    assertEquals(5, toks.size());
+    assertEquals("2", toks.get(0));
+    assertEquals("def", toks.get(1));
+    assertEquals("", toks.get(2));
+    assertEquals("", toks.get(3));
+    assertEquals("", toks.get(4));
     
     toks = csvr.readNext();
-    assertEquals(2, toks.length);
-    assertEquals("\"abc\"d\"efg\"", toks[0]);
-    assertEquals("\"Stan \"The Man\" Musial\"", toks[1]);
+    assertEquals(2, toks.size());
+    assertEquals("\"abc\"d\"efg\"", toks.get(0));
+    assertEquals("\"Stan \"The Man\" Musial\"", toks.get(1));
 
     toks = csvr.readNext();
-    assertEquals(1, toks.length);
-    assertEquals("", toks[0]);
+    assertEquals(1, toks.size());
+    assertEquals("", toks.get(0));
     
     toks = csvr.readNext();
-    assertEquals(6, toks.length);
-    assertEquals("2n", toks[0]);
-    assertEquals("\f", toks[1]);
-    assertEquals("\b", toks[2]);
-    assertEquals("\r\n", toks[3]);
-    assertEquals("\"\t\"", toks[4]);
-    assertEquals("last", toks[5]);
+    assertEquals(6, toks.size());
+    assertEquals("2n", toks.get(0));
+    assertEquals("\f", toks.get(1));
+    assertEquals("\b", toks.get(2));
+    assertEquals("\r\n", toks.get(3));
+    assertEquals("\"\t\"", toks.get(4));
+    assertEquals("last", toks.get(5));
 
     toks = csvr.readNext();
     assertNull(toks);
@@ -389,44 +396,151 @@ public class CsvReaderTest {
         build();
     csvr = new CsvReaderBuilder(fr).skipLines(1).csvParser(p).build();
         
-    String[] toks = csvr.readNext();
-    assertEquals(5, toks.length);
-    assertEquals("\"1\"", toks[0]);
-    assertEquals("\"abc\"", toks[1]);
-    assertEquals("\"Stan \"The Man\" Musial\"", toks[2]);
-    assertEquals("\"Mike \"The Situation\"\"", toks[3]);
-    assertEquals("\"I\nlike\nIke\"", toks[4]);
+    List<String> toks = csvr.readNext();
+    assertEquals(5, toks.size());
+    assertEquals("\"1\"", toks.get(0));
+    assertEquals("\"abc\"", toks.get(1));
+    assertEquals("\"Stan \"The Man\" Musial\"", toks.get(2));
+    assertEquals("\"Mike \"The Situation\"\"", toks.get(3));
+    assertEquals("\"I\nlike\nIke\"", toks.get(4));
 
     toks = csvr.readNext();
-    assertEquals(5, toks.length);
-    assertEquals("\"2\"", toks[0]);
-    assertEquals("\"def\"", toks[1]);
-    assertEquals("", toks[2]);
-    assertEquals("", toks[3]);
-    assertEquals("", toks[4]);
+    assertEquals(5, toks.size());
+    assertEquals("\"2\"", toks.get(0));
+    assertEquals("\"def\"", toks.get(1));
+    assertEquals("", toks.get(2));
+    assertEquals("", toks.get(3));
+    assertEquals("", toks.get(4));
     
     toks = csvr.readNext();
-    assertEquals(2, toks.length);
-    assertEquals("\"abc\"d\"efg\"", toks[0]);
-    assertEquals("\"Stan \"The Man\" Musial\"", toks[1]);
+    assertEquals(2, toks.size());
+    assertEquals("\"abc\"d\"efg\"", toks.get(0));
+    assertEquals("\"Stan \"The Man\" Musial\"", toks.get(1));
 
     toks = csvr.readNext();
-    assertEquals(1, toks.length);
-    assertEquals("", toks[0]);
+    assertEquals(1, toks.size());
+    assertEquals("", toks.get(0));
     
     toks = csvr.readNext();
-    assertEquals(6, toks.length);
-    assertEquals("\"2n\"", toks[0]);
-    assertEquals("\"\f\"", toks[1]);
-    assertEquals("\"\b\"", toks[2]);
-    assertEquals("\"\r\n\"", toks[3]);
-    assertEquals("\"\t\"", toks[4]);
-    assertEquals("\"last\"", toks[5]);
+    assertEquals(6, toks.size());
+    assertEquals("\"2n\"", toks.get(0));
+    assertEquals("\"\f\"", toks.get(1));
+    assertEquals("\"\b\"", toks.get(2));
+    assertEquals("\"\r\n\"", toks.get(3));
+    assertEquals("\"\t\"", toks.get(4));
+    assertEquals("\"last\"", toks.get(5));
 
     toks = csvr.readNext();
     assertNull(toks);
   }
 
+  @Test(expected=IllegalArgumentException.class)
+  public void testMultiLineInputWithSimpleCsvParser() throws IOException {
+    FileReader fr = new FileReader("src/test/resources/quotednl.csv");
+    csvr = new CsvReader(fr, 1);
+    
+    List<String> toks = csvr.readNext();
+    assertEquals(5, toks.size());
+    assertEquals("1", toks.get(0));
+    assertEquals(" abc", toks.get(1));
+    assertEquals(" Stan \"\"The Man\"\" Musial", toks.get(2));
+    assertEquals(" Mike \\\"The Situation\\\"", toks.get(3));
+    assertEquals(" I\\nlike\\nIke", toks.get(4));
+
+    csvr.readNext();
+  }
+  
+  /* ---[ quotednl.csv tests with MultiLine Parser ]--- */
+  
+  @Test
+  public void testMultiLineInputWithMultiLineParser() throws IOException {
+    FileReader fr = new FileReader("src/test/resources/quotednl.csv");
+    CsvParser p = new CsvParserBuilder().
+        multiLine(true).
+        build();
+    assertTrue(p instanceof MultiLineCsvParser);
+    csvr = new CsvReaderBuilder(fr).skipLines(1).csvParser(p).build();
+    
+    List<String> toks = csvr.readNext();
+    assertEquals(5, toks.size());
+    assertEquals("1", toks.get(0));
+    assertEquals(" abc", toks.get(1));
+    assertEquals(" Stan \"\"The Man\"\" Musial", toks.get(2));
+    assertEquals(" Mike \\\"The Situation\\\"", toks.get(3));
+    assertEquals(" I\\nlike\\nIke", toks.get(4));
+
+    toks = csvr.readNext();
+    assertEquals(6, toks.size());
+    assertEquals("2", toks.get(0));
+    assertEquals(" def", toks.get(1));
+    assertEquals("", toks.get(2));
+    assertEquals("", toks.get(3));
+    assertEquals("z\nabc\"d\"efg ", toks.get(4));
+    assertEquals("Stan \"The Man\" Musial        ", toks.get(5));
+    
+    toks = csvr.readNext();
+    assertEquals(1, toks.size());
+    assertEquals("", toks.get(0));
+    
+    toks = csvr.readNext();
+    assertEquals(6, toks.size());
+    assertEquals("2\\\\n", toks.get(0));
+    assertEquals("\\f", toks.get(1));
+    assertEquals("\\b", toks.get(2));
+    assertEquals("\\r\\n", toks.get(3));
+    assertEquals("\\t", toks.get(4));
+    assertEquals("\tlast", toks.get(5));
+
+    toks = csvr.readNext();
+    assertNull(toks);
+  }
+
+  
+  @Test
+  public void testMultiLineInputWithMultiLineParserAndRfc4180Support() throws IOException {
+    FileReader fr = new FileReader("src/test/resources/quotednl.csv");
+    CsvParser p = new CsvParserBuilder().
+        multiLine(true).
+        supportRfc4180QuotedQuotes(true).
+        build();
+    assertTrue(p instanceof MultiLineCsvParser);
+    csvr = new CsvReaderBuilder(fr).skipLines(1).csvParser(p).build();
+    
+    List<String> toks = csvr.readNext();
+    assertEquals(5, toks.size());
+    assertEquals("1", toks.get(0));
+    assertEquals(" abc", toks.get(1));
+    // with RFC4180 turned on the double quotes in the input go to single quotes here
+    assertEquals(" Stan \"The Man\" Musial", toks.get(2));  // key difference
+    assertEquals(" Mike \\\"The Situation\\\"", toks.get(3));
+    assertEquals(" I\\nlike\\nIke", toks.get(4));
+
+    toks = csvr.readNext();
+    assertEquals(6, toks.size());
+    assertEquals("2", toks.get(0));
+    assertEquals(" def", toks.get(1));
+    assertEquals("", toks.get(2));
+    assertEquals("", toks.get(3));
+    assertEquals("z\nabc\"d\"efg ", toks.get(4));
+    assertEquals("Stan \"The Man\" Musial        ", toks.get(5));
+    
+    toks = csvr.readNext();
+    assertEquals(1, toks.size());
+    assertEquals("", toks.get(0));
+    
+    toks = csvr.readNext();
+    assertEquals(6, toks.size());
+    assertEquals("2\\\\n", toks.get(0));
+    assertEquals("\\f", toks.get(1));
+    assertEquals("\\b", toks.get(2));
+    assertEquals("\\r\\n", toks.get(3));
+    assertEquals("\\t", toks.get(4));
+    assertEquals("\tlast", toks.get(5));
+
+    toks = csvr.readNext();
+    assertNull(toks);
+  }
+  
   
   /* ---------------------------------- */  
   /* ---[ StringReader based tests ]--- */
@@ -441,35 +555,35 @@ public class CsvReaderTest {
   public void testParseLine() throws IOException {
 
     // test normal case
-    String[] toks = csvr.readNext();
-    assertEquals("a", toks[0]);
-    assertEquals("b", toks[1]);
-    assertEquals("c", toks[2]);
+    List<String> toks = csvr.readNext();
+    assertEquals("a", toks.get(0));
+    assertEquals("b", toks.get(1));
+    assertEquals("c", toks.get(2));
 
     // test quoted commas
     toks = csvr.readNext();
-    assertEquals("a", toks[0]);
-    assertEquals("b,b,b", toks[1]);
-    assertEquals("c", toks[2]);
+    assertEquals("a", toks.get(0));
+    assertEquals("b,b,b", toks.get(1));
+    assertEquals("c", toks.get(2));
 
     // test empty elements
     toks = csvr.readNext();
-    assertEquals(3, toks.length);
+    assertEquals(3, toks.size());
 
     // test multiline quoted
     toks = csvr.readNext();
-    assertEquals(3, toks.length);
+    assertEquals(3, toks.size());
 
     // test quoted quote chars
     toks = csvr.readNext();
-    assertEquals("Glen \"\"The Man\"\" Smith", toks[0]);
+    assertEquals("Glen \"\"The Man\"\" Smith", toks.get(0));
 
     toks = csvr.readNext();
-    assertEquals("\"\"\"\"", toks[0]); 
-    assertEquals("test", toks[1]); // make sure we didn't ruin the next field..
+    assertEquals("\"\"\"\"", toks.get(0)); 
+    assertEquals("test", toks.get(1)); // make sure we didn't ruin the next field..
 
     toks = csvr.readNext();
-    assertEquals(4, toks.length);
+    assertEquals(4, toks.size());
 
     //test end of stream
     assertNull(csvr.readNext());
@@ -477,8 +591,7 @@ public class CsvReaderTest {
 
   @Test
   public void testParseLineStrictQuote() throws IOException {
-
-    StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
+    StringBuilder sb = new StringBuilder(INITIAL_READ_SIZE);
     sb.append("a,b,c").append("\n");   // standard case
     sb.append("a,\"b,b,b\",c").append("\n");  // quoted elements
     sb.append(",,").append("\n"); // empty elements
@@ -491,39 +604,39 @@ public class CsvReaderTest {
     csvr = new CsvReader(new StringReader(sb.toString()), parser);
 
     // test normal case
-    String[] toks = csvr.readNext();
-    assertEquals("", toks[0]);
-    assertEquals("", toks[1]);
-    assertEquals("", toks[2]);
+    List<String> toks = csvr.readNext();
+    assertEquals("", toks.get(0));
+    assertEquals("", toks.get(1));
+    assertEquals("", toks.get(2));
 
     // test quoted commas
     toks = csvr.readNext();
-    assertEquals("", toks[0]);
-    assertEquals("b,b,b", toks[1]);
-    assertEquals("", toks[2]);
+    assertEquals("", toks.get(0));
+    assertEquals("b,b,b", toks.get(1));
+    assertEquals("", toks.get(2));
 
     // test empty elements
     toks = csvr.readNext();
-    assertEquals(3, toks.length);
+    assertEquals(3, toks.size());
 
     // test multiline quoted
     toks = csvr.readNext();
-    assertEquals(3, toks.length);
+    assertEquals(3, toks.size());
 
     // test quoted quote chars
     toks = csvr.readNext();
-    assertEquals("Glen \\\"The Man\\\" Smith", toks[0]);
+    assertEquals("Glen \\\"The Man\\\" Smith", toks.get(0));
 
     toks = csvr.readNext();
-    assertEquals("", toks[0]);
-    assertEquals("test", toks[1]);
+    assertEquals("", toks.get(0));
+    assertEquals("test", toks.get(1));
 
     toks = csvr.readNext();
-    assertEquals(4, toks.length);
-    assertEquals("a\\nb", toks[0]);
-    assertEquals("", toks[1]);
-    assertEquals("\\nd", toks[2]);
-    assertEquals("", toks[3]);
+    assertEquals(4, toks.size());
+    assertEquals("a\\nb", toks.get(0));
+    assertEquals("", toks.get(1));
+    assertEquals("\\nd", toks.get(2));
+    assertEquals("", toks.get(3));
 
     //test end of stream
     assertNull(csvr.readNext());
@@ -548,47 +661,47 @@ public class CsvReaderTest {
   @Test
   public void testOptionalConstructors() throws IOException {
 
-    StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
+    StringBuilder sb = new StringBuilder(SimpleCsvParser.INITIAL_READ_SIZE);
     sb.append("a\tb\tc").append("\n");   // tab separated case
     sb.append("a\t'b\tb\tb'\tc").append("\n");  // single quoted elements
     
     CsvParser parser = new CsvParserBuilder().separator('\t').quoteChar('\'').build();
     CsvReader cr = new CsvReader(new StringReader(sb.toString()), parser);
     
-    String[] nextLine = cr.readNext();
-    assertEquals(3, nextLine.length);
+    List<String> nextLine = cr.readNext();
+    assertEquals(3, nextLine.size());
 
     nextLine = cr.readNext();
-    assertEquals(3, nextLine.length);
+    assertEquals(3, nextLine.size());
     cr.close();
   }
 
   @Test
   public void parseQuotedStringWithDefinedSeperator() throws IOException {
-    StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
+    StringBuilder sb = new StringBuilder(SimpleCsvParser.INITIAL_READ_SIZE);
     sb.append("a\tb\tc").append("\n");   // tab separated case
 
     CsvParser parser = new CsvParserBuilder().separator('\t').build();
     CsvReader cr = new CsvReader(new StringReader(sb.toString()), parser);
 
-    String[] nextLine = cr.readNext();
-    assertEquals(3, nextLine.length);
+    List<String> nextLine = cr.readNext();
+    assertEquals(3, nextLine.size());
 
     cr.close();
   }
 
   @Test
   public void parsePipeDelimitedString() throws IOException {
-    StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
+    StringBuilder sb = new StringBuilder(SimpleCsvParser.INITIAL_READ_SIZE);
     sb.append("[bar]|[baz]").append("\n");
 
     CsvParser parser = new CsvParserBuilder().separator('|').build();
     CsvReader cr = new CsvReader(new StringReader(sb.toString()), parser);
 
-    String[] nextLine = cr.readNext();
-    assertEquals(2, nextLine.length);
-    assertEquals("[bar]", nextLine[0]);
-    assertEquals("[baz]", nextLine[1]);
+    List<String> nextLine = cr.readNext();
+    assertEquals(2, nextLine.size());
+    assertEquals("[bar]", nextLine.get(0));
+    assertEquals("[baz]", nextLine.get(1));
 
     cr.close();
   }
@@ -601,7 +714,7 @@ public class CsvReaderTest {
   @Test
   public void testSkippingLines() throws IOException {
 
-    StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
+    StringBuilder sb = new StringBuilder(SimpleCsvParser.INITIAL_READ_SIZE);
     sb.append("Skip this line\t with tab").append("\n");   // should skip this
     sb.append("And this line too").append("\n");   // and this
     sb.append("a\t'b\tb\tb'\tc").append("\n");  // single quoted elements
@@ -612,9 +725,9 @@ public class CsvReaderTest {
         skipLines(2).
         build();
     
-    String[] nextLine = cr.readNext();
-    assertEquals(3, nextLine.length);
-    assertEquals("a", nextLine[0]);
+    List<String> nextLine = cr.readNext();
+    assertEquals(3, nextLine.size());
+    assertEquals("a", nextLine.get(0));
 
     cr.close();
   }
@@ -627,7 +740,7 @@ public class CsvReaderTest {
    */
   @Test
   public void testSkippingLinesWithDifferentEscape() throws IOException {
-    StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
+    StringBuilder sb = new StringBuilder(SimpleCsvParser.INITIAL_READ_SIZE);
     sb.append("Skip this line?t with tab").append("\n");   // should skip this
     sb.append("And this line too").append("\n");   // and this
     sb.append("a\t'b\tb\tb'\t'c'").append("\n");  // single quoted elements
@@ -638,10 +751,10 @@ public class CsvReaderTest {
         skipLines(2).
         build();
     
-    String[] nextLine = cr.readNext();
-    assertEquals(3, nextLine.length);
-    assertEquals("a", nextLine[0]);
-    assertEquals("c", nextLine[2]);
+    List<String> nextLine = cr.readNext();
+    assertEquals(3, nextLine.size());
+    assertEquals("a", nextLine.get(0));
+    assertEquals("c", nextLine.get(2));
 
     cr.close();
   }
@@ -653,18 +766,18 @@ public class CsvReaderTest {
    */
   @Test
   public void testNormalParsedLine() throws IOException {
-    StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
+    StringBuilder sb = new StringBuilder(SimpleCsvParser.INITIAL_READ_SIZE);
     sb.append("a,1234567,c").append("\n");// a,1234,c
 
-    CsvParser parser = new CsvParser();
+    CsvParser parser = new SimpleCsvParser();
     CsvReader cr = new CsvReader(new StringReader(sb.toString()), parser);
 
-    String[] nextLine = cr.readNext();
-    assertEquals(3, nextLine.length);
+    List<String> nextLine = cr.readNext();
+    assertEquals(3, nextLine.size());
 
-    assertEquals("a", nextLine[0]);
-    assertEquals("1234567", nextLine[1]);
-    assertEquals("c", nextLine[2]);
+    assertEquals("a", nextLine.get(0));
+    assertEquals("1234567", nextLine.get(1));
+    assertEquals("c", nextLine.get(2));
     cr.close();
   }
 
@@ -677,18 +790,18 @@ public class CsvReaderTest {
    */
   @Test
   public void testASingleQuoteAsDataElement() throws IOException {
-    StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
+    StringBuilder sb = new StringBuilder(SimpleCsvParser.INITIAL_READ_SIZE);
 
     sb.append("a,'''',c").append("\n");// a,'',c
 
     CsvParser parser = new CsvParserBuilder().quoteChar('\'').build();
     CsvReader cr = new CsvReader(new StringReader(sb.toString()), parser);
 
-    String[] nextLine = cr.readNext();
-    assertEquals(3, nextLine.length);
-    assertEquals("a", nextLine[0]);
-    assertEquals("''", nextLine[1]);
-    assertEquals("c", nextLine[2]);
+    List<String> nextLine = cr.readNext();
+    assertEquals(3, nextLine.size());
+    assertEquals("a", nextLine.get(0));
+    assertEquals("''", nextLine.get(1));
+    assertEquals("c", nextLine.get(2));
     cr.close();
   }
 
@@ -701,35 +814,35 @@ public class CsvReaderTest {
   @Test
   public void testASingleQuoteAsDataElementWithEmptyField() throws IOException {
 
-    StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
+    StringBuilder sb = new StringBuilder(SimpleCsvParser.INITIAL_READ_SIZE);
 
     sb.append("a,'',c").append("\n");// a,,c
 
     CsvParser parser = new CsvParserBuilder().quoteChar('\'').build();
     CsvReader cr = new CsvReader(new StringReader(sb.toString()), parser);
     
-    String[] nextLine = cr.readNext();
-    assertEquals(3, nextLine.length);
-    assertEquals("a", nextLine[0]);
-    assertEquals(0, nextLine[1].length());
-    assertEquals("", nextLine[1]);
-    assertEquals("c", nextLine[2]);
+    List<String> nextLine = cr.readNext();
+    assertEquals(3, nextLine.size());
+    assertEquals("a", nextLine.get(0));
+    assertEquals(0, nextLine.get(1).length());
+    assertEquals("", nextLine.get(1));
+    assertEquals("c", nextLine.get(2));
     cr.close();
   }
 
   @Test
   public void testSpacesAtEndOfString() throws IOException {
-    StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
+    StringBuilder sb = new StringBuilder(SimpleCsvParser.INITIAL_READ_SIZE);
     sb.append("\"a\",\"b\",\"c\"   ");
 
     CsvParser parser = new CsvParserBuilder().strictQuotes(true).build();
     CsvReader cr = new CsvReader(new StringReader(sb.toString()), parser);
 
-    String[] nextLine = cr.readNext();
-    assertEquals(3, nextLine.length);
-    assertEquals("a", nextLine[0]);
-    assertEquals("b", nextLine[1]);
-    assertEquals("c", nextLine[2]);
+    List<String> nextLine = cr.readNext();
+    assertEquals(3, nextLine.size());
+    assertEquals("a", nextLine.get(0));
+    assertEquals("b", nextLine.get(1));
+    assertEquals("c", nextLine.get(2));
     cr.close();
   }
 
@@ -741,10 +854,10 @@ public class CsvReaderTest {
 
     CsvReader cr = new CsvReader(new StringReader(sb.toString()));
     
-    String[] nextLine = cr.readNext();
-    assertEquals(3, nextLine.length);
+    List<String> nextLine = cr.readNext();
+    assertEquals(3, nextLine.size());
 
-    assertEquals("123\\\"4567", nextLine[1]);
+    assertEquals("123\\\"4567", nextLine.get(1));
     cr.close();
   }
 
@@ -755,9 +868,9 @@ public class CsvReaderTest {
 
     CsvReader cr = new CsvReader(new StringReader(sb.toString()));
     
-    String[] nextLine = cr.readNext();
-    assertEquals(3, nextLine.length);
-    assertEquals("123\\\\4567", nextLine[1]);
+    List<String> nextLine = cr.readNext();
+    assertEquals(3, nextLine.size());
+    assertEquals("123\\\\4567", nextLine.get(1));
     cr.close();
   }
 
@@ -771,17 +884,17 @@ public class CsvReaderTest {
    */
   @Test
   public void testSingleQuoteWhenDoubleQuoteIsQuoteChar() throws IOException {
-    StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
+    StringBuilder sb = new StringBuilder(SimpleCsvParser.INITIAL_READ_SIZE);
     sb.append("a,'',c").append("\n");// a,'',c
 
     CsvReader cr = new CsvReader(new StringReader(sb.toString()));
 
-    String[] nextLine = cr.readNext();
-    assertEquals(3, nextLine.length);
-    assertEquals("a", nextLine[0]);
-    assertEquals(2, nextLine[1].length());
-    assertEquals("''", nextLine[1]);
-    assertEquals("c", nextLine[2]);
+    List<String> nextLine = cr.readNext();
+    assertEquals(3, nextLine.size());
+    assertEquals("a", nextLine.get(0));
+    assertEquals(2, nextLine.get(1).length());
+    assertEquals("''", nextLine.get(1));
+    assertEquals("c", nextLine.get(2));
     cr.close();
   }
 
@@ -792,89 +905,89 @@ public class CsvReaderTest {
    */
   @Test
   public void testQuotedParsedLine() throws IOException {
-    StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
+    StringBuilder sb = new StringBuilder(SimpleCsvParser.INITIAL_READ_SIZE);
     sb.append("\"a\",\"1234567\",\"c\"").append("\n"); // "a","1234567","c"
 
     CsvParser parser = new CsvParserBuilder().strictQuotes(true).build();
     CsvReader cr = new CsvReader(new StringReader(sb.toString()), parser);
 
-    String[] nextLine = cr.readNext();
-    assertEquals(3, nextLine.length);
+    List<String> nextLine = cr.readNext();
+    assertEquals(3, nextLine.size());
 
-    assertEquals("a", nextLine[0]);
-    assertEquals(1, nextLine[0].length());
+    assertEquals("a", nextLine.get(0));
+    assertEquals(1, nextLine.get(0).length());
 
-    assertEquals("1234567", nextLine[1]);
-    assertEquals("c", nextLine[2]);
+    assertEquals("1234567", nextLine.get(1));
+    assertEquals("c", nextLine.get(2));
     cr.close();
   }
 
   @Test
   public void testIssue2992134OutOfPlaceQuotes() throws IOException {
-    StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
+    StringBuilder sb = new StringBuilder(SimpleCsvParser.INITIAL_READ_SIZE);
     sb.append("a,b,c,ddd\\\"eee\nf,g,h,\"iii,jjj\"");
 
     CsvReader cr = new CsvReader(new StringReader(sb.toString()));
 
-    String[] nextLine = cr.readNext();
-    assertEquals("a", nextLine[0]);
-    assertEquals("b", nextLine[1]);
-    assertEquals("c", nextLine[2]);
-    assertEquals("ddd\\\"eee", nextLine[3]);
+    List<String> nextLine = cr.readNext();
+    assertEquals("a", nextLine.get(0));
+    assertEquals("b", nextLine.get(1));
+    assertEquals("c", nextLine.get(2));
+    assertEquals("ddd\\\"eee", nextLine.get(3));
 
     nextLine = cr.readNext();
-    assertEquals("f", nextLine[0]);
-    assertEquals("g", nextLine[1]);
-    assertEquals("h", nextLine[2]);
-    assertEquals("iii,jjj", nextLine[3]);
+    assertEquals("f", nextLine.get(0));
+    assertEquals("g", nextLine.get(1));
+    assertEquals("h", nextLine.get(2));
+    assertEquals("iii,jjj", nextLine.get(3));
 
     cr.close();
   }
 
   @Test
   public void testIssue2992134OutOfPlaceQuotesAlwaysQuoteOutput() throws IOException {
-    StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
+    StringBuilder sb = new StringBuilder(SimpleCsvParser.INITIAL_READ_SIZE);
     sb.append("a,b,c,ddd\\\"eee\nf,g,h,\"iii,jjj\"");
 
     CsvParser p = new CsvParserBuilder().alwaysQuoteOutput(true).build();
     CsvReader cr = new CsvReader(new StringReader(sb.toString()), p);
 
-    String[] nextLine = cr.readNext();
-    assertEquals("\"a\"", nextLine[0]);
-    assertEquals("\"b\"", nextLine[1]);
-    assertEquals("\"c\"", nextLine[2]);
-    assertEquals("\"ddd\\\"eee\"", nextLine[3]);
+    List<String> nextLine = cr.readNext();
+    assertEquals("\"a\"", nextLine.get(0));
+    assertEquals("\"b\"", nextLine.get(1));
+    assertEquals("\"c\"", nextLine.get(2));
+    assertEquals("\"ddd\\\"eee\"", nextLine.get(3));
 
     nextLine = cr.readNext();
-    assertEquals("\"f\"", nextLine[0]);
-    assertEquals("\"g\"", nextLine[1]);
-    assertEquals("\"h\"", nextLine[2]);
-    assertEquals("\"iii,jjj\"", nextLine[3]);
+    assertEquals("\"f\"", nextLine.get(0));
+    assertEquals("\"g\"", nextLine.get(1));
+    assertEquals("\"h\"", nextLine.get(2));
+    assertEquals("\"iii,jjj\"", nextLine.get(3));
 
     cr.close();
   }
   
   @Test
   public void testASingleQuoteAsDataElementWithEmptyField2() throws IOException {
-    StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
+    StringBuilder sb = new StringBuilder(SimpleCsvParser.INITIAL_READ_SIZE);
     sb.append("\"\";1").append("\n");// ;1
     sb.append("\"\";2").append("\n");// ;2
 
     CsvParser parser = new CsvParserBuilder().separator(';').build();
     CsvReader cr = new CsvReader(new StringReader(sb.toString()), parser);
     
-    String[] nextLine = cr.readNext();
-    assertEquals(2, nextLine.length);
+    List<String> nextLine = cr.readNext();
+    assertEquals(2, nextLine.size());
 
-    assertEquals(0, nextLine[0].length());
-    assertEquals("1", nextLine[1]);
+    assertEquals(0, nextLine.get(0).length());
+    assertEquals("1", nextLine.get(1));
 
     nextLine = cr.readNext();
-    assertEquals(2, nextLine.length);
+    assertEquals(2, nextLine.size());
 
-    assertEquals("", nextLine[0]);
-    assertEquals(0, nextLine[0].length());
-    assertEquals("2", nextLine[1]);
+    assertEquals("", nextLine.get(0));
+    assertEquals(0, nextLine.get(0).length());
+    assertEquals("2", nextLine.get(1));
 
     cr.close();
   }
@@ -882,12 +995,12 @@ public class CsvReaderTest {
 
   @Test(expected = UnsupportedOperationException.class)
   public void quoteAndEscapeMustBeDifferent() throws IOException {
-    StringBuilder sb = new StringBuilder(CsvParser.INITIAL_READ_SIZE);
+    StringBuilder sb = new StringBuilder(SimpleCsvParser.INITIAL_READ_SIZE);
     sb.append("a,b,c,ddd\\\"eee\nf,g,h,\"iii,jjj\"");
 
     CsvParser parser = new CsvParserBuilder().
-        quoteChar(CsvParser.DEFAULT_QUOTE_CHAR).
-        escapeChar(CsvParser.DEFAULT_QUOTE_CHAR).
+        quoteChar(ParserUtil.DEFAULT_QUOTE_CHAR).
+        escapeChar(ParserUtil.DEFAULT_QUOTE_CHAR).
         build();
     CsvReader cr = null;
     try {
@@ -897,17 +1010,16 @@ public class CsvReaderTest {
     }
   }
   
-  
 
   /* ---[ Test OpenCSV bug 97 ]--- */
   // https://sourceforge.net/p/opencsv/bugs/97/
   
-  private List<String[]> getTestData() {
-    List<String[]> list = new ArrayList<String[]>();
-    list.add(new String[] {"quote\"", "escape\\", "normal"});
-    list.add(new String[] {"double \"quote\"", "middle \\escape", "regular"});
-    list.add(new String[] {"typical", "end escape\\", "ordinary"});
-    list.add(new String[] {"one", "two", "three"});
+  private List<List<String>> getTestData() {
+    List<List<String>> list = new ArrayList<List<String>>();
+    list.add(Arrays.asList("quote\"", "escape\\", "normal"));
+    list.add(Arrays.asList("double \"quote\"", "middle \\escape", "regular"));
+    list.add(Arrays.asList("typical", "end escape\\", "ordinary"));
+    list.add(Arrays.asList("one", "two", "three"));
     return list;
 }
   
@@ -919,7 +1031,7 @@ public class CsvReaderTest {
         writer.writeAll(getTestData());
         writer.close();
         CsvReader reader = new CsvReader(new FileReader(file));
-        List<String[]> list = reader.readAll();
+        List<List<String>> list = reader.readAll();
         reader.close();
         assertEquals(4, list.size());
       } finally {
@@ -935,7 +1047,7 @@ public class CsvReaderTest {
         writer.writeAll(getTestData());
         writer.close();
         CsvReader reader = new CsvReader(new FileReader(file));
-        List<String[]> list = reader.readAll();
+        List<List<String>> list = reader.readAll();
         reader.close();
         assertEquals(4, list.size());
       
@@ -956,7 +1068,7 @@ public class CsvReaderTest {
             allowUnbalancedQuotes(true).
             build();
         CsvReader reader = new CsvReader(new FileReader(file), p);
-        List<String[]> list = reader.readAll();
+        List<List<String>> list = reader.readAll();
         reader.close();
         assertEquals(4, list.size());
         
@@ -964,7 +1076,67 @@ public class CsvReaderTest {
         file.delete();
       }
   }
-
   /* ---[ END Test OpenCSV bug 97 ]--- */
+  
+  
+  // CsvReader tests using MultiLine parser
+  public void testCrLfAndAlwaysQuoteOutput() throws IOException {
+    CsvParser p = new CsvParserBuilder().
+        trimWhitespace(true).
+        alwaysQuoteOutput(true).
+        multiLine(true).
+        build();
 
+    // all quoted of course
+    CsvReader r = new CsvReader(new StringReader(
+        "a" + LF
+        + "," + CRLF
+        + "b" + LF
+        + ",c" + CR), p);
+
+    // LINE 1 = 'a' + LF
+    List<String> result = r.readNext();
+    assertArrayEquals(new String[]{"\"a\""}, result.toArray());
+
+    // LINE 2 =  , + CRLF == _,_ (line starting with a comma and then a CR or CRLF is actually two emtpy fields
+    result = r.readNext();
+    assertArrayEquals(new String[]{"", ""}, result.toArray());
+
+    // LINE 3 = 'b' + LF
+    result = r.readNext();
+    assertArrayEquals(new String[]{"\"b\""}, result.toArray());
+
+    // LINE 4 =  , + 'c' + CR + EOF = empty + c
+    result = r.readNext();
+    assertArrayEquals(new String[]{"", "\"c\""}, result.toArray());
+    
+    r.close();
+  }
+
+  @Test
+  public void rfc4180PlusChangeEscapeCharToDoubleQuote() throws IOException {
+    CsvParser rfc4180 = new CsvParserBuilder().
+        multiLine(true).
+        supportRfc4180QuotedQuotes(true).
+        escapeChar('"').
+        quoteChar('\'').
+        build();
+
+    // all quoted of course
+    CsvReader r = new CsvReader(new StringReader("'a\r\nb',b\\\b,'\\nd',e\n"), rfc4180);
+
+    List<String> toks = r.readNext();
+    assertEquals(4, toks.size());
+    assertEquals("a\r\nb", toks.get(0));
+    assertEquals("b\\\b", toks.get(1)); 
+    assertEquals("\\nd", toks.get(2));
+    assertEquals("e", toks.get(3));
+
+    r = new CsvReader(new StringReader("'Stan \"\"The Man\"\"'"), rfc4180);
+    toks = r.readNext();
+    assertEquals(1, toks.size());
+    assertEquals("Stan \"\"The Man\"\"", toks.get(0));
+    
+    r.close();
+  }
 }

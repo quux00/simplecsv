@@ -33,10 +33,10 @@ public class CsvReaderBuilder {
   /**
    * Sets the parser to use to parse the input
    *
-   * @param CsvParser the parser to use to parse the input
+   * @param csvParser the parser to use to parse the input
    */
-  public CsvReaderBuilder csvParser(final CsvParser CsvParser) {
-    this.parser = CsvParser;
+  public CsvReaderBuilder csvParser(final CsvParser csvParser) {
+    this.parser = csvParser;
     return this;
   }
 
@@ -46,7 +46,7 @@ public class CsvReaderBuilder {
    */
   public CsvReader build() {
     if (parser == null) {
-      parser = new CsvParser();
+      parser = new SimpleCsvParser();
     }
     return new CsvReader(reader, skipLines, parser);
   }

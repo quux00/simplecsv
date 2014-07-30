@@ -1,21 +1,5 @@
 package net.quux00.simplecsv;
 
-/**
- Copyright 2005 Bytecode Pty Ltd.
-
- Licensed under the Apache License, Version 2.0 (the "License");
- you may not use this file except in compliance with the License.
- You may obtain a copy of the License at
-
- http://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
- */
-
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.IOException;
@@ -25,21 +9,17 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * A very simple CSV reader released under a commercial-friendly license.
- *
- * @author Glen Smith
+ * A very CSV reader that can take any underlying parser that implements the 
+ * CsvParser interface.  Note that CsvReader does NOT implement the Reader interface,
+ * but instead must have a Reader supplied when it is constructed.
  */
-public class CsvReader implements Closeable, Iterable<String[]> {
+public class CsvReader implements Closeable, Iterable<List<String>> {
 
   private BufferedReader br;
-
-  private boolean hasNext = true;
+  private int recordNumber = 1;
 
   CsvParser parser;
-
   int skipLines;
-
-  private boolean linesSkiped;
 
   /**
    * The default line to start reading.
@@ -48,21 +28,23 @@ public class CsvReader implements Closeable, Iterable<String[]> {
 
   /**
    * Constructs CsvReader using a comma for the separator.
+   * Defaults to using a SimpleCsvParser.
    *
    * @param reader the reader to an underlying CSV source.
    */
   public CsvReader(Reader reader) {
-    this(reader, DEFAULT_SKIP_LINES, new CsvParser());
+    this(reader, DEFAULT_SKIP_LINES, new SimpleCsvParser());
   }
 
   /**
    * Constructs CsvReader with supplied separator and quote char.
+   * Defaults to using a SimpleCsvParser.
    *
    * @param reader    the reader to an underlying CSV source.
    * @param line      the line number to skip for start reading
    */
   public CsvReader(Reader reader, int line) {
-    this(reader, line, new CsvParser());
+    this(reader, line, new SimpleCsvParser());
   }
   
   /**
@@ -97,14 +79,15 @@ public class CsvReader implements Closeable, Iterable<String[]> {
    *         a line of the file.
    * @throws IOException if bad things happen during the read
    */
-  public List<String[]> readAll() throws IOException {
+  public List<List<String>> readAll() throws IOException {
 
-    List<String[]> allElements = new ArrayList<String[]>();
-    while (hasNext) {
-      String[] nextLineAsTokens = readNext();
-      if (nextLineAsTokens != null) {
-        allElements.add(nextLineAsTokens);
+    List<List<String>> allElements = new ArrayList<List<String>>();
+    while (true) {
+      List<String> nextLineAsTokens = readNext();
+      if (nextLineAsTokens == null) {
+        break;
       }
+      allElements.add(nextLineAsTokens);      
     }
     return allElements;
   }
@@ -115,31 +98,32 @@ public class CsvReader implements Closeable, Iterable<String[]> {
    * @return a string array with each comma-separated element as a separate entry.
    * @throws IOException if bad things happen during the read
    */
-  public String[] readNext() throws IOException {
-    String ln = getNextLine();
-    return parser.parseLine(ln);
+  public List<String> readNext() throws IOException {
+    try {
+      while (skipLines > 0) {
+        if (parser.parseNext(br) == null) {
+          // if we reacher EOF, then consider all lines skipped
+          skipLines = 0;
+        } else {
+          recordNumber++;
+          skipLines--;
+        }
+      }
+
+      List<String> next = parser.parseNext(br);
+      if (next != null) {
+        recordNumber++;
+      }
+      return next;
+      
+    } catch (IllegalArgumentException re) {
+      // we append the record number that caused the exception
+      IllegalArgumentException nre = new IllegalArgumentException(re.getMessage() + ": " + recordNumber + ".");
+      nre.setStackTrace(re.getStackTrace());
+      throw nre;
+    }
   }
 
-  /**
-   * Reads the next line from the file.
-   *
-   * @return the next line from the file without trailing newline
-   * @throws IOException if bad things happen during the read
-   */
-  // TODO: not sure I want all this nonsense about hasNext ...
-  private String getNextLine() throws IOException {
-    if (!this.linesSkiped) {
-      for (int i = 0; i < skipLines; i++) {
-        br.readLine();
-      }
-      this.linesSkiped = true;
-    }
-    String nextLine = br.readLine();
-    if (nextLine == null) {
-      hasNext = false;
-    }
-    return hasNext ? nextLine : null;
-  }
 
   /**
    * Closes the underlying reader.
@@ -150,7 +134,7 @@ public class CsvReader implements Closeable, Iterable<String[]> {
     br.close();
   }
 
-  public Iterator<String[]> iterator() {
+  public Iterator<List<String>> iterator() {
     try {
       return new CsvIterator(this);
     } catch (IOException e) {

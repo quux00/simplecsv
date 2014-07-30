@@ -155,29 +155,29 @@ public class CsvWriter implements Closeable, Flushable {
 
   /**
    * Writes the entire list to a CSV file. The list is assumed to be a
-   * String[]
+   * List<String>
    *
-   * @param allLines         a List of String[], with each String[] representing a line of
+   * @param allLines         a List of List<String>, with each List<String> representing a line of
    *                         the file.
    * @param applyQuotesToAll true if all values are to be quoted.  false if quotes only
    *                         to be applied to values which contain the separator, escape,
    *                         quote or new line characters.
    */
-  public void writeAll(List<String[]> allLines, boolean applyQuotesToAll) {
-    for (String[] line : allLines) {
+  public void writeAll(List<List<String>> allLines, boolean applyQuotesToAll) {
+    for (List<String> line : allLines) {
       writeNext(line, applyQuotesToAll);
     }
   }
 
   /**
    * Writes the entire list to a CSV file. The list is assumed to be a
-   * String[]
+   * List<String>
    *
-   * @param allLines a List of String[], with each String[] representing a line of
+   * @param allLines a List of List<String>, with each List<String> representing a line of
    *                 the file.
    */
-  public void writeAll(List<String[]> allLines) {
-    for (String[] line : allLines) {
+  public void writeAll(List<List<String>> allLines) {
+    for (List<String> line : allLines) {
       writeNext(line);
     }
   }
@@ -226,17 +226,17 @@ public class CsvWriter implements Closeable, Flushable {
    * @param applyQuotesToAll true if all values are to be quoted.  false applies quotes only
    *                         to values which contain the separator, escape, quote or new line characters.
    */
-  public void writeNext(String[] nextLine, boolean applyQuotesToAll) {
+  public void writeNext(List<String> nextLine, boolean applyQuotesToAll) {
     if (nextLine == null)
       return;
 
     StringBuilder sb = new StringBuilder(INITIAL_STRING_SIZE);
-    for (int i = 0; i < nextLine.length; i++) {
+    for (int i = 0; i < nextLine.size(); i++) {
       if (i != 0) {
         sb.append(separator);
       }
 
-      String nextElement = nextLine[i];
+      String nextElement = nextLine.get(i);
 
       if (nextElement == null)
         continue;
@@ -266,7 +266,7 @@ public class CsvWriter implements Closeable, Flushable {
    * @param nextLine a string array with each comma-separated element as a separate
    *                 entry.
    */
-  public void writeNext(String[] nextLine) {
+  public void writeNext(List<String> nextLine) {
     writeNext(nextLine, true);
   }
 
