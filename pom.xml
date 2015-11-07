@@ -3,7 +3,7 @@
   <groupId>net.quux00.simplecsv</groupId>
   <artifactId>simplecsv</artifactId>
   <packaging>jar</packaging>
-  <version>2.1</version>
+  <version>2.2-SNAPSHOT</version>
   <name>simplecsv</name>
   <description>A simple library for parsing CSV in Java, based on the OpenCSV library</description>
   <url>http://github.com/midpeter444/simplecsv</url>
@@ -12,7 +12,7 @@
     <connection>scm:git:git@github.com:quux00/simplecsv.git</connection>
     <developerConnection>scm:git:git@github.com:quux00/simplecsv.git</developerConnection>
     <url>https://github.com/quux00/simplecsv</url>
-    <tag>simplecsv-2.1</tag>
+    <tag>simplecsv-2.0</tag>
   </scm>
 
   <parent>
